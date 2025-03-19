@@ -22,7 +22,7 @@ export const Select: React.FC<SelectProps> = ({
       )}
       <select
         className={cn(
-          "w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
+          "w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm md:text-base py-1.5 md:py-2",
           error && "border-red-500",
           className
         )}
@@ -31,7 +31,7 @@ export const Select: React.FC<SelectProps> = ({
         {children}
       </select>
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p className="mt-1 text-xs md:text-sm text-red-600">{error}</p>
       )}
     </div>
   );

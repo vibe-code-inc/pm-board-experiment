@@ -26,22 +26,25 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
-        <p className="text-gray-600">{project.description}</p>
+    <div className="p-4 md:p-6">
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">{project.name}</h1>
+        <p className="text-sm md:text-base text-gray-600">{project.description}</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      {/* Responsive grid - stack on mobile, side by side on larger screens */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {columns.map((column) => (
           <div
             key={column.status}
-            className="bg-gray-50 rounded-lg p-4"
+            className="bg-gray-50 rounded-lg p-3 md:p-4 shadow-sm"
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, column.status)}
           >
-            <h2 className="font-semibold text-gray-700 mb-4">{column.title}</h2>
-            <div className="space-y-3 min-h-[200px]">
+            <h2 className="font-semibold text-gray-700 mb-3 md:mb-4 text-center md:text-left">
+              {column.title}
+            </h2>
+            <div className="space-y-3 min-h-[150px] md:min-h-[200px]">
               {project.tasks
                 .filter((task) => task.status === column.status)
                 .map((task) => (
