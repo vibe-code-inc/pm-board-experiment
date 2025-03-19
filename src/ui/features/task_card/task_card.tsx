@@ -36,7 +36,7 @@ const throttle = (func: Function, delay: number) => {
 
 // Outside of component, add scroll utility functions
 const SCROLL_EDGE_PERCENT = 0.05; // Edge detection zone - 5% of screen dimensions
-const SCROLL_THROTTLE = 16; // Milliseconds between scroll updates (16ms ≈ 60fps)
+const SCROLL_THROTTLE = 8; // Milliseconds between scroll updates (reduced from 16ms to 8ms for higher frequency)
 
 // Constants for exponential scrolling
 const EXPONENTIAL_FACTOR = 2.5; // Higher values make scroll speed increase more rapidly
@@ -161,39 +161,39 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     if (touchX < edgeWidth) {
       // Near left edge - use a fixed high value for reliability
       const intensity = 1 - (touchX / edgeWidth);
-      scrollX = -Math.round(25 * intensity); // Much faster scroll
+      scrollX = -Math.round(60 * intensity); // Much faster scroll
     } else if (touchX > windowWidth - edgeWidth) {
       // Near right edge
       const intensity = (touchX - (windowWidth - edgeWidth)) / edgeWidth;
-      scrollX = Math.round(25 * intensity); // Much faster scroll
+      scrollX = Math.round(60 * intensity); // Much faster scroll
     }
 
     // Simplified vertical scroll calculation with higher values
     if (touchY < edgeHeight) {
       // Near top edge
       const intensity = 1 - (touchY / edgeHeight);
-      scrollY = -Math.round(25 * intensity); // Much faster scroll
+      scrollY = -Math.round(60 * intensity); // Much faster scroll
     } else if (touchY > windowHeight - edgeHeight) {
       // Near bottom edge
       const intensity = (touchY - (windowHeight - edgeHeight)) / edgeHeight;
-      scrollY = Math.round(25 * intensity); // Much faster scroll
+      scrollY = Math.round(60 * intensity); // Much faster scroll
     }
 
     // Outside viewport scrolling - even faster
     if (touchX < 0) {
       // Outside left edge
-      scrollX = -50; // Very fast scroll
+      scrollX = -100; // Very fast scroll
     } else if (touchX > windowWidth) {
       // Outside right edge
-      scrollX = 50; // Very fast scroll
+      scrollX = 100; // Very fast scroll
     }
 
     if (touchY < 0) {
       // Outside top edge
-      scrollY = -50; // Very fast scroll
+      scrollY = -100; // Very fast scroll
     } else if (touchY > windowHeight) {
       // Outside bottom edge
-      scrollY = 50; // Very fast scroll
+      scrollY = 100; // Very fast scroll
     }
 
     // If no scrolling needed, cancel any ongoing animation
@@ -205,9 +205,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     // Create a simple scrolling function
     const doScroll = () => {
       // Apply scrolling immediately with fixed values
+      // Using direct scrollBy call for maximum performance
       window.scrollBy(scrollX, scrollY);
 
-      // Continue the animation
+      // Continue the animation with high priority
       scrollAnimationRef.current = window.requestAnimationFrame(doScroll);
     };
 
@@ -215,7 +216,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     if (scrollAnimationRef.current === null) {
       // First, do an immediate scroll for responsiveness
       window.scrollBy(scrollX, scrollY);
-      // Then start the animation loop
+      // Then start the animation loop with high priority
       scrollAnimationRef.current = window.requestAnimationFrame(doScroll);
     }
   }, [cleanupScrollAnimation]);
@@ -286,7 +287,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           lastKnownY >= window.innerHeight * (1 - SCROLL_EDGE_PERCENT)) {
         handleAutoScroll(lastKnownX, lastKnownY);
       }
-    }, 16); // Check roughly 60 times per second
+    }, 8); // Check more frequently (reduced from 16ms to 8ms)
 
     // Update last known position on mouse move
     const trackMousePosition = (moveEvent: MouseEvent) => {
