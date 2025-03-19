@@ -140,125 +140,108 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     };
   }, [cleanupScrollAnimation]);
 
-  // Auto-scroll function with truly dynamic calculations
+  // Auto-scroll function with time-based calculations
   const handleAutoScroll = useCallback((touchX: number, touchY: number) => {
-    // Get actual window dimensions at runtime
+    // Get current dimensions
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
-    // Calculate edge zones dynamically - 5% of screen dimension
+    // Calculate edge zones - 5% of screen
     const edgeSize = Math.min(windowWidth, windowHeight) * EDGE_ZONE_PERCENT;
-    const dangerZone = Math.min(windowWidth, windowHeight) * DANGER_ZONE_PERCENT;
 
-    // Dynamic scroll speeds based on screen size (25% of screen size per second)
-    // We calculate per call rather than assuming a specific FPS
-    const maxSpeedX = windowWidth * 0.25;
-    const maxSpeedY = windowHeight * 0.25;
+    // Time-based scrolling variables
+    const scrollTimeRef = useRef<number>(0);
+    const lastFrameTimeRef = useRef<number>(0);
 
-    // Calculate how often we expect to be called (but don't rely on it)
-    // This is a rough estimate to scale the per-call speed
-    const estimatedFramesPerSecond = 60;
-    const baseSpeedX = maxSpeedX / estimatedFramesPerSecond;
-    const baseSpeedY = maxSpeedY / estimatedFramesPerSecond;
+    // Maximum scroll speed per second (50% of screen per second)
+    const maxSpeedPerSecondX = windowWidth * 0.5;
+    const maxSpeedPerSecondY = windowHeight * 0.5;
 
-    // Compute distance from each edge
-    const distanceFromLeft = touchX;
-    const distanceFromRight = windowWidth - touchX;
-    const distanceFromTop = touchY;
-    const distanceFromBottom = windowHeight - touchY;
-
-    // Initialize scroll values
-    let scrollX = 0;
-    let scrollY = 0;
-
-    // Horizontal scrolling with dynamic scaling
-    if (distanceFromLeft < edgeSize) {
-      // Near or beyond left edge
-      // Calculate how far into the edge zone we are (0 = just at edge, 1 = at/beyond screen edge)
-      const zoneProgress = Math.min(1, (edgeSize - distanceFromLeft) / edgeSize);
-
-      // Exponential scaling for more responsive feel at edges
-      // Use square for exponential increase (can adjust power for different feel)
-      const scaleFactor = Math.pow(zoneProgress, 2);
-
-      // When in danger zone (very close to edge), use max speed
-      if (distanceFromLeft < dangerZone) {
-        scrollX = -baseSpeedX * 3; // Max speed with boost
-      } else {
-        // Otherwise scale from 0 to max speed based on position
-        scrollX = -baseSpeedX * scaleFactor * 3; // Scale up to 3x base speed
-      }
-    } else if (distanceFromRight < edgeSize) {
-      // Near or beyond right edge
-      const zoneProgress = Math.min(1, (edgeSize - distanceFromRight) / edgeSize);
-      const scaleFactor = Math.pow(zoneProgress, 2);
-
-      if (distanceFromRight < dangerZone) {
-        scrollX = baseSpeedX * 3; // Max speed with boost
-      } else {
-        scrollX = baseSpeedX * scaleFactor * 3;
-      }
-    }
-
-    // Vertical scrolling with dynamic scaling
-    if (distanceFromTop < edgeSize) {
-      // Near or beyond top edge
-      const zoneProgress = Math.min(1, (edgeSize - distanceFromTop) / edgeSize);
-      const scaleFactor = Math.pow(zoneProgress, 2);
-
-      if (distanceFromTop < dangerZone) {
-        scrollY = -baseSpeedY * 3; // Max speed with boost
-      } else {
-        scrollY = -baseSpeedY * scaleFactor * 3;
-      }
-    } else if (distanceFromBottom < edgeSize) {
-      // Near or beyond bottom edge
-      const zoneProgress = Math.min(1, (edgeSize - distanceFromBottom) / edgeSize);
-      const scaleFactor = Math.pow(zoneProgress, 2);
-
-      if (distanceFromBottom < dangerZone) {
-        scrollY = baseSpeedY * 3; // Max speed with boost
-      } else {
-        scrollY = baseSpeedY * scaleFactor * 3;
-      }
-    }
-
-    // If far outside the viewport, increase speed even more
-    // (distance calculation already handles this with min(1, ...) for zoneProgress)
-    if (touchX < 0 || touchX > windowWidth) {
-      scrollX *= 1.5; // 50% faster when outside
-    }
-    if (touchY < 0 || touchY > windowHeight) {
-      scrollY *= 1.5; // 50% faster when outside
-    }
-
-    // If no scrolling needed, cancel any ongoing animation
-    if (scrollX === 0 && scrollY === 0) {
-      cleanupScrollAnimation();
-      return;
-    }
-
-    // Apply scrolling immediately
-    window.scrollBy(scrollX, scrollY);
-
-    // Create a scrolling function that recalculates speed on each frame
-    const doScroll = () => {
-      // Skip if component is no longer mounted
-      if (!cardRef.current) {
-        cleanupScrollAnimation();
+    // Create direct scrolling function with time-based calculation
+    const performScroll = (timestamp: number) => {
+      // Initialize time tracking on first frame
+      if (scrollTimeRef.current === 0) {
+        scrollTimeRef.current = timestamp;
+        lastFrameTimeRef.current = timestamp;
+        scrollAnimationRef.current = window.requestAnimationFrame(performScroll);
         return;
       }
 
-      // Recalculate speeds on each frame for adaptive scrolling
-      handleAutoScroll(touchX, touchY);
+      // Calculate elapsed time since last frame in seconds
+      const deltaTime = (timestamp - lastFrameTimeRef.current) / 1000;
+      lastFrameTimeRef.current = timestamp;
 
-      // Continue the animation
-      scrollAnimationRef.current = window.requestAnimationFrame(doScroll);
+      // Get how far we are from each edge as a ratio (0-1)
+      const leftEdgeRatio = Math.max(0, Math.min(1, 1 - (touchX / edgeSize)));
+      const rightEdgeRatio = Math.max(0, Math.min(1, (touchX - (windowWidth - edgeSize)) / edgeSize));
+      const topEdgeRatio = Math.max(0, Math.min(1, 1 - (touchY / edgeSize)));
+      const bottomEdgeRatio = Math.max(0, Math.min(1, (touchY - (windowHeight - edgeSize)) / edgeSize));
+
+      // Calculate scroll amount for this frame based on time and edge distance
+      let scrollX = 0;
+      let scrollY = 0;
+
+      // Compute horizontal scroll - square the ratio for exponential feel
+      if (leftEdgeRatio > 0) {
+        // Left edge - scroll left (negative)
+        scrollX = -maxSpeedPerSecondX * deltaTime * Math.pow(leftEdgeRatio, 2);
+      } else if (rightEdgeRatio > 0) {
+        // Right edge - scroll right (positive)
+        scrollX = maxSpeedPerSecondX * deltaTime * Math.pow(rightEdgeRatio, 2);
+      }
+
+      // Compute vertical scroll - square the ratio for exponential feel
+      if (topEdgeRatio > 0) {
+        // Top edge - scroll up (negative)
+        scrollY = -maxSpeedPerSecondY * deltaTime * Math.pow(topEdgeRatio, 2);
+      } else if (bottomEdgeRatio > 0) {
+        // Bottom edge - scroll down (positive)
+        scrollY = maxSpeedPerSecondY * deltaTime * Math.pow(bottomEdgeRatio, 2);
+      }
+
+      // Extra speed outside viewport
+      if (touchX < 0) {
+        scrollX = -maxSpeedPerSecondX * deltaTime * 1.5; // 1.5x speed outside left
+      } else if (touchX > windowWidth) {
+        scrollX = maxSpeedPerSecondX * deltaTime * 1.5; // 1.5x speed outside right
+      }
+
+      if (touchY < 0) {
+        scrollY = -maxSpeedPerSecondY * deltaTime * 1.5; // 1.5x speed outside top
+      } else if (touchY > windowHeight) {
+        scrollY = maxSpeedPerSecondY * deltaTime * 1.5; // 1.5x speed outside bottom
+      }
+
+      // Apply scroll if needed
+      if (scrollX !== 0 || scrollY !== 0) {
+        window.scrollBy(scrollX, scrollY);
+      } else {
+        // No scrolling needed, cancel animation
+        cleanupScrollAnimation();
+        scrollTimeRef.current = 0;
+        return;
+      }
+
+      // Continue animation loop
+      scrollAnimationRef.current = window.requestAnimationFrame(performScroll);
     };
 
-    // Start the animation loop if not already running
-    if (scrollAnimationRef.current === null) {
-      scrollAnimationRef.current = window.requestAnimationFrame(doScroll);
+    // Start scrolling immediately if at edges
+    if (touchX <= edgeSize || touchX >= windowWidth - edgeSize ||
+        touchY <= edgeSize || touchY >= windowHeight - edgeSize ||
+        touchX < 0 || touchX > windowWidth || touchY < 0 || touchY > windowHeight) {
+
+      // Cancel any existing animation
+      cleanupScrollAnimation();
+      scrollTimeRef.current = 0;
+      lastFrameTimeRef.current = 0;
+
+      // Start a new animation
+      scrollAnimationRef.current = window.requestAnimationFrame(performScroll);
+    } else {
+      // Not at edges, stop any existing animation
+      cleanupScrollAnimation();
+      scrollTimeRef.current = 0;
     }
   }, [cleanupScrollAnimation]);
 
