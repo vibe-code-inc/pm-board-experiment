@@ -34,6 +34,22 @@ const throttle = (func: Function, delay: number) => {
   };
 };
 
+// Outside of component, add scroll utility functions
+const SCROLL_EDGE_SIZE = 60; // Size of the edge area that triggers scrolling
+const MAX_SCROLL_SPEED = 15; // Maximum scroll speed in pixels per frame
+
+// Calculate scroll amount based on cursor position
+const calculateScrollAmount = (position: number, edgeSize: number, containerSize: number) => {
+  if (position < edgeSize) {
+    // Near the top/left edge - scroll up/left
+    return -Math.pow((edgeSize - position) / edgeSize, 2) * MAX_SCROLL_SPEED;
+  } else if (position > containerSize - edgeSize) {
+    // Near the bottom/right edge - scroll down/right
+    return Math.pow((position - (containerSize - edgeSize)) / edgeSize, 2) * MAX_SCROLL_SPEED;
+  }
+  return 0; // No scrolling needed
+};
+
 export const TaskCard: React.FC<TaskCardProps> = ({
   task: initialTask,
   onStatusChange,
@@ -50,6 +66,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const dragHandleRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement | null>(null);
   const lastHighlightedElements = useRef<Set<Element>>(new Set());
+  const scrollAnimationRef = useRef<number | null>(null);
 
   // Update local task when initialTask changes
   useEffect(() => {
@@ -74,27 +91,149 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     };
   }, []);
 
+  // Cleanup function to cancel any active scroll animation
+  const cleanupScrollAnimation = useCallback(() => {
+    if (scrollAnimationRef.current !== null) {
+      window.cancelAnimationFrame(scrollAnimationRef.current);
+      scrollAnimationRef.current = null;
+    }
+  }, []);
+
+  // Component cleanup
+  useEffect(() => {
+    return () => {
+      cleanupScrollAnimation();
+      if (placeholderRef.current) {
+        placeholderRef.current.remove();
+        placeholderRef.current = null;
+      }
+    };
+  }, [cleanupScrollAnimation]);
+
+  // Auto-scroll function
+  const handleAutoScroll = useCallback((touchX: number, touchY: number) => {
+    // Safety check - don't do anything if the component is unmounted
+    if (!cardRef.current) return;
+
+    const scrollContainer = document.documentElement;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    // Calculate scroll amounts
+    const scrollX = calculateScrollAmount(touchX, SCROLL_EDGE_SIZE, windowWidth);
+    const scrollY = calculateScrollAmount(touchY, SCROLL_EDGE_SIZE, windowHeight);
+
+    // If no scrolling needed, cancel any ongoing animation
+    if (scrollX === 0 && scrollY === 0) {
+      cleanupScrollAnimation();
+      return;
+    }
+
+    // Scroll function for animation frame
+    const scroll = () => {
+      // Safety check for cleanup
+      if (!cardRef.current) {
+        cleanupScrollAnimation();
+        return;
+      }
+
+      // Scroll the container
+      scrollContainer.scrollLeft += scrollX;
+      scrollContainer.scrollTop += scrollY;
+
+      // Continue animation
+      scrollAnimationRef.current = window.requestAnimationFrame(scroll);
+    };
+
+    // Start or continue scrolling animation
+    if (scrollAnimationRef.current === null) {
+      scrollAnimationRef.current = window.requestAnimationFrame(scroll);
+    }
+  }, [cleanupScrollAnimation]);
+
   // For traditional drag events
   const handleDragStart = (e: React.DragEvent) => {
+    const card = cardRef.current;
+    if (!card) return;
+
     e.dataTransfer.setData('taskId', task.id);
     setIsDragging(true);
 
-    // Add some visual feedback
-    if (e.dataTransfer.setDragImage && cardRef.current) {
-      e.dataTransfer.setDragImage(cardRef.current, 20, 20);
+    // Record initial position for reference
+    const rect = card.getBoundingClientRect();
+    card.dataset.originalLeft = rect.left.toString();
+    card.dataset.originalTop = rect.top.toString();
+    card.dataset.originalWidth = rect.width.toString();
+    card.dataset.originalHeight = rect.height.toString();
+
+    // Create a custom drag image for better control
+    try {
+      // Clone the card for the drag image
+      const dragImage = card.cloneNode(true) as HTMLElement;
+      dragImage.style.width = `${rect.width}px`;
+      dragImage.style.transform = 'translate3d(0,0,0)';
+      dragImage.style.opacity = '0.8';
+      dragImage.style.position = 'absolute';
+      dragImage.style.top = '-1000px'; // Position offscreen
+      dragImage.style.left = '-1000px';
+      document.body.appendChild(dragImage);
+
+      // Set the drag image with proper offset
+      e.dataTransfer.setDragImage(dragImage, e.clientX - rect.left, e.clientY - rect.top);
+
+      // Remove the element after drag starts
+      setTimeout(() => {
+        document.body.removeChild(dragImage);
+      }, 100);
+    } catch (err) {
+      // Fallback if custom drag image fails
+      if (e.dataTransfer.setDragImage) {
+        e.dataTransfer.setDragImage(card, 10, 10);
+      }
     }
 
-    // Add a status text
-    if (cardRef.current) {
-      cardRef.current.setAttribute('aria-grabbed', 'true');
-    }
+    // Add feedback classes
+    card.classList.add('dragging');
+    card.setAttribute('aria-grabbed', 'true');
+
+    // Create a function that safely handles auto-scrolling during mouse move
+    const safeAutoScroll = (x: number, y: number) => {
+      if (cardRef.current) {
+        handleAutoScroll(x, y);
+      }
+    };
+
+    // Start auto-scroll when mouse moves during drag
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      safeAutoScroll(moveEvent.clientX, moveEvent.clientY);
+    };
+
+    // Add and remove listeners for mouse movement during drag
+    document.addEventListener('mousemove', handleMouseMove);
+
+    // Set cleanup function for when drag ends
+    window.addEventListener('dragend', function cleanupDrag() {
+      document.removeEventListener('mousemove', handleMouseMove);
+      cleanupScrollAnimation();
+      window.removeEventListener('dragend', cleanupDrag);
+    }, { once: true });
   };
 
   const handleDragEnd = () => {
     setIsDragging(false);
+    // Stop any auto-scrolling
+    cleanupScrollAnimation();
 
     if (cardRef.current) {
       cardRef.current.setAttribute('aria-grabbed', 'false');
+      cardRef.current.classList.remove('dragging');
+
+      // Clean up any data attributes
+      Object.keys(cardRef.current.dataset).forEach(key => {
+        if (key.startsWith('original')) {
+          delete cardRef.current.dataset[key];
+        }
+      });
     }
   };
 
@@ -118,14 +257,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       const card = cardRef.current;
       const touch = e.touches[0];
       const rect = card.getBoundingClientRect();
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const scrollX = window.scrollX || document.documentElement.scrollLeft;
 
-      // Store precise positioning data
+      // Store precise positioning data with scroll offsets included
       card.dataset.touchStartX = touch.clientX.toString();
       card.dataset.touchStartY = touch.clientY.toString();
       card.dataset.originalLeft = rect.left.toString();
       card.dataset.originalTop = rect.top.toString();
       card.dataset.originalWidth = rect.width.toString();
       card.dataset.originalHeight = rect.height.toString();
+      card.dataset.scrollY = scrollY.toString();
+      card.dataset.scrollX = scrollX.toString();
 
       // Activate touch tracking
       setTouchActive(true);
@@ -173,6 +316,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       const card = cardRef.current;
       const touch = e.touches[0];
 
+      // Check if we need to auto-scroll
+      handleAutoScroll(touch.clientX, touch.clientY);
+
       // Calculate movement
       const startX = parseInt(card.dataset.touchStartX || '0');
       const startY = parseInt(card.dataset.touchStartY || '0');
@@ -180,18 +326,32 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       const deltaY = touch.clientY - startY;
 
       // If first move, setup proper initial positioning
-      if (!card.style.position || card.style.position !== 'absolute') {
+      if (!card.style.position || card.style.position !== 'fixed') {
         const originalLeft = parseFloat(card.dataset.originalLeft || '0');
         const originalTop = parseFloat(card.dataset.originalTop || '0');
         const originalWidth = parseFloat(card.dataset.originalWidth || '0');
 
-        // Set exact position based on original coordinates
-        card.style.position = 'absolute';
+        // Position the card exactly where it was without any offset
+        card.style.transition = 'none';
+        card.style.position = 'fixed'; // Use fixed instead of absolute for precise positioning
         card.style.zIndex = '100';
         card.style.width = `${originalWidth}px`;
         card.style.left = `${originalLeft}px`;
         card.style.top = `${originalTop}px`;
         card.style.margin = '0';
+        card.style.transform = 'translate3d(0,0,0)';
+
+        // Force browser to apply the styles before adding the transform
+        card.offsetHeight; // Trigger a reflow
+
+        // Apply the transform on the next frame to avoid flickering
+        requestAnimationFrame(() => {
+          if (card && touchActive) {
+            card.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+            card.style.opacity = '0.8';
+          }
+        });
+        return; // Skip the rest of this cycle
       }
 
       // Use CSS transform for better performance
@@ -322,8 +482,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           }
         }
       }
-    }, 32),
-    [touchActive, isDragging, clearHighlights, onReorder]
+    }, 16), // Increase to 60fps for smoother scrolling
+    [touchActive, isDragging, clearHighlights, onReorder, handleAutoScroll]
   );
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -339,21 +499,25 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
     setTouchActive(false);
 
+    // Stop any auto-scrolling
+    cleanupScrollAnimation();
+
     if (cardRef.current) {
       const card = cardRef.current;
       setIsDragging(false);
 
-      // Reset styles
-      card.style.transform = '';
-      card.style.opacity = '';
-      card.style.zIndex = '';
-      card.style.position = '';
-      card.style.width = '';
-      card.style.left = '';
-      card.style.top = '';
-      card.style.margin = '';
-      card.classList.remove('touch-dragging');
-      document.body.classList.remove('touch-dragging-active');
+      // Setup a smooth transition for going back to normal
+      card.style.transition = 'transform 0.1s ease-out, opacity 0.1s ease-out';
+      card.style.transform = 'translate3d(0,0,0)';
+      card.style.opacity = '1';
+
+      // Wait for the transition to complete before resetting all styles
+      setTimeout(() => {
+        // Reset all styles completely
+        card.style.cssText = ''; // Reset all inline styles at once
+        card.classList.remove('touch-dragging');
+        document.body.classList.remove('touch-dragging-active');
+      }, 100);
 
       // Find the element we're over
       const touch = e.changedTouches[0];
@@ -421,14 +585,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         placeholderRef.current = null;
       }
 
-      // Clean up
-      delete card.dataset.touchStartX;
-      delete card.dataset.touchStartY;
+      // Clean up data attributes
+      Object.keys(card.dataset).forEach(key => {
+        if (key.startsWith('touch') || key.startsWith('original') || key.startsWith('scroll')) {
+          delete card.dataset[key];
+        }
+      });
     }
   };
 
   // Handle touch cancel event
   const handleTouchCancel = (e: React.TouchEvent) => {
+    // Stop any auto-scrolling
+    cleanupScrollAnimation();
     handleTouchEnd(e);
   };
 

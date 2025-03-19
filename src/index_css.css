@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global scrolling behavior */
+html, body {
+  /* Default to smooth scrolling */
+  @apply h-full;
+  overscroll-behavior: none;
+}
+
+/* For auto-scrolling during drag operations */
+.project-board-container {
+  @apply relative;
+  min-height: calc(100vh - 2rem);
+  padding-bottom: 4rem; /* Extra padding at bottom for scrolling */
+}
+
 /* Custom drag and drop styles */
 .drop-target-highlight {
   @apply ring-2 ring-blue-500 bg-blue-50;
@@ -9,17 +23,32 @@
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
+/* Classes for touch drag operations */
 .touch-dragging {
   @apply shadow-lg;
   /* Visual styles for dragged element */
   pointer-events: none;
   z-index: 100;
+  /* Prevent any transitions while dragging to avoid position flicker */
+  transition: none !important;
   /* Hardware acceleration */
   will-change: transform;
   /* Visual indicator */
   filter: brightness(0.98);
-  /* Add a subtle transition for smoother appearance changes */
-  transition: box-shadow 0.1s ease;
+}
+
+/* Classes for mouse drag operations */
+.dragging {
+  @apply shadow-lg;
+  opacity: 0.8;
+  transform: scale(1.02);
+  z-index: 50;
+  /* Prevent transitions that might cause flickering */
+  transition: none !important;
+  /* Hardware acceleration */
+  will-change: transform, opacity;
+  /* Visual indicator */
+  filter: brightness(0.98);
 }
 
 .touch-dragging-active {
@@ -27,6 +56,9 @@
   touch-action: none;
   /* Prevent content shifting during drag */
   overscroll-behavior: none;
+  /* Ensure the page doesn't scroll unexpectedly */
+  overflow: hidden;
+  height: 100%;
 }
 
 .touch-drag-handle {
@@ -40,6 +72,19 @@
 /* Task list container - add transition for smoother reflows */
 .task-list {
   transition: height 0.15s ease;
+  /* Ensure task lists can grow to fit content */
+  min-height: 8rem;
+  height: 100%;
+}
+
+/* Drag scroll zones */
+.task-column {
+  /* Make columns full height to enable proper scrolling */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* Allow columns to scroll independently if needed */
+  overflow-y: auto;
 }
 
 /* Task card */
@@ -54,6 +99,8 @@
   /* Add normal spacing to ensure consistent layout */
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
+  /* Prevent position flickering */
+  position: relative;
 }
 
 /* Task card placeholder - ensure it takes the same space as the card */
