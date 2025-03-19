@@ -1,0 +1,237 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+// Bolt Project Conventions
+// This rule file defines coding conventions for the Bolt project
+
+// ====================================================
+// FILE AND DIRECTORY NAMING CONVENTIONS
+// ====================================================
+
+// Use snake_case for all file and directory names
+// Examples:
+//   ✓ project_board.tsx
+//   ✓ task_list.tsx
+//   ✓ utils_ts.ts
+//   ✓ task_card/
+//   ✓ design_kit/
+//   ✗ ProjectBoard.tsx
+//   ✗ taskList.tsx
+//   ✗ utils.ts
+//   ✗ task-card/
+//   ✗ DesignKit/
+
+// ====================================================
+// IMPORT CONVENTIONS
+// ====================================================
+
+// Use absolute imports with @/ prefix
+// Examples:
+//   ✓ import { Button } from '@/ui/base/design_kit/button/button';
+//   ✓ import { Task } from '@/types_ts';
+//   ✓ import { cn } from '@/lib/utils_ts';
+//   ✗ import { Button } from '../../ui/base/design_kit/button/button';
+//   ✗ import { Task } from '../types';
+
+// ====================================================
+// PROJECT STRUCTURE CONVENTIONS
+// ====================================================
+
+/*
+Project Structure:
+
+/src
+  /features - Feature-specific modules that wire components together
+    /project_board
+    /task_management
+  /ui - UI components
+    /base - Primitive UI components
+      /design_kit - Basic design system components
+        /button
+        /input
+        /select
+        /textarea
+    /features - Complex reusable UI components
+      /task_card
+      /task_modal
+  /lib - Utility functions and helpers
+  /types_ts.ts - Type definitions
+  /app.tsx - Main application
+  /main.tsx - Entry point
+*/
+
+// ====================================================
+// CONSTANTS AND THEME CONVENTIONS
+// ====================================================
+
+// Extract hardcoded values into constants files
+// Examples:
+
+// 1. IDs should be in a constants file:
+//   ✓ import { PROJECT_ID, TASK_IDS } from '@/constants/ids_ts';
+//   ✓ id: PROJECT_ID.WEBSITE_REDESIGN
+//   ✗ id: '1'
+
+// 2. Colors should use a theme configuration:
+//   ✓ import { COLORS } from '@/ui/theme/colors_ts';
+//   ✓ const priorityColors = COLORS.priority;
+//   ✗ low: 'bg-blue-100 text-blue-800',
+
+// 3. Component styles should be extracted:
+//   ✓ import { BUTTON_STYLES } from '@/ui/base/design_kit/button/button_styles_ts';
+//   ✓ const { base, variants, sizes } = BUTTON_STYLES;
+//   ✗ const baseStyles = 'rounded-md font-medium...';
+
+// ====================================================
+// TYPE CONVENTIONS
+// ====================================================
+
+// Use explicit type annotations
+// Examples:
+//   ✓ const [project, setProject] = useState<Project>(initialProject);
+//   ✓ const handleTaskUpdate = (taskId: string, newStatus: Task['status']) => {...}
+//   ✗ const [project, setProject] = useState(initialProject);
+//   ✗ const handleTaskUpdate = (taskId, newStatus) => {...}
+
+// ====================================================
+// COMPONENT CONVENTIONS
+// ====================================================
+
+// 1. Use function component syntax with React.FC and explicit props interface
+// Example:
+/*
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+export const Button: React.FC<ButtonProps> = ({
+  children,
+  className,
+  variant = 'primary',
+  size = 'md',
+  ...props
+}) => {
+  // Component implementation
+};
+*/
+
+// 2. Keep components focused and extract complex logic
+// Example:
+/*
+// Separate hooks for complex logic
+const useTaskManagement = (initialTasks: Task[]) => {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  
+  const updateTaskStatus = (taskId: string, status: Task['status']) => {
+    setTasks(prev => 
+      prev.map(task => task.id === taskId ? {...task, status} : task)
+    );
+  };
+  
+  return { tasks, updateTaskStatus };
+};
+
+// Use in component
+export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
+  const { tasks, updateTaskStatus } = useTaskManagement(initialTasks);
+  
+  // Component rendering logic
+};
+*/
+
+// ====================================================
+// STATE MANAGEMENT CONVENTIONS
+// ====================================================
+
+// 1. Use useState for component-level state
+// Example:
+/*
+const [isEditing, setIsEditing] = useState(false);
+const [task, setTask] = useState(initialTask);
+*/
+
+// 2. Use callbacks for state updates
+// Example:
+/*
+const handleTaskUpdate = (updatedTask: Task) => {
+  setTask(updatedTask);
+};
+
+const handleStatusChange = (status: Task['status']) => {
+  onStatusChange(status);
+};
+*/
+
+// ====================================================
+// EVENT HANDLER CONVENTIONS
+// ====================================================
+
+// 1. Prefix event handlers with 'handle'
+// Example:
+/*
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  onSave(task);
+};
+
+const handleDragStart = (e: React.DragEvent) => {
+  e.dataTransfer.setData('taskId', task.id);
+};
+*/
+
+// 2. Use explicit event types
+// Example:
+/*
+const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  onChange({ ...task, title: e.target.value });
+};
+*/
+
+// ====================================================
+// CSS & STYLING CONVENTIONS
+// ====================================================
+
+// 1. Use className with Tailwind CSS utilities
+// Example:
+/*
+<div className="p-4 rounded-lg shadow-sm bg-gray-100 transition-all hover:shadow-md">
+  <h3 className="font-semibold text-gray-800">{task.title}</h3>
+</div>
+*/
+
+// 2. Use cn utility for conditional classes
+// Example:
+/*
+import { cn } from '@/lib/utils_ts';
+
+<button
+  className={cn(
+    baseStyles,
+    variants[variant],
+    sizes[size],
+    className
+  )}
+  {...props}
+>
+  {children}
+</button>
+*/
+
+// ====================================================
+// DESTRUCTURING CONVENTIONS
+// ====================================================
+
+// Use destructuring for props
+// Example:
+/*
+export const TaskCard: React.FC<TaskCardProps> = ({
+  task: initialTask,
+  onStatusChange,
+  onEdit,
+}) => {
+  // Component implementation
+};
+*/

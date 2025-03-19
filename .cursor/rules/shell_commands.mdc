@@ -1,0 +1,202 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ // Shell Commands
+// This rule enforces best practices for generating, executing, and managing shell commands to ensure safety, reliability, and proper execution.
+
+// ====================================================
+// COMMAND FORMATTING GUIDELINES
+// ====================================================
+
+// 1. When generating a shell command to execute, ensure each line ends with a backslash (`\`) to properly escape newlines.
+// 2. Only generate shell commands when there's an absolute necessity.
+// 3. Always escape special characters in file paths and variable names to prevent unexpected behavior.
+// 4. Use double quotes around variables to prevent word splitting and globbing.
+// 5. NEVER create temporary files for git commit messages or other operations. Use direct methods like inline strings with proper escaping instead.
+
+/*
+// Good example of multiline command with proper backslash continuation:
+find . -type f -name "*.js" \
+  -exec grep -l "function" {} \; \
+  | xargs wc -l
+
+// Bad example - missing backslashes for continuation:
+find . -type f -name "*.js"
+  -exec grep -l "function" {} \;
+  | xargs wc -l
+*/
+
+// ====================================================
+// SAFETY AND PERMISSIONS
+// ====================================================
+
+// 1. When removing or modifying a file outside git control, or doing so in any irreversible manner, ask for the user confirmation first.
+// 2. For destructive operations (rm, mv, etc.), include safeguards like confirmation prompts or dry-run options.
+// 3. When suggesting commands that modify system configuration, explain potential consequences.
+// 4. If you're trying to run a command and there's prompt to update oh-my-zsh (Y/N), type N and then Enter.
+
+/*
+// Good example with user confirmation:
+run_terminal_cmd({
+  command: "rm -rf ./build",
+  explanation: "Removing build directory to prepare for clean build",
+  is_background: false,
+  require_user_approval: true
+})
+
+// Bad example - destructive operation without user approval:
+run_terminal_cmd({
+  command: "rm -rf ./build",
+  explanation: "Removing build directory",
+  is_background: false,
+  require_user_approval: false
+})
+*/
+
+// ====================================================
+// VARIABLE HANDLING
+// ====================================================
+
+// 1. Always quote variables in shell commands to prevent word splitting and unexpected behavior with special characters.
+// 2. Prefer "${VAR}" over "$VAR" for clearer variable boundaries, especially in complex strings.
+
+/*
+// Good example with properly quoted variables:
+run_terminal_cmd({
+  command: "find . -name \"${PATTERN}\" -type f",
+  explanation: "Finding files matching the specified pattern",
+  is_background: false,
+  require_user_approval: true
+})
+
+// Bad example - unquoted variables:
+run_terminal_cmd({
+  command: "find . -name $PATTERN -type f",
+  explanation: "Finding files",
+  is_background: false,
+  require_user_approval: true
+})
+*/
+
+// ====================================================
+// GIT OPERATIONS
+// ====================================================
+
+// 1. When using `git diff`, ALWAYS compare against the previous commit explicitly using `git diff --no-pager HEAD` to ensure proper context. 
+// 2. Before committing changes, ALWAYS check the full diff against the previous commit using `git diff --no-pager HEAD`.
+// 3. After staging changes with `git add`, ALWAYS verify what's being committed with `git diff --no-pager --staged`.
+// 4. For git operations, ensure you have the complete context by checking both staged and unstaged changes before proceeding with commits.
+
+/*
+// Good example for git workflow:
+run_terminal_cmd({
+  command: "git diff --no-pager HEAD && git add . && git diff --no-pager --staged && git commit -m $'feat: implement new feature'",
+  explanation: "Complete git workflow: checking changes against previous commit, staging all changes, verifying staged changes, and committing",
+  is_background: false,
+  require_user_approval: true
+})
+
+// Good example for multiline commit message:
+run_terminal_cmd({
+  command: "git commit -m $'fix(i18n): add an initial commit\n- Implement feature A\n- Fix bug in X for module B\n- Update documentation'",
+  explanation: "Creating a git commit with a detailed multiline commit message within a single message param",
+  is_background: false,
+  require_user_approval: true
+})
+
+// Bad example - git diff without no-pager option:
+run_terminal_cmd({
+  command: "git diff",
+  explanation: "Checking changes without preventing paging",
+  is_background: false,
+  require_user_approval: true
+})
+
+// Bad example - no context checks before committing:
+run_terminal_cmd({
+  command: "git add . && git commit -m 'fix: bug fix'",
+  explanation: "Staging and committing changes without checking context",
+  is_background: false,
+  require_user_approval: true
+})
+*/
+
+// ====================================================
+// OH-MY-ZSH HANDLING
+// ====================================================
+
+// When running commands that might trigger oh-my-zsh update prompts, always include instructions to decline the update (type N).
+
+/*
+// Good example - declining oh-my-zsh updates:
+run_terminal_cmd({
+  command: "echo N | zsh -c 'source ~/.zshrc'",
+  explanation: "Sourcing zsh configuration while declining updates",
+  is_background: false,
+  require_user_approval: true
+})
+
+// Bad example - accepting oh-my-zsh updates:
+run_terminal_cmd({
+  command: "echo Y | zsh -c 'source ~/.zshrc'",
+  explanation: "Sourcing zsh configuration",
+  is_background: false,
+  require_user_approval: true
+})
+*/
+
+// ====================================================
+// COMPREHENSIVE EXAMPLES
+// ====================================================
+
+/*
+// Command with proper variable quoting and explanation
+run_terminal_cmd({
+  command: "find . -name \"*.js\" -type f -exec grep -l \"console.log\" {} \\;",
+  explanation: "Finding all JavaScript files containing console.log statements",
+  is_background: false,
+  require_user_approval: true
+})
+
+// Multiline command with proper continuation
+run_terminal_cmd({
+  command: "for file in $(find . -name \"*.txt\"); do \\
+    echo \"Processing $file\"; \\
+    cat \"$file\" | grep -v \"^#\" | \\
+    awk '{print $1, $2}' > \"${file}.processed\"; \\
+  done",
+  explanation: "Processing all text files by removing comment lines and extracting first two columns",
+  is_background: false,
+  require_user_approval: true
+})
+
+// Git workflow with proper context checks
+run_terminal_cmd({
+  command: "git diff --no-pager HEAD && \\
+           git add . && \\
+           git diff --no-pager --staged && \\
+           git commit -m $'feat(auth): implement OAuth login\n\n- Add OAuth provider configuration\n- Create authentication service\n- Implement login page\n- Add token refresh logic'",
+  explanation: "Complete git workflow with OAuth implementation commit",
+  is_background: false,
+  require_user_approval: true
+})
+*/
+
+// ====================================================
+// IMPORTANT NOTES
+// ====================================================
+
+// 1. SAFETY FIRST: Always prioritize safety when generating shell commands. Destructive operations should require explicit user approval.
+// 2. COMMAND CLARITY: Each shell command should be accompanied by a clear explanation of what it does and why it's necessary.
+// 3. ERROR HANDLING: Consider suggesting error handling mechanisms for critical shell operations, such as checking exit codes or using set -e.
+// 4. ENVIRONMENT AWARENESS: Be mindful of different shell environments (bash, zsh, sh) and their syntax differences when suggesting commands.
+// 5. ESCAPING: Properly escape special characters in shell commands to prevent unexpected behavior or security issues.
+// 6. MULTILINE COMMANDS: For multiline commands, always use backslash (`\`) at the end of each line to indicate line continuation.
+// 7. VARIABLE HANDLING: Always quote variables in shell commands to prevent word splitting and unexpected behavior with special characters.
+// 8. OH-MY-ZSH UPDATES: When running commands that might trigger oh-my-zsh update prompts, always include instructions to decline the update.
+// 9. NO TEMPORARY FILES: Never create temporary files for operations like git commits. Use direct methods with proper escaping instead.
+// 10. GIT DIFF CONTEXT: Always use `git diff` with explicit reference to the previous commit (HEAD) to ensure you have complete context.
+// 11. PREVENTING PAGING: Always include the `--no-pager` option with git diff commands to prevent paging and ensure all output is visible.
+// 12. COMPLETE GIT WORKFLOW: Before committing, always check the full diff against the previous commit and verify staged changes.

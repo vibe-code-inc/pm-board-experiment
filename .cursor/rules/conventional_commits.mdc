@@ -1,0 +1,215 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+// Conventional Commits
+// This rule enforces the Conventional Commits 1.0.0 specification for commit messages, ensuring a structured and consistent commit history.
+
+// ====================================================
+// COMMIT TYPE GUIDELINES
+// ====================================================
+
+// 1. Commit messages MUST be prefixed with a type, followed by optional scope, optional `!`, and required terminal colon and space.
+// 2. The type `feat` MUST be used when adding a new feature (correlates with MINOR in SemVer).
+// 3. The type `fix` MUST be used when fixing a bug (correlates with PATCH in SemVer).
+// 4. A scope MAY be provided after a type, surrounded by parentheses, e.g., `fix(parser):`.
+// 5. A description MUST immediately follow the colon and space after the type/scope prefix.
+// 6. A longer commit body MAY be provided after the short description, separated by a blank line.
+// 7. One or more footers MAY be provided one blank line after the body.
+// 8. Breaking changes MUST be indicated either with `!` before the colon or as a `BREAKING CHANGE:` footer.
+// 9. Other types beyond `feat` and `fix` are allowed, such as `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `config`, and `test`.
+
+// Valid commit types:
+// - feat: A new feature (correlates with MINOR in SemVer)
+// - fix: A bug fix (correlates with PATCH in SemVer)
+// - docs: Documentation changes
+// - style: Changes that do not affect the meaning of the code (formatting, etc.)
+// - refactor: Code changes that neither fix a bug nor add a feature
+// - perf: Code changes that improve performance
+// - test: Adding or correcting tests
+// - build: Changes to the build system or dependencies
+// - ci: Changes to CI configuration files and scripts
+// - chore: Other changes that don't modify src or test files
+// - revert: Reverts a previous commit
+// - config: Configuration changes
+
+// ====================================================
+// COMMIT MESSAGE FORMAT
+// ====================================================
+
+/*
+<type>(<scope>)!: <description>
+
+<body>
+
+<footer>
+*/
+
+// Examples:
+// ✓ feat: add new user authentication feature
+// ✓ fix(auth): resolve token expiration issues
+// ✓ docs: update README with new installation instructions
+// ✓ feat(api)!: change response format
+// ✓ fix: correct calculation error
+//   
+//   Close #123
+// ✗ update user authentication
+// ✗ fixed bug
+// ✗ feat:missing space after colon
+
+// ====================================================
+// LIST FORMATTING IN COMMIT BODIES
+// ====================================================
+
+// When using lists in the commit body, list items MUST be separated by only one newline.
+// DO NOT add blank lines between list items.
+
+// Example of correct list formatting:
+/*
+fix(i18n): correct strings.ts files to follow guidelines
+
+- Add missing parameters to string functions
+- Fix ICU variable references in templates
+- Remove unused imports
+- Update JSDoc comments to document new parameters
+*/
+
+// Example of incorrect list formatting:
+/*
+fix(i18n): correct strings.ts files to follow guidelines
+
+- Add missing parameters to string functions
+
+- Fix ICU variable references in templates
+
+- Remove unused imports
+
+- Update JSDoc comments to document new parameters
+*/
+
+// ====================================================
+// GIT DIFF AND STAGING PRACTICES
+// ====================================================
+
+// 1. When using `git diff`, always include the `--no-pager` option to prevent paging.
+// 2. ALWAYS check BOTH staged AND unstaged changes using `git --no-pager diff` AND `git --no-pager diff --staged` before writing commit messages.
+// 3. Commit messages MUST accurately reflect ALL code changes, not just what was discussed in conversations.
+// 4. ALWAYS ensure ALL relevant changes are staged before committing. Use `git add` to stage any unstaged changes that should be part of the commit.
+// 5. NEVER leave relevant changes unstaged.
+// 6. NEVER base commit messages solely on conversation context. Always examine the actual diff to ensure accuracy.
+// 7. ALWAYS compare against the previous commit explicitly using `git diff --no-pager HEAD` to ensure proper context.
+// 8. Before committing changes, ALWAYS check the full diff against the previous commit using `git diff --no-pager HEAD`.
+// 9. After staging changes with `git add`, ALWAYS verify what's being committed with `git diff --no-pager --staged`.
+
+// ====================================================
+// BREAKING CHANGES
+// ====================================================
+
+// Breaking changes MUST be indicated in one of two ways:
+// 1. With a `!` before the colon: `feat(api)!: change response format`
+// 2. Using a `BREAKING CHANGE:` footer:
+/*
+feat(api): change response format
+
+BREAKING CHANGE: The API now returns JSON instead of XML
+*/
+
+// ====================================================
+// COMPLETE EXAMPLES
+// ====================================================
+
+/*
+# Feature Addition Example with Complete Diff Check
+
+# First check both unstaged and staged changes
+git --no-pager diff HEAD
+git --no-pager diff --staged
+
+# Make sure all relevant changes are staged
+git add path/to/relevant/unstaged/files
+
+# Then create a commit message based on ALL the changes
+feat: add new user authentication feature
+
+This feature allows users to authenticate using OAuth providers:
+- Implement OAuth2 authentication flow
+- Add user profile data retrieval
+- Create session management for OAuth users
+
+Refs: #123
+*/
+
+/*
+# Bug Fix Example with Comprehensive Description
+
+# First check both unstaged and staged changes
+git --no-pager diff HEAD
+git --no-pager diff --staged
+
+# Make sure all relevant changes are staged
+git add path/to/relevant/unstaged/files
+
+# Then write a message that covers ALL the changes
+fix(auth): resolve token expiration and validation issues
+
+- Fix token expiration calculation
+- Add proper error handling for invalid tokens
+- Improve token refresh mechanism
+- Update tests to cover edge cases
+*/
+
+/*
+# Breaking Change Example
+
+# Check all changes and stage them
+git --no-pager diff HEAD
+git --no-pager diff --staged
+git add .
+
+feat(api)!: change response format
+
+BREAKING CHANGE: The API now returns JSON instead of XML
+*/
+
+/*
+# Documentation Update Example
+
+# Check all changes
+git --no-pager diff HEAD
+git --no-pager diff --staged
+git add path/to/docs
+
+docs: update README with new installation instructions
+*/
+
+/*
+# Configuration Update Example
+
+# Check all changes
+git --no-pager diff HEAD
+git --no-pager diff --staged
+git add path/to/config/files
+
+config(rules): update cursor rules for commit message formatting
+
+This change adds a new type of commit messages to the Cursor rule:
+- config: commits of this type mean a configuration change.
+*/
+
+// ====================================================
+// IMPORTANT NOTES
+// ====================================================
+
+// 1. SEMANTIC VERSIONING: Conventional Commits correlate with SemVer - `fix` for PATCH, `feat` for MINOR, and any commit with `!` or `BREAKING CHANGE:` for MAJOR.
+// 2. MULTIPLE TYPES: If a commit conforms to more than one type, consider making multiple commits instead.
+// 3. GIT DIFF USAGE: Always use `git --no-pager diff HEAD` to prevent paging and to ensure comparison against the previous commit.
+// 4. SCOPE NAMING: Scopes should be consistent across the project and represent logical sections of the codebase.
+// 5. BREAKING CHANGES: Breaking changes must be clearly indicated to ensure proper versioning.
+// 6. REVERT COMMITS: For reverting previous changes, use the `revert` type and reference the reverted commit SHAs in the footer.
+// 7. COMMIT HISTORY: Conventional Commits help generate accurate CHANGELOGs and determine semantic version bumps automatically.
+// 8. COMMIT BODY: Whenever possible and makes sense, generate the commit description body.
+// 9. BLANK LINES: Do not insert blank lines between bullet points in the commit description body.
+// 10. COMPREHENSIVE DESCRIPTIONS: Commit messages MUST cover ALL significant changes in the diff, not just a subset of them.
+// 11. STAGE ALL RELEVANT CHANGES: NEVER leave relevant changes unstaged. Always use `git add` to stage all changes that should be part of the commit.
+// 12. COMPLETE CONTEXT: Always compare against the previous commit using `git diff --no-pager HEAD` to ensure complete context of your changes.
