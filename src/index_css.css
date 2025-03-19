@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom drag and drop styles */
+.drop-target-highlight {
+  @apply ring-2 ring-blue-500 ring-offset-2 ring-opacity-70 bg-blue-50;
+}
+
+.touch-dragging {
+  @apply shadow-lg;
+}
+
+.touch-drag-handle {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: grab;
+}
