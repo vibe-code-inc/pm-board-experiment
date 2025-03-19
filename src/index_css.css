@@ -101,6 +101,11 @@ html, body {
   margin-bottom: 0.75rem;
   /* Prevent position flickering */
   position: relative;
+  /* Prevent text selection */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 /* Task card placeholder - ensure it takes the same space as the card */

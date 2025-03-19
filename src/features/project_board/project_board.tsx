@@ -44,6 +44,24 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
     return result;
   }, [localProject.tasks]);
 
+  // Ensure the board container handles scrolling properly
+  useEffect(() => {
+    // Ensure scrolling works properly in all browsers
+    const enableSmoothScrolling = () => {
+      document.documentElement.style.scrollBehavior = 'smooth';
+    };
+
+    const cleanupScrolling = () => {
+      document.documentElement.style.scrollBehavior = '';
+    };
+
+    enableSmoothScrolling();
+
+    return () => {
+      cleanupScrolling();
+    };
+  }, []);
+
   // Check if we're on mobile and if we should show the guide
   useEffect(() => {
     const checkMobile = () => {
@@ -218,7 +236,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
   }, []);
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="project-board-container p-4 md:p-6 min-h-screen">
       {/* Mobile drag and drop guide */}
       {showMobileGuide && isMobile && (
         <div className="bg-blue-50 rounded-lg p-3 mb-4 relative">
@@ -256,7 +274,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
           return (
             <div
               key={column.status}
-              className={`bg-gray-50 rounded-lg p-3 md:p-4 shadow-sm drop-column ${hasNoTasks ? 'empty-column' : ''}`}
+              className={`bg-gray-50 rounded-lg p-3 md:p-4 shadow-sm drop-column task-column ${hasNoTasks ? 'empty-column' : ''}`}
               data-status={column.status}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}

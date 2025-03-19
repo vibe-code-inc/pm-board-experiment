@@ -37,6 +37,12 @@ const throttle = (func: Function, delay: number) => {
 // Outside of component, add scroll utility functions
 const SCROLL_EDGE_SIZE = 60; // Size of the edge area that triggers scrolling
 const MAX_SCROLL_SPEED = 15; // Maximum scroll speed in pixels per frame
+const MAX_OUTSIDE_SCROLL_SPEED = 25; // Maximum scroll speed when outside viewport
+const SCROLL_ACCELERATION = 1.05; // Acceleration factor for continuous scrolling
+
+// Percentage of screen to scroll per frame
+const EDGE_SCROLL_PERCENT = 0.04; // 4.0% of screen dimension per frame when near edge
+const OUTSIDE_SCROLL_PERCENT = 0.065; // 6.5% of screen dimension per frame when outside viewport
 
 // Calculate scroll amount based on cursor position
 const calculateScrollAmount = (position: number, edgeSize: number, containerSize: number) => {
@@ -48,6 +54,18 @@ const calculateScrollAmount = (position: number, edgeSize: number, containerSize
     return Math.pow((position - (containerSize - edgeSize)) / edgeSize, 2) * MAX_SCROLL_SPEED;
   }
   return 0; // No scrolling needed
+};
+
+// Calculate scroll amount for positions outside the viewport
+const calculateOutsideScrollAmount = (position: number, containerSize: number) => {
+  if (position < 0) {
+    // Outside top/left - stronger scrolling
+    return -MAX_OUTSIDE_SCROLL_SPEED;
+  } else if (position > containerSize) {
+    // Outside bottom/right - stronger scrolling
+    return MAX_OUTSIDE_SCROLL_SPEED;
+  }
+  return 0;
 };
 
 export const TaskCard: React.FC<TaskCardProps> = ({
@@ -112,16 +130,49 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   // Auto-scroll function
   const handleAutoScroll = useCallback((touchX: number, touchY: number) => {
-    // Safety check - don't do anything if the component is unmounted
-    if (!cardRef.current) return;
-
-    const scrollContainer = document.documentElement;
+    // Get window dimensions
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
-    // Calculate scroll amounts
-    const scrollX = calculateScrollAmount(touchX, SCROLL_EDGE_SIZE, windowWidth);
-    const scrollY = calculateScrollAmount(touchY, SCROLL_EDGE_SIZE, windowHeight);
+    // Calculate scroll speeds based on screen dimensions
+    const edgeHorizontalSpeed = Math.round(windowWidth * EDGE_SCROLL_PERCENT);
+    const outsideHorizontalSpeed = Math.round(windowWidth * OUTSIDE_SCROLL_PERCENT);
+    const edgeVerticalSpeed = Math.round(windowHeight * EDGE_SCROLL_PERCENT);
+    const outsideVerticalSpeed = Math.round(windowHeight * OUTSIDE_SCROLL_PERCENT);
+
+    // Calculate scroll amounts - simpler approach
+    let scrollX = 0;
+    let scrollY = 0;
+
+    // Handle horizontal scrolling
+    if (touchX < 0) {
+      // Outside left edge
+      scrollX = -outsideHorizontalSpeed;
+    } else if (touchX > windowWidth) {
+      // Outside right edge
+      scrollX = outsideHorizontalSpeed;
+    } else if (touchX < SCROLL_EDGE_SIZE) {
+      // Near left edge
+      scrollX = -edgeHorizontalSpeed;
+    } else if (touchX > windowWidth - SCROLL_EDGE_SIZE) {
+      // Near right edge
+      scrollX = edgeHorizontalSpeed;
+    }
+
+    // Handle vertical scrolling
+    if (touchY < 0) {
+      // Outside top edge
+      scrollY = -outsideVerticalSpeed;
+    } else if (touchY > windowHeight) {
+      // Outside bottom edge
+      scrollY = outsideVerticalSpeed;
+    } else if (touchY < SCROLL_EDGE_SIZE) {
+      // Near top edge
+      scrollY = -edgeVerticalSpeed;
+    } else if (touchY > windowHeight - SCROLL_EDGE_SIZE) {
+      // Near bottom edge
+      scrollY = edgeVerticalSpeed;
+    }
 
     // If no scrolling needed, cancel any ongoing animation
     if (scrollX === 0 && scrollY === 0) {
@@ -129,25 +180,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       return;
     }
 
-    // Scroll function for animation frame
-    const scroll = () => {
-      // Safety check for cleanup
-      if (!cardRef.current) {
-        cleanupScrollAnimation();
-        return;
-      }
+    // Create a simple scrolling function
+    const doScroll = () => {
+      // Directly use window.scrollBy for reliable scrolling
+      window.scrollBy(scrollX, scrollY);
 
-      // Scroll the container
-      scrollContainer.scrollLeft += scrollX;
-      scrollContainer.scrollTop += scrollY;
-
-      // Continue animation
-      scrollAnimationRef.current = window.requestAnimationFrame(scroll);
+      // Continue the animation
+      scrollAnimationRef.current = window.requestAnimationFrame(doScroll);
     };
 
-    // Start or continue scrolling animation
+    // Start the animation if not already running
     if (scrollAnimationRef.current === null) {
-      scrollAnimationRef.current = window.requestAnimationFrame(scroll);
+      scrollAnimationRef.current = window.requestAnimationFrame(doScroll);
     }
   }, [cleanupScrollAnimation]);
 
@@ -615,7 +659,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     <>
       <div
         ref={cardRef}
-        className={`task-card p-3 md:p-4 rounded-lg shadow-sm ${statusColors[task.status]} transition-all hover:shadow-md cursor-move group ${isDragging ? 'opacity-60' : ''}`}
+        className={`task-card p-3 md:p-4 rounded-lg shadow-sm ${statusColors[task.status]} transition-all hover:shadow-md cursor-move group ${isDragging ? 'opacity-60' : ''} select-none`}
         draggable="true"
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
