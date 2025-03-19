@@ -35,38 +35,11 @@ const throttle = (func: Function, delay: number) => {
 };
 
 // Outside of component, add scroll utility functions
-const SCROLL_EDGE_SIZE = 60; // Size of the edge area that triggers scrolling
-const MAX_SCROLL_SPEED = 15; // Maximum scroll speed in pixels per frame
-const MAX_OUTSIDE_SCROLL_SPEED = 25; // Maximum scroll speed when outside viewport
-const SCROLL_ACCELERATION = 1.05; // Acceleration factor for continuous scrolling
+const SCROLL_EDGE_PERCENT = 0.05; // Edge detection zone - 5% of screen dimensions
+const SCROLL_THROTTLE = 16; // Milliseconds between scroll updates (16ms ≈ 60fps)
 
-// Percentage of screen to scroll per frame
-const EDGE_SCROLL_PERCENT = 0.04; // 4.0% of screen dimension per frame when near edge
-const OUTSIDE_SCROLL_PERCENT = 0.065; // 6.5% of screen dimension per frame when outside viewport
-
-// Calculate scroll amount based on cursor position
-const calculateScrollAmount = (position: number, edgeSize: number, containerSize: number) => {
-  if (position < edgeSize) {
-    // Near the top/left edge - scroll up/left
-    return -Math.pow((edgeSize - position) / edgeSize, 2) * MAX_SCROLL_SPEED;
-  } else if (position > containerSize - edgeSize) {
-    // Near the bottom/right edge - scroll down/right
-    return Math.pow((position - (containerSize - edgeSize)) / edgeSize, 2) * MAX_SCROLL_SPEED;
-  }
-  return 0; // No scrolling needed
-};
-
-// Calculate scroll amount for positions outside the viewport
-const calculateOutsideScrollAmount = (position: number, containerSize: number) => {
-  if (position < 0) {
-    // Outside top/left - stronger scrolling
-    return -MAX_OUTSIDE_SCROLL_SPEED;
-  } else if (position > containerSize) {
-    // Outside bottom/right - stronger scrolling
-    return MAX_OUTSIDE_SCROLL_SPEED;
-  }
-  return 0;
-};
+// Constants for exponential scrolling
+const EXPONENTIAL_FACTOR = 2.5; // Higher values make scroll speed increase more rapidly
 
 export const TaskCard: React.FC<TaskCardProps> = ({
   task: initialTask,
@@ -85,11 +58,53 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const placeholderRef = useRef<HTMLDivElement | null>(null);
   const lastHighlightedElements = useRef<Set<Element>>(new Set());
   const scrollAnimationRef = useRef<number | null>(null);
+  const safeAreaRef = useRef({ top: 0, right: 0, bottom: 0, left: 0 });
 
   // Update local task when initialTask changes
   useEffect(() => {
     setTask(initialTask);
   }, [initialTask]);
+
+  // Detect safe areas for notches and home indicators
+  useEffect(() => {
+    // Try to detect safe areas using CSS environment variables
+    const detectSafeAreas = () => {
+      // Check if environment variables are supported
+      const style = window.getComputedStyle(document.documentElement);
+
+      try {
+        // Use CSS environment variables for safe areas if available
+        const safeTop = parseInt(style.getPropertyValue('env(safe-area-inset-top)') || '0');
+        const safeRight = parseInt(style.getPropertyValue('env(safe-area-inset-right)') || '0');
+        const safeBottom = parseInt(style.getPropertyValue('env(safe-area-inset-bottom)') || '0');
+        const safeLeft = parseInt(style.getPropertyValue('env(safe-area-inset-left)') || '0');
+
+        safeAreaRef.current = {
+          top: safeTop,
+          right: safeRight,
+          bottom: safeBottom,
+          left: safeLeft
+        };
+      } catch (e) {
+        // Fallback to sensible defaults if environment variables aren't supported
+        safeAreaRef.current = {
+          top: 10,
+          right: 10,
+          bottom: 10,
+          left: 10
+        };
+      }
+    };
+
+    detectSafeAreas();
+
+    // Listen for orientationchange events to recalculate safe areas
+    window.addEventListener('orientationchange', detectSafeAreas);
+
+    return () => {
+      window.removeEventListener('orientationchange', detectSafeAreas);
+    };
+  }, []);
 
   // Detect if we're on a mobile device
   useEffect(() => {
@@ -128,50 +143,57 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     };
   }, [cleanupScrollAnimation]);
 
-  // Auto-scroll function
+  // Auto-scroll function with dynamic calculations
   const handleAutoScroll = useCallback((touchX: number, touchY: number) => {
-    // Get window dimensions
+    // Get actual window dimensions
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
-    // Calculate scroll speeds based on screen dimensions
-    const edgeHorizontalSpeed = Math.round(windowWidth * EDGE_SCROLL_PERCENT);
-    const outsideHorizontalSpeed = Math.round(windowWidth * OUTSIDE_SCROLL_PERCENT);
-    const edgeVerticalSpeed = Math.round(windowHeight * EDGE_SCROLL_PERCENT);
-    const outsideVerticalSpeed = Math.round(windowHeight * OUTSIDE_SCROLL_PERCENT);
+    // Calculate edge size dynamically - 5% of screen dimension
+    const edgeWidth = windowWidth * SCROLL_EDGE_PERCENT;
+    const edgeHeight = windowHeight * SCROLL_EDGE_PERCENT;
 
-    // Calculate scroll amounts - simpler approach
+    // Initialize scroll values with much higher speeds
     let scrollX = 0;
     let scrollY = 0;
 
-    // Handle horizontal scrolling
-    if (touchX < 0) {
-      // Outside left edge
-      scrollX = -outsideHorizontalSpeed;
-    } else if (touchX > windowWidth) {
-      // Outside right edge
-      scrollX = outsideHorizontalSpeed;
-    } else if (touchX < SCROLL_EDGE_SIZE) {
-      // Near left edge
-      scrollX = -edgeHorizontalSpeed;
-    } else if (touchX > windowWidth - SCROLL_EDGE_SIZE) {
+    // Simplified horizontal scroll calculation with higher values
+    if (touchX < edgeWidth) {
+      // Near left edge - use a fixed high value for reliability
+      const intensity = 1 - (touchX / edgeWidth);
+      scrollX = -Math.round(25 * intensity); // Much faster scroll
+    } else if (touchX > windowWidth - edgeWidth) {
       // Near right edge
-      scrollX = edgeHorizontalSpeed;
+      const intensity = (touchX - (windowWidth - edgeWidth)) / edgeWidth;
+      scrollX = Math.round(25 * intensity); // Much faster scroll
     }
 
-    // Handle vertical scrolling
+    // Simplified vertical scroll calculation with higher values
+    if (touchY < edgeHeight) {
+      // Near top edge
+      const intensity = 1 - (touchY / edgeHeight);
+      scrollY = -Math.round(25 * intensity); // Much faster scroll
+    } else if (touchY > windowHeight - edgeHeight) {
+      // Near bottom edge
+      const intensity = (touchY - (windowHeight - edgeHeight)) / edgeHeight;
+      scrollY = Math.round(25 * intensity); // Much faster scroll
+    }
+
+    // Outside viewport scrolling - even faster
+    if (touchX < 0) {
+      // Outside left edge
+      scrollX = -50; // Very fast scroll
+    } else if (touchX > windowWidth) {
+      // Outside right edge
+      scrollX = 50; // Very fast scroll
+    }
+
     if (touchY < 0) {
       // Outside top edge
-      scrollY = -outsideVerticalSpeed;
+      scrollY = -50; // Very fast scroll
     } else if (touchY > windowHeight) {
       // Outside bottom edge
-      scrollY = outsideVerticalSpeed;
-    } else if (touchY < SCROLL_EDGE_SIZE) {
-      // Near top edge
-      scrollY = -edgeVerticalSpeed;
-    } else if (touchY > windowHeight - SCROLL_EDGE_SIZE) {
-      // Near bottom edge
-      scrollY = edgeVerticalSpeed;
+      scrollY = 50; // Very fast scroll
     }
 
     // If no scrolling needed, cancel any ongoing animation
@@ -182,15 +204,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
     // Create a simple scrolling function
     const doScroll = () => {
-      // Directly use window.scrollBy for reliable scrolling
+      // Apply scrolling immediately with fixed values
       window.scrollBy(scrollX, scrollY);
 
       // Continue the animation
       scrollAnimationRef.current = window.requestAnimationFrame(doScroll);
     };
 
-    // Start the animation if not already running
+    // Start the animation, or continue if already running
     if (scrollAnimationRef.current === null) {
+      // First, do an immediate scroll for responsiveness
+      window.scrollBy(scrollX, scrollY);
+      // Then start the animation loop
       scrollAnimationRef.current = window.requestAnimationFrame(doScroll);
     }
   }, [cleanupScrollAnimation]);
@@ -240,24 +265,44 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     card.classList.add('dragging');
     card.setAttribute('aria-grabbed', 'true');
 
-    // Create a function that safely handles auto-scrolling during mouse move
-    const safeAutoScroll = (x: number, y: number) => {
-      if (cardRef.current) {
-        handleAutoScroll(x, y);
-      }
+    // Create a function that handles auto-scrolling during mouse move
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      // Trigger auto-scroll immediately on every mouse move
+      handleAutoScroll(moveEvent.clientX, moveEvent.clientY);
     };
 
-    // Start auto-scroll when mouse moves during drag
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      safeAutoScroll(moveEvent.clientX, moveEvent.clientY);
+    // More aggressive scroll checking using interval for desktop dragging
+    // This ensures scrolling continues even when the mouse isn't moving
+    let lastKnownX = e.clientX;
+    let lastKnownY = e.clientY;
+
+    // Create interval to continuously check mouse position and scroll
+    const scrollInterval = setInterval(() => {
+      if (lastKnownX <= 0 || lastKnownX >= window.innerWidth ||
+          lastKnownY <= 0 || lastKnownY >= window.innerHeight ||
+          lastKnownX <= window.innerWidth * SCROLL_EDGE_PERCENT ||
+          lastKnownX >= window.innerWidth * (1 - SCROLL_EDGE_PERCENT) ||
+          lastKnownY <= window.innerHeight * SCROLL_EDGE_PERCENT ||
+          lastKnownY >= window.innerHeight * (1 - SCROLL_EDGE_PERCENT)) {
+        handleAutoScroll(lastKnownX, lastKnownY);
+      }
+    }, 16); // Check roughly 60 times per second
+
+    // Update last known position on mouse move
+    const trackMousePosition = (moveEvent: MouseEvent) => {
+      lastKnownX = moveEvent.clientX;
+      lastKnownY = moveEvent.clientY;
     };
 
     // Add and remove listeners for mouse movement during drag
     document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', trackMousePosition);
 
     // Set cleanup function for when drag ends
     window.addEventListener('dragend', function cleanupDrag() {
       document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousemove', trackMousePosition);
+      clearInterval(scrollInterval);
       cleanupScrollAnimation();
       window.removeEventListener('dragend', cleanupDrag);
     }, { once: true });
@@ -360,8 +405,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       const card = cardRef.current;
       const touch = e.touches[0];
 
-      // Check if we need to auto-scroll
-      handleAutoScroll(touch.clientX, touch.clientY);
+      // Always try to scroll if we're near an edge
+      const x = touch.clientX;
+      const y = touch.clientY;
+      const edgePercent = SCROLL_EDGE_PERCENT;
+
+      // Check if we're near an edge and should trigger scrolling
+      if (x <= 0 || x >= window.innerWidth ||
+          y <= 0 || y >= window.innerHeight ||
+          x <= window.innerWidth * edgePercent ||
+          x >= window.innerWidth * (1 - edgePercent) ||
+          y <= window.innerHeight * edgePercent ||
+          y >= window.innerHeight * (1 - edgePercent)) {
+        handleAutoScroll(x, y);
+      }
 
       // Calculate movement
       const startX = parseInt(card.dataset.touchStartX || '0');
@@ -526,7 +583,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           }
         }
       }
-    }, 16), // Increase to 60fps for smoother scrolling
+    }, SCROLL_THROTTLE),
     [touchActive, isDragging, clearHighlights, onReorder, handleAutoScroll]
   );
 
@@ -534,6 +591,24 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     // This wrapper prevents excessive renders while still capturing the event
     if (touchActive && cardRef.current) {
       e.preventDefault(); // Prevent scrolling
+
+      // Get the touch position
+      const touch = e.touches[0];
+      const x = touch.clientX;
+      const y = touch.clientY;
+
+      // Check if we're near an edge and should trigger scrolling
+      if (x <= 0 || x >= window.innerWidth ||
+          y <= 0 || y >= window.innerHeight ||
+          x <= window.innerWidth * SCROLL_EDGE_PERCENT ||
+          x >= window.innerWidth * (1 - SCROLL_EDGE_PERCENT) ||
+          y <= window.innerHeight * SCROLL_EDGE_PERCENT ||
+          y >= window.innerHeight * (1 - SCROLL_EDGE_PERCENT)) {
+        // Call auto-scroll directly for immediate response
+        handleAutoScroll(x, y);
+      }
+
+      // Also call the throttled handler for other drag operations
       handleTouchMoveThrottled(e);
     }
   };
