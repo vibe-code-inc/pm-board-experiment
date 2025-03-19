@@ -4,16 +4,29 @@
 
 /* Custom drag and drop styles */
 .drop-target-highlight {
-  @apply ring-2 ring-blue-500 ring-offset-2 ring-opacity-70 bg-blue-50;
+  @apply ring-2 ring-blue-500 bg-blue-50;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
 .touch-dragging {
   @apply shadow-lg;
+  /* Visual styles for dragged element */
+  pointer-events: none;
+  z-index: 100;
+  /* Hardware acceleration */
+  will-change: transform;
+  /* Visual indicator */
+  filter: brightness(0.98);
+  /* Add a subtle transition for smoother appearance changes */
+  transition: box-shadow 0.1s ease;
 }
 
 .touch-dragging-active {
   @apply overflow-hidden;
   touch-action: none;
+  /* Prevent content shifting during drag */
+  overscroll-behavior: none;
 }
 
 .touch-drag-handle {
@@ -24,41 +37,73 @@
   cursor: grab;
 }
 
-/* Task card placeholder */
+/* Task list container - add transition for smoother reflows */
+.task-list {
+  transition: height 0.15s ease;
+}
+
+/* Task card */
+.task-card {
+  /* Add hardware acceleration for all cards */
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+  transition: transform 0.1s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+  backface-visibility: hidden;
+  /* Ensure consistent box model */
+  box-sizing: border-box;
+  /* Add normal spacing to ensure consistent layout */
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Task card placeholder - ensure it takes the same space as the card */
 .task-card-placeholder {
-  @apply rounded-lg my-3 border-2 border-dashed border-blue-300 bg-blue-50 animate-pulse;
-  min-height: 100px;
+  @apply rounded-lg border-2 border-dashed border-blue-300 bg-blue-50;
+  box-sizing: border-box;
+  /* Consistent appearance */
+  opacity: 0.8;
+  /* Minimal height but respects content flow */
+  min-height: 4rem;
+  /* Add thickness to make it more visible */
+  padding: 1rem;
+  /* Match original card spacing */
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  /* Subtle animation to draw attention */
+  animation: placeholderPulse 2s infinite alternate ease-in-out;
+  /* Smooth transitions when moving */
+  transition: all 0.15s ease-out;
+  /* Ensure it always takes precedence in empty columns */
+  z-index: 1;
 }
 
-/* Task reordering indicators */
+@keyframes placeholderPulse {
+  from { background-color: rgba(219, 234, 254, 0.5); }
+  to { background-color: rgba(219, 234, 254, 0.8); }
+}
+
+/* Task reordering indicators - clear visual feedback */
 .task-card.insert-above {
-  @apply border-t-2 border-blue-500 pt-1;
+  border-top: 2px solid rgba(59, 130, 246, 0.8);
+  box-shadow: 0 -2px 0 rgba(59, 130, 246, 0.3);
+  padding-top: 4px;
+  margin-top: 3px;
   position: relative;
-}
-
-.task-card.insert-above::before {
-  content: '';
-  position: absolute;
-  top: -3px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 3px;
-  @apply bg-blue-500;
 }
 
 .task-card.insert-below {
-  @apply border-b-2 border-blue-500 pb-1;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.8);
+  box-shadow: 0 2px 0 rgba(59, 130, 246, 0.3);
+  padding-bottom: 4px;
+  margin-bottom: 3px;
   position: relative;
 }
 
-.task-card.insert-below::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 3px;
-  @apply bg-blue-500;
+/* Ensure empty column messages work properly with placeholders */
+.empty-column-message {
+  transition: opacity 0.15s ease-out;
+}
+
+.empty-column-message.hidden {
+  display: none;
 }

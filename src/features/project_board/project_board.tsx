@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Task, Project } from '@/types';
 import { TaskCard } from '@/ui/features/task_card/task_card';
 import { Info, X } from 'lucide-react';
@@ -9,21 +9,40 @@ interface ProjectBoardProps {
   onTaskEdit: (task: Task) => void;
 }
 
+// Column definitions - defined outside component to prevent recreation
+const columns: { title: string; status: Task['status'] }[] = [
+  { title: 'To Do', status: 'todo' },
+  { title: 'In Progress', status: 'in-progress' },
+  { title: 'Done', status: 'done' },
+];
+
 export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdate, onTaskEdit }) => {
   const [showMobileGuide, setShowMobileGuide] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [localProject, setLocalProject] = useState<Project>(project);
+  const [dragInProgress, setDragInProgress] = useState(false);
 
   // Update local project when props change
   useEffect(() => {
-    setLocalProject(project);
-  }, [project]);
+    if (!dragInProgress) {
+      setLocalProject(project);
+    }
+  }, [project, dragInProgress]);
 
-  const columns: { title: string; status: Task['status'] }[] = [
-    { title: 'To Do', status: 'todo' },
-    { title: 'In Progress', status: 'in-progress' },
-    { title: 'Done', status: 'done' },
-  ];
+  // Pre-compute task groups per column to minimize render calculations
+  const columnTasks = useMemo(() => {
+    const result: Record<Task['status'], Task[]> = {
+      'todo': [],
+      'in-progress': [],
+      'done': []
+    };
+
+    localProject.tasks.forEach(task => {
+      result[task.status].push(task);
+    });
+
+    return result;
+  }, [localProject.tasks]);
 
   // Check if we're on mobile and if we should show the guide
   useEffect(() => {
@@ -46,29 +65,29 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
   }, []);
 
   // Dismiss the guide and remember the user's choice
-  const dismissGuide = () => {
+  const dismissGuide = useCallback(() => {
     setShowMobileGuide(false);
     localStorage.setItem('dragDropGuideShown', 'true');
-  };
+  }, []);
 
   // Standard drag and drop handlers
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
 
     // Add highlight to the column
     if (e.currentTarget.classList.contains('drop-column')) {
       e.currentTarget.classList.add('drop-target-highlight');
     }
-  };
+  }, []);
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
     // Remove highlight when dragging out
     if (e.currentTarget.classList.contains('drop-column')) {
       e.currentTarget.classList.remove('drop-target-highlight');
     }
-  };
+  }, []);
 
-  const handleDrop = (e: React.DragEvent, status: Task['status']) => {
+  const handleDrop = useCallback((e: React.DragEvent, status: Task['status']) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('taskId');
 
@@ -80,10 +99,13 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
     if (taskId) {
       onTaskUpdate(taskId, status);
     }
-  };
+  }, [onTaskUpdate]);
 
   // Handle reordering of tasks within a column
-  const handleReorder = (draggedTaskId: string, targetTaskId: string) => {
+  const handleReorder = useCallback((draggedTaskId: string, targetTaskId: string) => {
+    // Signal drag start to prevent project updates during reordering
+    setDragInProgress(true);
+
     // Create a copy of the project for local updates
     const updatedProject = { ...localProject };
     const allTasks = [...updatedProject.tasks];
@@ -92,7 +114,10 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
     const draggedTaskIndex = allTasks.findIndex(task => task.id === draggedTaskId);
     const targetTaskIndex = allTasks.findIndex(task => task.id === targetTaskId);
 
-    if (draggedTaskIndex === -1 || targetTaskIndex === -1) return;
+    if (draggedTaskIndex === -1 || targetTaskIndex === -1) {
+      setDragInProgress(false);
+      return;
+    }
 
     // Get the dragged task
     const draggedTask = allTasks[draggedTaskIndex];
@@ -101,7 +126,10 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
     const draggedElement = document.querySelector(`[data-task-id="${draggedTaskId}"]`);
     const targetElement = document.querySelector(`[data-task-id="${targetTaskId}"]`);
 
-    if (!draggedElement || !targetElement) return;
+    if (!draggedElement || !targetElement) {
+      setDragInProgress(false);
+      return;
+    }
 
     const targetRect = targetElement.getBoundingClientRect();
     const draggedRect = draggedElement.getBoundingClientRect();
@@ -133,24 +161,30 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
     // Insert the dragged task at the new position
     allTasks.splice(insertPosition, 0, draggedTask);
 
-    // Update the local project state
-    updatedProject.tasks = allTasks;
-    setLocalProject(updatedProject);
+    // Batch state update to reduce re-renders
+    window.requestAnimationFrame(() => {
+      // Update the local project state
+      updatedProject.tasks = allTasks;
+      setLocalProject(updatedProject);
 
-    // Notify the parent component about the reordering
-    // This requires the parent to have a way to handle reordering
-    // You might need to add this functionality to the parent component
-    if (typeof window !== 'undefined') {
-      // Create a custom event to notify the parent
-      const reorderEvent = new CustomEvent('taskReorder', {
-        detail: {
-          projectId: updatedProject.id,
-          tasks: updatedProject.tasks
-        }
-      });
-      document.dispatchEvent(reorderEvent);
-    }
-  };
+      // Allow project updates again after a short delay to avoid flicker
+      setTimeout(() => {
+        setDragInProgress(false);
+      }, 50);
+
+      // Notify the parent component about the reordering
+      if (typeof window !== 'undefined') {
+        // Create a custom event to notify the parent
+        const reorderEvent = new CustomEvent('taskReorder', {
+          detail: {
+            projectId: updatedProject.id,
+            tasks: updatedProject.tasks
+          }
+        });
+        document.dispatchEvent(reorderEvent);
+      }
+    });
+  }, [localProject]);
 
   // Add a polyfill for elementsFromPoint if it doesn't exist (older browsers)
   useEffect(() => {
@@ -215,12 +249,9 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
       {/* Responsive grid - stack on mobile, side by side on larger screens */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {columns.map((column) => {
-          // Get tasks for this column
-          const columnTasks = localProject.tasks.filter(
-            task => task.status === column.status
-          );
-
-          const hasNoTasks = columnTasks.length === 0;
+          // Get tasks for this column from pre-computed object
+          const tasks = columnTasks[column.status];
+          const hasNoTasks = tasks.length === 0;
 
           return (
             <div
@@ -234,19 +265,19 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
               <h2 className="font-semibold text-gray-700 mb-3 md:mb-4 text-center md:text-left">
                 {column.title}
               </h2>
-              <div className={`space-y-3 min-h-[150px] md:min-h-[200px] ${hasNoTasks ? 'flex items-center justify-center' : ''}`}>
+              <div className={`space-y-3 task-list min-h-[150px] md:min-h-[200px] ${hasNoTasks ? 'flex items-center justify-center' : ''}`}>
                 {hasNoTasks ? (
-                  <div className="text-gray-400 text-sm text-center border-2 border-dashed border-gray-200 rounded-lg p-4 w-full">
+                  <div className="text-gray-400 text-sm text-center border-2 border-dashed border-gray-200 rounded-lg p-4 w-full empty-column-message">
                     Drag tasks here
                   </div>
                 ) : (
-                  columnTasks.map((task) => (
+                  tasks.map((task) => (
                     <TaskCard
                       key={task.id}
                       task={task}
                       onStatusChange={(status) => onTaskUpdate(task.id, status)}
                       onEdit={() => onTaskEdit(task)}
-                      columnTasks={columnTasks}
+                      columnTasks={tasks}
                       onReorder={handleReorder}
                     />
                   ))
