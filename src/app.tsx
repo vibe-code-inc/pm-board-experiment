@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Project, Task } from '@/types_ts';
+import { Project, Task } from '@/types';
 import { ProjectBoard } from '@/features/project_board/project_board';
 import { Layout } from 'lucide-react';
 
