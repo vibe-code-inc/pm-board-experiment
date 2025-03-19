@@ -34,8 +34,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const [task, setTask] = useState(initialTask);
   const [isDragging, setIsDragging] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [touchActive, setTouchActive] = useState(false);
+  const [placeholder, setPlaceholder] = useState<HTMLDivElement | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
+
+  // Update local task when initialTask changes
+  useEffect(() => {
+    setTask(initialTask);
+  }, [initialTask]);
 
   // Detect if we're on a mobile device
   useEffect(() => {
@@ -88,80 +95,121 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       cardRef.current.dataset.touchStartX = touch.clientX.toString();
       cardRef.current.dataset.touchStartY = touch.clientY.toString();
 
+      // Activate touch tracking
+      setTouchActive(true);
+
       // Add feedback
       cardRef.current.classList.add('touch-dragging');
+      document.body.classList.add('touch-dragging-active');
+
+      // Create a placeholder for the dragged item
+      if (!placeholder) {
+        const newPlaceholder = document.createElement('div');
+        newPlaceholder.className = 'task-card-placeholder';
+        newPlaceholder.style.height = `${cardRef.current.offsetHeight}px`;
+        newPlaceholder.style.width = `${cardRef.current.offsetWidth}px`;
+        newPlaceholder.style.display = 'none';
+        document.body.appendChild(newPlaceholder);
+        setPlaceholder(newPlaceholder);
+      }
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    // If we weren't dragging from the handle, ignore touch move
-    if (!cardRef.current?.classList.contains('touch-dragging')) {
+    // If touch tracking isn't active, don't do anything
+    if (!touchActive || !cardRef.current) {
       return;
     }
 
     // Prevent scrolling while dragging
-    if (cardRef.current && cardRef.current.dataset.touchStartX) {
-      e.preventDefault();
-      setIsDragging(true);
+    e.preventDefault();
+    setIsDragging(true);
 
-      // Get the card element and touch data
-      const card = cardRef.current;
-      const touch = e.touches[0];
+    // Get the card element and touch data
+    const card = cardRef.current;
+    const touch = e.touches[0];
 
-      // Calculate movement
-      const startX = parseInt(card.dataset.touchStartX || '0');
-      const startY = parseInt(card.dataset.touchStartY || '0');
-      const deltaX = touch.clientX - startX;
-      const deltaY = touch.clientY - startY;
+    // Calculate movement
+    const startX = parseInt(card.dataset.touchStartX || '0');
+    const startY = parseInt(card.dataset.touchStartY || '0');
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
 
-      // Move the element (purely visual, will snap back on release)
-      card.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-      card.style.opacity = '0.8';
-      card.style.zIndex = '100';
+    // Move the element (purely visual, will snap back on release)
+    card.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    card.style.opacity = '0.8';
+    card.style.position = 'relative';
+    card.style.zIndex = '100';
 
-      // Create highlight effect for potential drop targets
-      const elementsAtTouch = document.elementsFromPoint(touch.clientX, touch.clientY);
+    // Create highlight effect for potential drop targets
+    const elementsAtTouch = document.elementsFromPoint(touch.clientX, touch.clientY);
 
-      // Look for both columns and other tasks
-      const dropColumn = elementsAtTouch.find(el =>
-        el.classList.contains('drop-column')
-      ) as HTMLElement;
+    // Look for both columns and other tasks
+    const dropColumn = elementsAtTouch.find(el =>
+      el.classList.contains('drop-column')
+    ) as HTMLElement;
 
-      const targetTaskCard = elementsAtTouch.find(el =>
-        el.classList.contains('task-card') &&
-        el !== card &&
-        !el.contains(card) &&
-        !card.contains(el)
-      ) as HTMLElement;
+    const targetTaskCard = elementsAtTouch.find(el =>
+      el.classList.contains('task-card') &&
+      el !== card &&
+      !el.contains(card) &&
+      !card.contains(el)
+    ) as HTMLElement;
 
-      // Remove all highlights
-      document.querySelectorAll('.drop-column, .task-card').forEach(el => {
-        el.classList.remove('drop-target-highlight', 'insert-above', 'insert-below');
-      });
+    // Remove all highlights
+    document.querySelectorAll('.drop-column, .task-card').forEach(el => {
+      el.classList.remove('drop-target-highlight', 'insert-above', 'insert-below');
+    });
 
-      // Add highlight to the column we're over
-      if (dropColumn) {
-        dropColumn.classList.add('drop-target-highlight');
+    // Hide the placeholder by default
+    if (placeholder) {
+      placeholder.style.display = 'none';
+    }
+
+    // Add highlight to the column we're over
+    if (dropColumn) {
+      dropColumn.classList.add('drop-target-highlight');
+
+      // Show placeholder in empty column
+      if (placeholder && dropColumn.querySelector('.space-y-3')?.children.length === 0) {
+        const columnContent = dropColumn.querySelector('.space-y-3');
+        if (columnContent) {
+          placeholder.style.display = 'block';
+          placeholder.className = 'task-card-placeholder bg-blue-50 border-2 border-dashed border-blue-200 rounded-lg';
+          columnContent.appendChild(placeholder);
+        }
       }
+    }
 
-      // If we're over another task card, highlight it for reordering
-      if (targetTaskCard && onReorder) {
-        targetTaskCard.classList.add('drop-target-highlight');
+    // If we're over another task card, highlight it for reordering
+    if (targetTaskCard && onReorder) {
+      targetTaskCard.classList.add('drop-target-highlight');
 
-        // Determine if we're in the top or bottom half of the target card
-        const rect = targetTaskCard.getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
+      // Determine if we're in the top or bottom half of the target card
+      const rect = targetTaskCard.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+
+      // Show placeholder either above or below the target card
+      if (placeholder) {
+        placeholder.style.display = 'block';
+        placeholder.className = 'task-card-placeholder bg-blue-50 border-2 border-dashed border-blue-200 rounded-lg';
 
         if (touch.clientY < midY) {
           targetTaskCard.classList.add('insert-above');
+          targetTaskCard.parentNode?.insertBefore(placeholder, targetTaskCard);
         } else {
           targetTaskCard.classList.add('insert-below');
+          targetTaskCard.parentNode?.insertBefore(placeholder, targetTaskCard.nextSibling);
         }
       }
     }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchActive) return;
+
+    setTouchActive(false);
+
     if (cardRef.current) {
       const card = cardRef.current;
       setIsDragging(false);
@@ -170,7 +218,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       card.style.transform = '';
       card.style.opacity = '';
       card.style.zIndex = '';
+      card.style.position = '';
       card.classList.remove('touch-dragging');
+      document.body.classList.remove('touch-dragging-active');
 
       // Find the element we're over
       const touch = e.changedTouches[0];
@@ -204,10 +254,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         el.classList.remove('drop-target-highlight', 'insert-above', 'insert-below');
       });
 
+      // Remove the placeholder
+      if (placeholder) {
+        placeholder.remove();
+        setPlaceholder(null);
+      }
+
       // Clean up
       delete card.dataset.touchStartX;
       delete card.dataset.touchStartY;
     }
+  };
+
+  // Handle touch cancel event
+  const handleTouchCancel = (e: React.TouchEvent) => {
+    handleTouchEnd(e);
   };
 
   const handleTaskUpdate = (updatedTask: Task) => {
@@ -231,6 +292,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         aria-grabbed="false"
         data-task-id={task.id}
       >

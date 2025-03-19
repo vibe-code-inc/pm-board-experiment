@@ -54,11 +54,28 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
   // Standard drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+
+    // Add highlight to the column
+    if (e.currentTarget.classList.contains('drop-column')) {
+      e.currentTarget.classList.add('drop-target-highlight');
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Remove highlight when dragging out
+    if (e.currentTarget.classList.contains('drop-column')) {
+      e.currentTarget.classList.remove('drop-target-highlight');
+    }
   };
 
   const handleDrop = (e: React.DragEvent, status: Task['status']) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('taskId');
+
+    // Remove highlight
+    if (e.currentTarget.classList.contains('drop-column')) {
+      e.currentTarget.classList.remove('drop-target-highlight');
+    }
 
     if (taskId) {
       onTaskUpdate(taskId, status);
@@ -203,28 +220,37 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
             task => task.status === column.status
           );
 
+          const hasNoTasks = columnTasks.length === 0;
+
           return (
             <div
               key={column.status}
-              className="bg-gray-50 rounded-lg p-3 md:p-4 shadow-sm drop-column"
+              className={`bg-gray-50 rounded-lg p-3 md:p-4 shadow-sm drop-column ${hasNoTasks ? 'empty-column' : ''}`}
               data-status={column.status}
               onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, column.status)}
             >
               <h2 className="font-semibold text-gray-700 mb-3 md:mb-4 text-center md:text-left">
                 {column.title}
               </h2>
-              <div className="space-y-3 min-h-[150px] md:min-h-[200px]">
-                {columnTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onStatusChange={(status) => onTaskUpdate(task.id, status)}
-                    onEdit={() => onTaskEdit(task)}
-                    columnTasks={columnTasks}
-                    onReorder={handleReorder}
-                  />
-                ))}
+              <div className={`space-y-3 min-h-[150px] md:min-h-[200px] ${hasNoTasks ? 'flex items-center justify-center' : ''}`}>
+                {hasNoTasks ? (
+                  <div className="text-gray-400 text-sm text-center border-2 border-dashed border-gray-200 rounded-lg p-4 w-full">
+                    Drag tasks here
+                  </div>
+                ) : (
+                  columnTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onStatusChange={(status) => onTaskUpdate(task.id, status)}
+                      onEdit={() => onTaskEdit(task)}
+                      columnTasks={columnTasks}
+                      onReorder={handleReorder}
+                    />
+                  ))
+                )}
               </div>
             </div>
           );

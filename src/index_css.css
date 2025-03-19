@@ -11,12 +11,23 @@
   @apply shadow-lg;
 }
 
+.touch-dragging-active {
+  @apply overflow-hidden;
+  touch-action: none;
+}
+
 .touch-drag-handle {
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
   cursor: grab;
+}
+
+/* Task card placeholder */
+.task-card-placeholder {
+  @apply rounded-lg my-3 border-2 border-dashed border-blue-300 bg-blue-50 animate-pulse;
+  min-height: 100px;
 }
 
 /* Task reordering indicators */
