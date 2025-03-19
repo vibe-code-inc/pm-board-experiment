@@ -1,5 +1,5 @@
 import React from 'react';
-import { Task, Project } from '@/types_ts';
+import { Task, Project } from '@/types';
 import { TaskCard } from '@/ui/features/task_card/task_card';
 
 interface ProjectBoardProps {

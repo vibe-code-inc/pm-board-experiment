@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { Task } from '@/types_ts';
+import { Task } from '@/types';
 import { Button } from '@/ui/base/design_kit/button/button';
 import { Input } from '@/ui/base/design_kit/input/input';
 import { Select } from '@/ui/base/design_kit/select/select';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Clock, Flag, Edit2 } from 'lucide-react';
-import { Task } from '@/types_ts';
+import { Task } from '@/types';
 import { TaskModal } from '@/ui/features/task_modal/task_modal';
 
 interface TaskCardProps {

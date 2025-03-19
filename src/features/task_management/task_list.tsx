@@ -1,5 +1,5 @@
 import React from 'react';
-import { Task } from '@/types_ts';
+import { Task } from '@/types';
 
 interface TaskListProps {
   tasks: Task[];
