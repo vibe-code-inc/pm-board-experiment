@@ -12,6 +12,12 @@ interface ProjectBoardProps {
 export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdate, onTaskEdit }) => {
   const [showMobileGuide, setShowMobileGuide] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [localProject, setLocalProject] = useState<Project>(project);
+
+  // Update local project when props change
+  useEffect(() => {
+    setLocalProject(project);
+  }, [project]);
 
   const columns: { title: string; status: Task['status'] }[] = [
     { title: 'To Do', status: 'todo' },
@@ -56,6 +62,76 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
 
     if (taskId) {
       onTaskUpdate(taskId, status);
+    }
+  };
+
+  // Handle reordering of tasks within a column
+  const handleReorder = (draggedTaskId: string, targetTaskId: string) => {
+    // Create a copy of the project for local updates
+    const updatedProject = { ...localProject };
+    const allTasks = [...updatedProject.tasks];
+
+    // Find the tasks
+    const draggedTaskIndex = allTasks.findIndex(task => task.id === draggedTaskId);
+    const targetTaskIndex = allTasks.findIndex(task => task.id === targetTaskId);
+
+    if (draggedTaskIndex === -1 || targetTaskIndex === -1) return;
+
+    // Get the dragged task
+    const draggedTask = allTasks[draggedTaskIndex];
+
+    // Get positional info to determine if we need to insert before or after the target
+    const draggedElement = document.querySelector(`[data-task-id="${draggedTaskId}"]`);
+    const targetElement = document.querySelector(`[data-task-id="${targetTaskId}"]`);
+
+    if (!draggedElement || !targetElement) return;
+
+    const targetRect = targetElement.getBoundingClientRect();
+    const draggedRect = draggedElement.getBoundingClientRect();
+
+    // Get the center point of each element
+    const draggedCenter = draggedRect.top + draggedRect.height / 2;
+    const targetCenter = targetRect.top + targetRect.height / 2;
+
+    // Remove the dragged task
+    allTasks.splice(draggedTaskIndex, 1);
+
+    // Calculate the new position for insertion
+    let insertPosition = targetTaskIndex;
+    if (draggedTaskIndex < targetTaskIndex) {
+      // If dragging from above to below, adjust the insert position
+      insertPosition--;
+    }
+
+    // If dragging from below to above, we want to insert before the target
+    // If dragging from above to below, we want to insert after the target
+    if (draggedCenter < targetCenter) {
+      // Insert before the target
+      insertPosition = targetTaskIndex > draggedTaskIndex ? targetTaskIndex - 1 : targetTaskIndex;
+    } else {
+      // Insert after the target
+      insertPosition = targetTaskIndex < draggedTaskIndex ? targetTaskIndex + 1 : targetTaskIndex;
+    }
+
+    // Insert the dragged task at the new position
+    allTasks.splice(insertPosition, 0, draggedTask);
+
+    // Update the local project state
+    updatedProject.tasks = allTasks;
+    setLocalProject(updatedProject);
+
+    // Notify the parent component about the reordering
+    // This requires the parent to have a way to handle reordering
+    // You might need to add this functionality to the parent component
+    if (typeof window !== 'undefined') {
+      // Create a custom event to notify the parent
+      const reorderEvent = new CustomEvent('taskReorder', {
+        detail: {
+          projectId: updatedProject.id,
+          tasks: updatedProject.tasks
+        }
+      });
+      document.dispatchEvent(reorderEvent);
     }
   };
 
@@ -107,7 +183,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
             <div>
               <h3 className="font-medium text-blue-800 text-sm">Touch Dragging Enabled</h3>
               <p className="text-xs text-blue-700 mt-1">
-                Use the grip handle on the left side of each task to drag and drop tasks between columns.
+                Use the grip handle on the left side of each task to drag and drop tasks between columns or rearrange tasks within a column.
               </p>
             </div>
           </div>
@@ -115,37 +191,44 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
       )}
 
       <div className="mb-4 md:mb-6">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">{project.name}</h1>
-        <p className="text-sm md:text-base text-gray-600">{project.description}</p>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">{localProject.name}</h1>
+        <p className="text-sm md:text-base text-gray-600">{localProject.description}</p>
       </div>
 
       {/* Responsive grid - stack on mobile, side by side on larger screens */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {columns.map((column) => (
-          <div
-            key={column.status}
-            className="bg-gray-50 rounded-lg p-3 md:p-4 shadow-sm drop-column"
-            data-status={column.status}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, column.status)}
-          >
-            <h2 className="font-semibold text-gray-700 mb-3 md:mb-4 text-center md:text-left">
-              {column.title}
-            </h2>
-            <div className="space-y-3 min-h-[150px] md:min-h-[200px]">
-              {project.tasks
-                .filter((task) => task.status === column.status)
-                .map((task) => (
+        {columns.map((column) => {
+          // Get tasks for this column
+          const columnTasks = localProject.tasks.filter(
+            task => task.status === column.status
+          );
+
+          return (
+            <div
+              key={column.status}
+              className="bg-gray-50 rounded-lg p-3 md:p-4 shadow-sm drop-column"
+              data-status={column.status}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, column.status)}
+            >
+              <h2 className="font-semibold text-gray-700 mb-3 md:mb-4 text-center md:text-left">
+                {column.title}
+              </h2>
+              <div className="space-y-3 min-h-[150px] md:min-h-[200px]">
+                {columnTasks.map((task) => (
                   <TaskCard
                     key={task.id}
                     task={task}
                     onStatusChange={(status) => onTaskUpdate(task.id, status)}
                     onEdit={() => onTaskEdit(task)}
+                    columnTasks={columnTasks}
+                    onReorder={handleReorder}
                   />
                 ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

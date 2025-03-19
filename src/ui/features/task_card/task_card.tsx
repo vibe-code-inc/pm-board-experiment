@@ -7,6 +7,8 @@ interface TaskCardProps {
   task: Task;
   onStatusChange: (status: Task['status']) => void;
   onEdit: (task: Task) => void;
+  columnTasks?: Task[]; // Tasks in the current column for reordering
+  onReorder?: (draggedTaskId: string, targetTaskId: string) => void; // Callback for reordering
 }
 
 const priorityColors = {
@@ -25,6 +27,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   task: initialTask,
   onStatusChange,
   onEdit,
+  columnTasks = [],
+  onReorder,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [task, setTask] = useState(initialTask);
@@ -117,18 +121,42 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
       // Create highlight effect for potential drop targets
       const elementsAtTouch = document.elementsFromPoint(touch.clientX, touch.clientY);
+
+      // Look for both columns and other tasks
       const dropColumn = elementsAtTouch.find(el =>
         el.classList.contains('drop-column')
       ) as HTMLElement;
 
-      // Remove highlight from all columns
-      document.querySelectorAll('.drop-column').forEach(col => {
-        col.classList.remove('drop-target-highlight');
+      const targetTaskCard = elementsAtTouch.find(el =>
+        el.classList.contains('task-card') &&
+        el !== card &&
+        !el.contains(card) &&
+        !card.contains(el)
+      ) as HTMLElement;
+
+      // Remove all highlights
+      document.querySelectorAll('.drop-column, .task-card').forEach(el => {
+        el.classList.remove('drop-target-highlight', 'insert-above', 'insert-below');
       });
 
       // Add highlight to the column we're over
       if (dropColumn) {
         dropColumn.classList.add('drop-target-highlight');
+      }
+
+      // If we're over another task card, highlight it for reordering
+      if (targetTaskCard && onReorder) {
+        targetTaskCard.classList.add('drop-target-highlight');
+
+        // Determine if we're in the top or bottom half of the target card
+        const rect = targetTaskCard.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+
+        if (touch.clientY < midY) {
+          targetTaskCard.classList.add('insert-above');
+        } else {
+          targetTaskCard.classList.add('insert-below');
+        }
       }
     }
   };
@@ -144,24 +172,37 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       card.style.zIndex = '';
       card.classList.remove('touch-dragging');
 
-      // Remove highlight from all columns
-      document.querySelectorAll('.drop-column').forEach(col => {
-        col.classList.remove('drop-target-highlight');
-      });
-
-      // Find the column we're over
+      // Find the element we're over
       const touch = e.changedTouches[0];
       const elementsAtTouch = document.elementsFromPoint(touch.clientX, touch.clientY);
 
-      // Find the first column element
-      const dropColumn = elementsAtTouch.find(el =>
-        el.classList.contains('drop-column')
+      // Check if we're over another task card first (for reordering)
+      const targetTaskCard = elementsAtTouch.find(el =>
+        el.classList.contains('task-card') &&
+        el !== card &&
+        !el.contains(card) &&
+        !card.contains(el)
       ) as HTMLElement;
 
-      if (dropColumn && dropColumn.dataset.status) {
-        // We found a valid drop target
-        onStatusChange(dropColumn.dataset.status as Task['status']);
+      // If we're over another task card and have a reorder callback
+      if (targetTaskCard && onReorder && targetTaskCard.dataset.taskId) {
+        onReorder(task.id, targetTaskCard.dataset.taskId);
+      } else {
+        // Otherwise check for column drops
+        const dropColumn = elementsAtTouch.find(el =>
+          el.classList.contains('drop-column')
+        ) as HTMLElement;
+
+        if (dropColumn && dropColumn.dataset.status) {
+          // We found a valid drop target
+          onStatusChange(dropColumn.dataset.status as Task['status']);
+        }
       }
+
+      // Remove all highlights
+      document.querySelectorAll('.drop-column, .task-card').forEach(el => {
+        el.classList.remove('drop-target-highlight', 'insert-above', 'insert-below');
+      });
 
       // Clean up
       delete card.dataset.touchStartX;
@@ -183,7 +224,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     <>
       <div
         ref={cardRef}
-        className={`p-3 md:p-4 rounded-lg shadow-sm ${statusColors[task.status]} transition-all hover:shadow-md cursor-move group ${isDragging ? 'opacity-60' : ''}`}
+        className={`task-card p-3 md:p-4 rounded-lg shadow-sm ${statusColors[task.status]} transition-all hover:shadow-md cursor-move group ${isDragging ? 'opacity-60' : ''}`}
         draggable="true"
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -191,6 +232,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         aria-grabbed="false"
+        data-task-id={task.id}
       >
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
           <div className="flex items-start gap-2">

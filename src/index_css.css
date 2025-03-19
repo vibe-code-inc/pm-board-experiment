@@ -18,3 +18,36 @@
   user-select: none;
   cursor: grab;
 }
+
+/* Task reordering indicators */
+.task-card.insert-above {
+  @apply border-t-2 border-blue-500 pt-1;
+  position: relative;
+}
+
+.task-card.insert-above::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  @apply bg-blue-500;
+}
+
+.task-card.insert-below {
+  @apply border-b-2 border-blue-500 pb-1;
+  position: relative;
+}
+
+.task-card.insert-below::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  @apply bg-blue-500;
+}
