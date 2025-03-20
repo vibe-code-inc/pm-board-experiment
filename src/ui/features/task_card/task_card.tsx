@@ -57,6 +57,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const scrollAnimationRef = useRef<number | null>(null);
   const safeAreaRef = useRef({ top: 0, right: 0, bottom: 0, left: 0 });
 
+  // Add time tracking refs at component level
+  const scrollTimeRef = useRef<number>(0);
+  const lastFrameTimeRef = useRef<number>(0);
+
   // Update local task when initialTask changes
   useEffect(() => {
     setTask(initialTask);
@@ -149,13 +153,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     // Calculate edge zones - 5% of screen
     const edgeSize = Math.min(windowWidth, windowHeight) * EDGE_ZONE_PERCENT;
 
-    // Time-based scrolling variables
-    const scrollTimeRef = useRef<number>(0);
-    const lastFrameTimeRef = useRef<number>(0);
-
-    // Maximum scroll speed per second (50% of screen per second)
-    const maxSpeedPerSecondX = windowWidth * 0.5;
-    const maxSpeedPerSecondY = windowHeight * 0.5;
+    // Maximum scroll speed per second (increase to 80% of screen per second)
+    const maxSpeedPerSecondX = windowWidth * 0.8;
+    const maxSpeedPerSecondY = windowHeight * 0.8;
 
     // Create direct scrolling function with time-based calculation
     const performScroll = (timestamp: number) => {
@@ -201,15 +201,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
       // Extra speed outside viewport
       if (touchX < 0) {
-        scrollX = -maxSpeedPerSecondX * deltaTime * 1.5; // 1.5x speed outside left
+        scrollX = -maxSpeedPerSecondX * deltaTime * 2; // 2x speed outside left
       } else if (touchX > windowWidth) {
-        scrollX = maxSpeedPerSecondX * deltaTime * 1.5; // 1.5x speed outside right
+        scrollX = maxSpeedPerSecondX * deltaTime * 2; // 2x speed outside right
       }
 
       if (touchY < 0) {
-        scrollY = -maxSpeedPerSecondY * deltaTime * 1.5; // 1.5x speed outside top
+        scrollY = -maxSpeedPerSecondY * deltaTime * 2; // 2x speed outside top
       } else if (touchY > windowHeight) {
-        scrollY = maxSpeedPerSecondY * deltaTime * 1.5; // 1.5x speed outside bottom
+        scrollY = maxSpeedPerSecondY * deltaTime * 2; // 2x speed outside bottom
       }
 
       // Apply scroll if needed
@@ -342,12 +342,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       cardRef.current.setAttribute('aria-grabbed', 'false');
       cardRef.current.classList.remove('dragging');
 
-      // Clean up any data attributes
-      Object.keys(cardRef.current.dataset).forEach(key => {
-        if (key.startsWith('original')) {
-          delete cardRef.current.dataset[key];
-        }
-      });
+      // Clean up any data attributes - fix null check
+      const dataset = cardRef.current.dataset;
+      if (dataset) {
+        Object.keys(dataset).forEach(key => {
+          if (key.startsWith('original')) {
+            delete dataset[key];
+          }
+        });
+      }
     }
   };
 
@@ -769,6 +772,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         onTouchCancel={handleTouchCancel}
         aria-grabbed="false"
         data-task-id={task.id}
+        style={{ touchAction: 'none' }}
       >
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
           <div className="flex items-start gap-2">
