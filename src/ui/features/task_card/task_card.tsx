@@ -35,7 +35,7 @@ const throttle = (func: Function, delay: number) => {
 };
 
 // Outside of component, add scroll utility functions
-const EDGE_ZONE_PERCENT = 0.1; // Edge detection zone - increased to 10% of screen dimensions
+const EDGE_ZONE_PERCENT = 0.25; // Edge detection zone - increased to 25% of screen dimensions
 const EXPONENTIAL_POWER = 3; // Higher power means more aggressive exponential curve
 
 export const TaskCard: React.FC<TaskCardProps> = ({
@@ -259,21 +259,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       if (isAtLeftEdge || touchX < 0) {
         const proximityToEdge = isAtLeftEdge ? 1 - (touchX / edgeSize) : 1;
         const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
-        window.scrollBy(Math.round(-maxSpeedPerSecondX * initialDeltaTime * expFactor * 20), 0);
+        window.scrollBy(Math.round(-maxSpeedPerSecondX * initialDeltaTime * expFactor * 30), 0);
       } else if (isAtRightEdge || touchX > windowWidth) {
         const proximityToEdge = isAtRightEdge ? 1 - ((windowWidth - touchX) / edgeSize) : 1;
         const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
-        window.scrollBy(Math.round(maxSpeedPerSecondX * initialDeltaTime * expFactor * 20), 0);
+        window.scrollBy(Math.round(maxSpeedPerSecondX * initialDeltaTime * expFactor * 30), 0);
       }
 
       if (isAtTopEdge || touchY < 0) {
         const proximityToEdge = isAtTopEdge ? 1 - (touchY / edgeSize) : 1;
         const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
-        window.scrollBy(0, Math.round(-maxSpeedPerSecondY * initialDeltaTime * expFactor * 20));
+        window.scrollBy(0, Math.round(-maxSpeedPerSecondY * initialDeltaTime * expFactor * 30));
       } else if (isAtBottomEdge || touchY > windowHeight) {
         const proximityToEdge = isAtBottomEdge ? 1 - ((windowHeight - touchY) / edgeSize) : 1;
         const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
-        window.scrollBy(0, Math.round(maxSpeedPerSecondY * initialDeltaTime * expFactor * 20));
+        window.scrollBy(0, Math.round(maxSpeedPerSecondY * initialDeltaTime * expFactor * 30));
       }
 
       // Then start the animation for continuous scrolling
