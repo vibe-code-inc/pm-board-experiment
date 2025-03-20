@@ -1,7 +1,15 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Clock, Flag, Edit2, GripVertical } from 'lucide-react';
+import { Edit2 } from 'lucide-react';
 import { Task } from '@/types';
 import { TaskModal } from '@/ui/features/task_modal/task_modal';
+import { PriorityBadge } from './components/priority_badge';
+import { DueDate } from './components/due_date';
+import { DragHandle } from './components/drag_handle';
+import { statusColors } from './task_card_styles';
+import { useAutoScroll } from '@/lib/hooks/use_auto_scroll';
+import { useMobileDetection } from '@/lib/hooks/use_mobile_detection';
+import { useSafeArea } from '@/lib/hooks/use_safe_area';
+import { stopScroll, throttle } from '@/lib/scroll_utils';
 
 interface TaskCardProps {
   task: Task;
@@ -10,66 +18,6 @@ interface TaskCardProps {
   columnTasks?: Task[]; // Tasks in the current column for reordering
   onReorder?: (draggedTaskId: string, targetTaskId: string) => void; // Callback for reordering
 }
-
-const priorityColors = {
-  low: 'bg-blue-100 text-blue-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  high: 'bg-red-100 text-red-800',
-};
-
-const statusColors = {
-  'todo': 'bg-gray-100',
-  'in-progress': 'bg-purple-100',
-  'done': 'bg-green-100',
-};
-
-// Outside of component, add scroll utility functions
-const EDGE_ZONE_PERCENT = 0.3; // Edge detection zone - 30% of screen dimensions
-const MIN_SCROLL_SPEED = 50; // Minimum scrolling speed in pixels per frame
-const MAX_SCROLL_SPEED = 200; // Maximum scrolling speed in pixels per frame
-const EXPONENTIAL_POWER = 2; // Exponential power for acceleration
-
-// Create a direct, simple scroll function that isn't dependent on the component
-let scrollIntervalId: number | null = null;
-
-// Simple scroll function that uses fixed pixel amounts
-function directScroll(direction: 'left' | 'right' | 'up' | 'down', speed: number) {
-  if (scrollIntervalId) {
-    clearInterval(scrollIntervalId);
-  }
-
-  // Set up interval for continuous scrolling with fixed pixel amounts
-  scrollIntervalId = window.setInterval(() => {
-    if (direction === 'left') {
-      window.scrollBy(-speed, 0);
-    } else if (direction === 'right') {
-      window.scrollBy(speed, 0);
-    } else if (direction === 'up') {
-      window.scrollBy(0, -speed);
-    } else if (direction === 'down') {
-      window.scrollBy(0, speed);
-    }
-  }, 16); // ~60fps
-}
-
-// Stop scrolling function
-function stopScroll() {
-  if (scrollIntervalId) {
-    clearInterval(scrollIntervalId);
-    scrollIntervalId = null;
-  }
-}
-
-// Throttle function to limit frequency of function calls
-const throttle = (func: Function, delay: number) => {
-  let lastCall = 0;
-  return (...args: any[]) => {
-    const now = new Date().getTime();
-    if (now - lastCall < delay) return;
-    lastCall = now;
-    func(...args);
-  };
-};
 
 export const TaskCard: React.FC<TaskCardProps> = ({
   task: initialTask,
@@ -81,82 +29,23 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [task, setTask] = useState(initialTask);
   const [isDragging, setIsDragging] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [touchActive, setTouchActive] = useState(false);
+
   const cardRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement | null>(null);
   const lastHighlightedElements = useRef<Set<Element>>(new Set());
   const scrollAnimationRef = useRef<number | null>(null);
-  const safeAreaRef = useRef({ top: 0, right: 0, bottom: 0, left: 0 });
 
-  // Add time tracking refs at component level
-  const scrollTimeRef = useRef<number>(0);
-  const lastFrameTimeRef = useRef<number>(0);
+  // Custom hooks
+  const isMobile = useMobileDetection();
+  const safeArea = useSafeArea();
+  const handleAutoScroll = useAutoScroll();
 
   // Update local task when initialTask changes
   useEffect(() => {
     setTask(initialTask);
   }, [initialTask]);
-
-  // Detect safe areas for notches and home indicators
-  useEffect(() => {
-    // Try to detect safe areas using CSS environment variables
-    const detectSafeAreas = () => {
-      // Check if environment variables are supported
-      const style = window.getComputedStyle(document.documentElement);
-
-      try {
-        // Use CSS environment variables for safe areas if available
-        const safeTop = parseInt(style.getPropertyValue('env(safe-area-inset-top)') || '0');
-        const safeRight = parseInt(style.getPropertyValue('env(safe-area-inset-right)') || '0');
-        const safeBottom = parseInt(style.getPropertyValue('env(safe-area-inset-bottom)') || '0');
-        const safeLeft = parseInt(style.getPropertyValue('env(safe-area-inset-left)') || '0');
-
-        safeAreaRef.current = {
-          top: safeTop,
-          right: safeRight,
-          bottom: safeBottom,
-          left: safeLeft
-        };
-      } catch (e) {
-        // Fallback to sensible defaults if environment variables aren't supported
-        safeAreaRef.current = {
-          top: 10,
-          right: 10,
-          bottom: 10,
-          left: 10
-        };
-      }
-    };
-
-    detectSafeAreas();
-
-    // Listen for orientationchange events to recalculate safe areas
-    window.addEventListener('orientationchange', detectSafeAreas);
-
-    return () => {
-      window.removeEventListener('orientationchange', detectSafeAreas);
-    };
-  }, []);
-
-  // Detect if we're on a mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.matchMedia('(max-width: 768px)').matches);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-      if (placeholderRef.current) {
-        placeholderRef.current.remove();
-        placeholderRef.current = null;
-      }
-    };
-  }, []);
 
   // Cleanup function to cancel any active scroll animation
   const cleanupScrollAnimation = useCallback(() => {
@@ -176,78 +65,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       }
     };
   }, [cleanupScrollAnimation]);
-
-  // Auto-scroll function with reliable fixed pixel amounts
-  const handleAutoScroll = useCallback((touchX: number, touchY: number) => {
-    // Get current dimensions
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-
-    // Calculate edge zones
-    const edgeWidth = windowWidth * EDGE_ZONE_PERCENT;
-    const edgeHeight = windowHeight * EDGE_ZONE_PERCENT;
-
-    // Calculate scroll speed based on position
-    let direction: 'left' | 'right' | 'up' | 'down' | null = null;
-    let speed = MIN_SCROLL_SPEED;
-
-    // HORIZONTAL EDGES
-    if (touchX < edgeWidth) {
-      // Left edge
-      direction = 'left';
-      // Calculate how close to the edge (0-1)
-      const edgeFactor = 1 - (touchX / edgeWidth);
-      // Apply exponential scaling
-      const expFactor = Math.pow(edgeFactor, EXPONENTIAL_POWER);
-      // Scale between min and max speed
-      speed = MIN_SCROLL_SPEED + expFactor * (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED);
-    } else if (touchX > windowWidth - edgeWidth) {
-      // Right edge
-      direction = 'right';
-      const edgeFactor = 1 - ((windowWidth - touchX) / edgeWidth);
-      const expFactor = Math.pow(edgeFactor, EXPONENTIAL_POWER);
-      speed = MIN_SCROLL_SPEED + expFactor * (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED);
-    }
-
-    // VERTICAL EDGES - only check if not already scrolling horizontally
-    if (!direction) {
-      if (touchY < edgeHeight) {
-        // Top edge
-        direction = 'up';
-        const edgeFactor = 1 - (touchY / edgeHeight);
-        const expFactor = Math.pow(edgeFactor, EXPONENTIAL_POWER);
-        speed = MIN_SCROLL_SPEED + expFactor * (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED);
-      } else if (touchY > windowHeight - edgeHeight) {
-        // Bottom edge
-        direction = 'down';
-        const edgeFactor = 1 - ((windowHeight - touchY) / edgeHeight);
-        const expFactor = Math.pow(edgeFactor, EXPONENTIAL_POWER);
-        speed = MIN_SCROLL_SPEED + expFactor * (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED);
-      }
-    }
-
-    // Outside viewport gets max speed
-    if (touchX < 0) {
-      direction = 'left';
-      speed = MAX_SCROLL_SPEED * 2; // 2x max speed
-    } else if (touchX > windowWidth) {
-      direction = 'right';
-      speed = MAX_SCROLL_SPEED * 2;
-    } else if (touchY < 0) {
-      direction = 'up';
-      speed = MAX_SCROLL_SPEED * 2;
-    } else if (touchY > windowHeight) {
-      direction = 'down';
-      speed = MAX_SCROLL_SPEED * 2;
-    }
-
-    // Apply scrolling if needed
-    if (direction) {
-      directScroll(direction, Math.round(speed));
-    } else {
-      stopScroll();
-    }
-  }, []);
 
   // When dragging ends, make sure to stop any scrolling
   useEffect(() => {
@@ -772,13 +589,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
           <div className="flex items-start gap-2">
             {isMobile && (
-              <div
-                ref={dragHandleRef}
-                className="touch-drag-handle mt-1 text-gray-400 transition-colors hover:text-gray-600 active:text-blue-500"
-                aria-label="Drag handle"
-              >
-                <GripVertical className="w-4 h-4" />
-              </div>
+              <DragHandle innerRef={dragHandleRef} />
             )}
             <h3 className="font-semibold text-gray-800 text-sm md:text-base line-clamp-2">{task.title}</h3>
           </div>
@@ -806,16 +617,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </p>
 
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
-          <span className={`text-xs px-2 py-0.5 rounded ${priorityColors[task.priority]}`}>
-            <Flag className="w-3 h-3 inline mr-1" />
-            {task.priority}
-          </span>
-          {task.dueDate && (
-            <span className="text-xs text-gray-600 flex items-center truncate max-w-[120px]">
-              <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
-              <span className="truncate">{new Date(task.dueDate).toLocaleDateString()}</span>
-            </span>
-          )}
+          <PriorityBadge priority={task.priority} />
+          {task.dueDate && <DueDate date={task.dueDate} />}
           {task.assignee && (
             <span className="text-xs bg-gray-100 px-2 py-0.5 rounded truncate max-w-[120px]">
               {task.assignee}
