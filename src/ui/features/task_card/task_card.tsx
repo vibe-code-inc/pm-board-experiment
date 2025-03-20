@@ -35,8 +35,8 @@ const throttle = (func: Function, delay: number) => {
 };
 
 // Outside of component, add scroll utility functions
-const EDGE_ZONE_PERCENT = 0.05; // Edge detection zone - 5% of screen dimensions
-const DANGER_ZONE_PERCENT = 0.01; // 1% closest to edge for maximum speed
+const EDGE_ZONE_PERCENT = 0.1; // Edge detection zone - increased to 10% of screen dimensions
+const EXPONENTIAL_POWER = 3; // Higher power means more aggressive exponential curve
 
 export const TaskCard: React.FC<TaskCardProps> = ({
   task: initialTask,
@@ -144,18 +144,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     };
   }, [cleanupScrollAnimation]);
 
-  // Auto-scroll function with time-based calculations
+  // Auto-scroll function with extreme speed
   const handleAutoScroll = useCallback((touchX: number, touchY: number) => {
     // Get current dimensions
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
-    // Calculate edge zones - 5% of screen
+    // Calculate edge zones - 10% of screen
     const edgeSize = Math.min(windowWidth, windowHeight) * EDGE_ZONE_PERCENT;
 
-    // MUCH higher scroll speed: 200% of screen per second
-    const maxSpeedPerSecondX = windowWidth * 2.0;
-    const maxSpeedPerSecondY = windowHeight * 2.0;
+    // EXTREMELY high scroll speed: 500% of screen per second
+    const maxSpeedPerSecondX = windowWidth * 5.0;
+    const maxSpeedPerSecondY = windowHeight * 5.0;
 
     // Create direct scrolling function with time-based calculation
     const performScroll = (timestamp: number) => {
@@ -171,45 +171,60 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       const deltaTime = (timestamp - lastFrameTimeRef.current) / 1000;
       lastFrameTimeRef.current = timestamp;
 
-      // Start with maximum speeds
+      // Calculate scroll with extreme exponential scaling
       let scrollX = 0;
       let scrollY = 0;
 
-      // Apply maximum scroll speeds for immediate responsiveness
-      // Left side
-      if (touchX < edgeSize) {
-        scrollX = -maxSpeedPerSecondX * deltaTime; // Maximum left scroll
-      }
-      // Right side
-      else if (touchX > windowWidth - edgeSize) {
-        scrollX = maxSpeedPerSecondX * deltaTime; // Maximum right scroll
-      }
-
-      // Top side
-      if (touchY < edgeSize) {
-        scrollY = -maxSpeedPerSecondY * deltaTime; // Maximum up scroll
-      }
-      // Bottom side
-      else if (touchY > windowHeight - edgeSize) {
-        scrollY = maxSpeedPerSecondY * deltaTime; // Maximum down scroll
+      // EXPONENTIAL horizontal scroll calculation
+      if (touchX <= edgeSize) {
+        // LEFT edge - exponential speed increase closer to edge
+        // Calculate how close we are to the edge (0 = at edge, 1 = at edge boundary)
+        const proximityToEdge = 1 - (touchX / edgeSize);
+        // Apply exponential power for extreme acceleration near edges
+        const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
+        // Apply extreme scaling
+        scrollX = -maxSpeedPerSecondX * deltaTime * expFactor * 10;
+      } else if (touchX >= windowWidth - edgeSize) {
+        // RIGHT edge - exponential speed increase closer to edge
+        const proximityToEdge = 1 - ((windowWidth - touchX) / edgeSize);
+        const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
+        scrollX = maxSpeedPerSecondX * deltaTime * expFactor * 10;
       }
 
-      // Extremely fast speed outside viewport (4x normal speed)
+      // EXPONENTIAL vertical scroll calculation
+      if (touchY <= edgeSize) {
+        // TOP edge - exponential speed increase closer to edge
+        const proximityToEdge = 1 - (touchY / edgeSize);
+        const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
+        scrollY = -maxSpeedPerSecondY * deltaTime * expFactor * 10;
+      } else if (touchY >= windowHeight - edgeSize) {
+        // BOTTOM edge - exponential speed increase closer to edge
+        const proximityToEdge = 1 - ((windowHeight - touchY) / edgeSize);
+        const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
+        scrollY = maxSpeedPerSecondY * deltaTime * expFactor * 10;
+      }
+
+      // Extreme speed outside viewport (10x normal speed)
       if (touchX < 0) {
-        scrollX = -maxSpeedPerSecondX * deltaTime * 4;
+        const outsideFactor = Math.min(10, 1 + Math.abs(touchX / 100));
+        scrollX = -maxSpeedPerSecondX * deltaTime * outsideFactor * 10;
       } else if (touchX > windowWidth) {
-        scrollX = maxSpeedPerSecondX * deltaTime * 4;
+        const outsideFactor = Math.min(10, 1 + Math.abs((touchX - windowWidth) / 100));
+        scrollX = maxSpeedPerSecondX * deltaTime * outsideFactor * 10;
       }
 
       if (touchY < 0) {
-        scrollY = -maxSpeedPerSecondY * deltaTime * 4;
+        const outsideFactor = Math.min(10, 1 + Math.abs(touchY / 100));
+        scrollY = -maxSpeedPerSecondY * deltaTime * outsideFactor * 10;
       } else if (touchY > windowHeight) {
-        scrollY = maxSpeedPerSecondY * deltaTime * 4;
+        const outsideFactor = Math.min(10, 1 + Math.abs((touchY - windowHeight) / 100));
+        scrollY = maxSpeedPerSecondY * deltaTime * outsideFactor * 10;
       }
 
-      // Apply scroll immediately
+      // Apply scroll if needed
       if (scrollX !== 0 || scrollY !== 0) {
-        window.scrollBy(scrollX, scrollY);
+        // Apply with integer values for better performance
+        window.scrollBy(Math.round(scrollX), Math.round(scrollY));
       } else {
         // No scrolling needed, cancel animation
         cleanupScrollAnimation();
@@ -238,21 +253,27 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       scrollTimeRef.current = 0;
       lastFrameTimeRef.current = 0;
 
-      // Immediately start scrolling (don't wait for next frame)
-      const now = performance.now();
-      const deltaTime = 1/60; // Assume initial frame at 60fps
+      // Apply MASSIVE initial scroll for immediate feedback
+      const initialDeltaTime = 1/30; // Assume 30fps for initial jump
 
-      // Apply immediate scroll before starting animation
       if (isAtLeftEdge || touchX < 0) {
-        window.scrollBy(-maxSpeedPerSecondX * deltaTime * (touchX < 0 ? 4 : 1), 0);
+        const proximityToEdge = isAtLeftEdge ? 1 - (touchX / edgeSize) : 1;
+        const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
+        window.scrollBy(Math.round(-maxSpeedPerSecondX * initialDeltaTime * expFactor * 20), 0);
       } else if (isAtRightEdge || touchX > windowWidth) {
-        window.scrollBy(maxSpeedPerSecondX * deltaTime * (touchX > windowWidth ? 4 : 1), 0);
+        const proximityToEdge = isAtRightEdge ? 1 - ((windowWidth - touchX) / edgeSize) : 1;
+        const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
+        window.scrollBy(Math.round(maxSpeedPerSecondX * initialDeltaTime * expFactor * 20), 0);
       }
 
       if (isAtTopEdge || touchY < 0) {
-        window.scrollBy(0, -maxSpeedPerSecondY * deltaTime * (touchY < 0 ? 4 : 1));
+        const proximityToEdge = isAtTopEdge ? 1 - (touchY / edgeSize) : 1;
+        const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
+        window.scrollBy(0, Math.round(-maxSpeedPerSecondY * initialDeltaTime * expFactor * 20));
       } else if (isAtBottomEdge || touchY > windowHeight) {
-        window.scrollBy(0, maxSpeedPerSecondY * deltaTime * (touchY > windowHeight ? 4 : 1));
+        const proximityToEdge = isAtBottomEdge ? 1 - ((windowHeight - touchY) / edgeSize) : 1;
+        const expFactor = Math.pow(proximityToEdge, EXPONENTIAL_POWER);
+        window.scrollBy(0, Math.round(maxSpeedPerSecondY * initialDeltaTime * expFactor * 20));
       }
 
       // Then start the animation for continuous scrolling
