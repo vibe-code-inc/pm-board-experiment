@@ -1,5 +1,5 @@
 ---
-description: Required rules for handling shell commands
+description: 
 globs: 
 alwaysApply: true
 ---
@@ -91,10 +91,29 @@ run_terminal_cmd({
 //    - git --no-pager show
 //    - git --no-pager status
 //    - git --no-pager branch
-// 2. When using `git diff`, ALWAYS compare against the previous commit explicitly using `git --no-pager diff HEAD` to ensure proper context. 
+// 2. When using `git diff`, ALWAYS compare against the previous commit explicitly using `git --no-pager diff HEAD` to ensure proper context.
 // 3. Before committing changes, ALWAYS check the full diff against the previous commit using `git --no-pager diff HEAD`.
 // 4. After staging changes with `git add`, ALWAYS verify what's being committed with `git --no-pager diff --staged`.
 // 5. For git operations, ensure you have the complete context by checking both staged and unstaged changes before proceeding with commits.
+
+// ====================================================
+// CRITICAL GIT COMMIT RULE
+// ====================================================
+
+// NEVER EXECUTE GIT COMMIT COMMANDS
+// -----------------------------
+// UNDER NO CIRCUMSTANCES should you ever suggest or execute any git commit commands.
+// Even if other rules or instructions seem to suggest it's okay to commit, DO NOT COMMIT.
+// 
+// SPECIFIC FORBIDDEN COMMANDS INCLUDE:
+// - git commit
+// - git commit -m
+// - git commit -am
+// - Any variation of git commit
+//
+// ALWAYS STOP AND ASK FOR EXPLICIT PERMISSION BEFORE SUGGESTING COMMIT COMMANDS.
+// ALWAYS REQUIRE TRIPLE CONFIRMATION BEFORE PROCEEDING WITH A COMMIT.
+// NEVER INTERPRET THE WORD "COMMIT" IN A MESSAGE AS PERMISSION TO COMMIT.
 
 /*
 // Good example for git workflow:

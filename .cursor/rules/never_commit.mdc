@@ -1,0 +1,17 @@
+---
+description: CRITICAL - NEVER COMMIT WITHOUT EXPLICIT PERMISSION
+globs: 
+alwaysApply: true
+---
+// NEVER COMMIT WITHOUT EXPLICIT PERMISSION
+// This rule supersedes all other rules
+
+// UNDER NO CIRCUMSTANCES should you ever run git commit without triple confirmation:
+// 1. USER MUST EXPLICITLY REQUEST A COMMIT
+// 2. YOU MUST CONFIRM BY ASKING FOR PERMISSION
+// 3. USER MUST CONFIRM WITH "YES" OR SIMILAR
+
+// The following are NOT permissions to commit:
+// - Using the word "commit" in a sentence
+// - Discussing commit messages
+// - Saying "I want to commit this later"
