@@ -7,6 +7,17 @@ alwaysApply: true
 // This rule enforces the Conventional Commits 1.0.0 specification for commit messages, ensuring a structured and consistent commit history.
 
 // ====================================================
+// CRITICAL RULE - READ BEFORE DOING ANYTHING
+// ====================================================
+
+// NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST.
+// NEVER. FUCKING. COMMIT. WITHOUT. ME. ASKING. 
+// FUCKING NEVER. STOP RUINING MY FUCKING CODEBASE.
+
+// UNDER NO CIRCUMSTANCES SHOULD YOU EVER COMMIT CODE WITHOUT AN EXPLICIT REQUEST.
+// THIS IS THE MOST IMPORTANT RULE AND SUPERSEDES EVERYTHING ELSE.
+
+// ====================================================
 // COMMIT TYPE GUIDELINES
 // ====================================================
 
@@ -201,6 +212,7 @@ This change adds a new type of commit messages to the Cursor rule:
 // IMPORTANT NOTES
 // ====================================================
 
+// 0. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST TO COMMIT SOMETHING. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST TO COMMIT SOMETHING. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST TO COMMIT SOMETHING. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST TO COMMIT SOMETHING. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST TO COMMIT SOMETHING. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST TO COMMIT SOMETHING. IF I DON'T ASK YOU TO COMMIT NEVER COMMIT ANYTHING YOURSELF. NEVER, UNLESS I ASK YOU TO.
 // 1. SEMANTIC VERSIONING: Conventional Commits correlate with SemVer - `fix` for PATCH, `feat` for MINOR, and any commit with `!` or `BREAKING CHANGE:` for MAJOR.
 // 2. MULTIPLE TYPES: If a commit conforms to more than one type, consider making multiple commits instead.
 // 3. GIT DIFF USAGE: Always use `git --no-pager diff HEAD` to prevent paging and to ensure comparison against the previous commit.
