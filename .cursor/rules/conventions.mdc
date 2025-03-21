@@ -1,10 +1,10 @@
 ---
 description: Required project conventions
-globs:
+globs: 
 alwaysApply: true
 ---
-// PM Board Experiment Project Conventions
-// This rule file defines coding conventions for the PM Board Experiment project
+// Project Conventions
+// This rule file defines coding conventions for the project
 
 // ====================================================
 // FILE AND DIRECTORY NAMING CONVENTIONS

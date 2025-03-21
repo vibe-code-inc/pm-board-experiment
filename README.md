@@ -1,6 +1,6 @@
-# PM Board Experiment - Task Management Application
+# PM Board - Task Management Application
 
-PM Board Experiment is a modern task management application built with React and TypeScript that helps users organize and track tasks across different projects.
+PM Board is a modern task management application built with React and TypeScript that helps users organize and track tasks across different projects.
 
 ## Features
 
@@ -81,7 +81,7 @@ PM Board Experiment is a modern task management application built with React and
 
 ### Coding Conventions
 
-PM Board Experiment follows specific coding conventions:
+PM Board follows specific coding conventions:
 
 - File and directory names use snake_case
 - Components use functional component syntax with TypeScript interfaces
