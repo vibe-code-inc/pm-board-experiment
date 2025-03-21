@@ -159,3 +159,31 @@ html, body {
 .empty-column-message.hidden {
   display: none;
 }
+
+/* Remove blue highlight on mobile tap */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Drag and drop styles */
+.drop-target-highlight {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  box-shadow: inset 0 0 0 2px rgb(59, 130, 246) !important;
+}
+
+.task-card.insert-above {
+  border-top: 2px solid rgb(59, 130, 246) !important;
+  margin-top: -2px;
+}
+
+.task-card.insert-below {
+  border-bottom: 2px solid rgb(59, 130, 246) !important;
+  margin-bottom: -2px;
+}
+
+.task-card-placeholder {
+  border: 2px dashed #9ca3af;
+  border-radius: 8px;
+  background-color: #f3f4f6;
+  transition: all 0.2s ease;
+}

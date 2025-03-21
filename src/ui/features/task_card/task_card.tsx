@@ -112,36 +112,67 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const positionPlaceholder = useCallback((x: number, y: number) => {
     if (!placeholderRef.current) return;
 
+    // Get elements at the pointer location with a bit more precision
     const elementsAtPoint = document.elementsFromPoint(x, y);
 
-    // Find drop column and target task card
-    const dropColumn = elementsAtPoint.find(el =>
-      el.classList.contains('drop-column')
-    ) as HTMLElement;
+    // Find drop column - looking for a direct match or a parent
+    const dropColumn = elementsAtPoint.find(el => {
+      if (el.classList.contains('drop-column')) return true;
+      // Also check if any parent up to 3 levels is a drop column
+      let parent = el.parentElement;
+      for (let i = 0; i < 3 && parent; i++) {
+        if (parent.classList.contains('drop-column')) return true;
+        parent = parent.parentElement;
+      }
+      return false;
+    }) as HTMLElement;
 
-    const targetTaskCard = elementsAtPoint.find(el =>
-      el.classList.contains('task-card') &&
-      el !== cardRef.current &&
-      !el.contains(cardRef.current) &&
-      !cardRef.current?.contains(el)
-    ) as HTMLElement;
+    // Find the direct column element rather than a child
+    const actualColumn = dropColumn?.classList.contains('drop-column')
+      ? dropColumn
+      : dropColumn?.closest('.drop-column') as HTMLElement;
+
+    // Find target task card with similar approach
+    const targetTaskCard = elementsAtPoint.find(el => {
+      // Don't consider the dragged card itself or its children
+      if (el === cardRef.current || cardRef.current?.contains(el)) return false;
+
+      // Direct match
+      if (el.classList.contains('task-card')) return true;
+
+      // Check parents up to 2 levels
+      let parent = el.parentElement;
+      for (let i = 0; i < 2 && parent; i++) {
+        if (parent.classList.contains('task-card') && parent !== cardRef.current) return true;
+        parent = parent.parentElement;
+      }
+      return false;
+    }) as HTMLElement;
+
+    // Get the actual task card element
+    const actualTaskCard = targetTaskCard?.classList.contains('task-card')
+      ? targetTaskCard
+      : targetTaskCard?.closest('.task-card') as HTMLElement;
 
     // Clear previous highlights
     clearHighlights();
 
-    // If we've moved out of the original column, hide the placeholder
-    if (placeholderRef.current && !placeholderRef.current.parentNode?.contains(dropColumn)) {
-      placeholderRef.current.style.display = 'none';
+    // If drag has moved out of all valid drop areas
+    if (!actualColumn && !actualTaskCard) {
+      if (placeholderRef.current) {
+        placeholderRef.current.style.display = 'none';
+      }
+      return;
     }
 
     // Handle drop column highlight and placeholder positioning
-    if (dropColumn) {
-      dropColumn.classList.add('drop-target-highlight');
-      lastHighlightedElements.current.add(dropColumn);
+    if (actualColumn) {
+      actualColumn.classList.add('drop-target-highlight');
+      lastHighlightedElements.current.add(actualColumn);
 
       if (placeholderRef.current) {
-        // Get the task list container in the column
-        const taskList = dropColumn.querySelector('.task-list');
+        // Get the task list container in the column (direct child with task-list class)
+        const taskList = actualColumn.querySelector('.task-list');
         if (!taskList) return;
 
         // Check if this is an empty column
@@ -158,16 +189,28 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           // Add placeholder directly to task list
           placeholderRef.current.style.display = 'block';
           taskList.appendChild(placeholderRef.current);
+
+          // Clear any previous position data and set column-specific data
+          placeholderRef.current.dataset.targetColumn = actualColumn.dataset.status || '';
+          delete placeholderRef.current.dataset.targetTaskId;
+          delete placeholderRef.current.dataset.insertBefore;
           return;
         }
 
         // Get all task cards in this column (excluding the dragged card)
-        const columnTaskCards = Array.from(taskList.querySelectorAll('.task-card:not(.dragging):not(.touch-dragging)')) as HTMLElement[];
+        const columnTaskCards = Array.from(
+          taskList.querySelectorAll('.task-card:not(.dragging):not(.touch-dragging)')
+        ).filter(el => el !== cardRef.current) as HTMLElement[];
 
         // If there are no task cards in this column, add placeholder
         if (columnTaskCards.length === 0) {
           placeholderRef.current.style.display = 'block';
           taskList.appendChild(placeholderRef.current);
+
+          // Set column-specific data
+          placeholderRef.current.dataset.targetColumn = actualColumn.dataset.status || '';
+          delete placeholderRef.current.dataset.targetTaskId;
+          delete placeholderRef.current.dataset.insertBefore;
           return;
         }
 
@@ -193,60 +236,86 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         if (closestCard && closestCard.parentNode) {
           placeholderRef.current.style.display = 'block';
 
-          // Store the task ID in the placeholder's dataset
+          // Store positioning data
           placeholderRef.current.dataset.targetTaskId = closestCard.dataset.taskId;
           placeholderRef.current.dataset.insertBefore = insertBefore.toString();
+          placeholderRef.current.dataset.targetColumn = actualColumn.dataset.status || '';
 
-          // Insert the placeholder at the appropriate position
+          // Add visual indicator classes to the closest card
           if (insertBefore) {
+            closestCard.classList.add('insert-above');
+            lastHighlightedElements.current.add(closestCard);
             closestCard.parentNode.insertBefore(placeholderRef.current, closestCard);
-            lastHighlightedElements.current.add(closestCard);
           } else {
-            closestCard.parentNode.insertBefore(placeholderRef.current, closestCard.nextSibling);
+            closestCard.classList.add('insert-below');
             lastHighlightedElements.current.add(closestCard);
+            closestCard.parentNode.insertBefore(placeholderRef.current, closestCard.nextSibling);
           }
         }
       }
-    } else if (targetTaskCard && onReorder) {
-      // If we're over a specific task card
-      lastHighlightedElements.current.add(targetTaskCard);
+    } else if (actualTaskCard && onReorder) {
+      // If we're over a specific task card but not a column
+      lastHighlightedElements.current.add(actualTaskCard);
 
       // Determine if we're in the top or bottom half of the target card
-      const rect = targetTaskCard.getBoundingClientRect();
+      const rect = actualTaskCard.getBoundingClientRect();
       const midY = rect.top + rect.height / 2;
       const insertBefore = y < midY;
 
-      if (placeholderRef.current) {
+      // Find the column this task card belongs to
+      const parentColumn = actualTaskCard.closest('.drop-column') as HTMLElement;
+
+      if (placeholderRef.current && parentColumn) {
         placeholderRef.current.style.display = 'block';
 
-        // Store the task ID in the placeholder's dataset
-        placeholderRef.current.dataset.targetTaskId = targetTaskCard.dataset.taskId;
+        // Store positioning data
+        placeholderRef.current.dataset.targetTaskId = actualTaskCard.dataset.taskId;
         placeholderRef.current.dataset.insertBefore = insertBefore.toString();
+        placeholderRef.current.dataset.targetColumn = parentColumn.dataset.status || '';
+
+        // Add visual indicator classes
+        if (insertBefore) {
+          actualTaskCard.classList.add('insert-above');
+          lastHighlightedElements.current.add(actualTaskCard);
+        } else {
+          actualTaskCard.classList.add('insert-below');
+          lastHighlightedElements.current.add(actualTaskCard);
+        }
 
         // Only move placeholder if it's not already in the right position
         const isAboveAndShouldBeAbove = insertBefore &&
-          placeholderRef.current.nextSibling === targetTaskCard;
+          placeholderRef.current.nextSibling === actualTaskCard;
         const isBelowAndShouldBeBelow = !insertBefore &&
-          placeholderRef.current.previousSibling === targetTaskCard;
+          placeholderRef.current.previousSibling === actualTaskCard;
 
         // Only reposition if needed - reduces DOM operations
         if (!isAboveAndShouldBeAbove && !isBelowAndShouldBeBelow) {
           if (insertBefore) {
-            targetTaskCard.parentNode?.insertBefore(placeholderRef.current, targetTaskCard);
+            actualTaskCard.parentNode?.insertBefore(placeholderRef.current, actualTaskCard);
           } else {
-            targetTaskCard.parentNode?.insertBefore(placeholderRef.current, targetTaskCard.nextSibling);
+            actualTaskCard.parentNode?.insertBefore(placeholderRef.current, actualTaskCard.nextSibling);
           }
         }
       }
     }
-  }, [clearHighlights]);
+  }, [clearHighlights, onReorder]);
 
   // For mouse movement during drag
   const handleDragStart = (e: React.DragEvent) => {
     const card = cardRef.current;
     if (!card) return;
 
-    e.dataTransfer.setData('taskId', task.id);
+    // Explicitly set the data format for Firefox compatibility
+    e.dataTransfer.setData('application/json', JSON.stringify({
+      taskId: task.id,
+      status: task.status
+    }));
+    // For other browsers
+    e.dataTransfer.setData('text/plain', task.id);
+
+    // Set effectAllowed for better cross-browser compatibility
+    e.dataTransfer.effectAllowed = 'move';
+
     setIsDragging(true);
 
     // Record initial position for reference
@@ -299,7 +368,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       positionPlaceholder(moveEvent.clientX, moveEvent.clientY);
     };
 
-    // Add mouse move listener
+    // Add mouse move listener with throttling
     document.addEventListener('mousemove', handleMouseMove);
 
     // Clean up on drag end
@@ -331,28 +400,39 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       e.stopPropagation();
     }
 
-    // Get the dragged task ID
-    const draggedTaskId = e.dataTransfer.getData('taskId');
+    // Try to get the dragged task ID from multiple data formats
+    let dragData;
+    try {
+      const jsonData = e.dataTransfer.getData('application/json');
+      if (jsonData) {
+        dragData = JSON.parse(jsonData);
+      }
+    } catch (err) {
+      console.error('Error parsing drag data:', err);
+    }
+
+    // Fallback to plain text if JSON parsing failed
+    const draggedTaskId = dragData?.taskId || e.dataTransfer.getData('text/plain');
+
+    if (!draggedTaskId) {
+      console.error('No task ID found in the drag data');
+      return;
+    }
 
     // Handle drop based on placeholder position
     if (placeholderRef.current && placeholderRef.current.parentNode) {
+      const targetColumn = placeholderRef.current.dataset.targetColumn;
       const targetTaskId = placeholderRef.current.dataset.targetTaskId;
       const insertBefore = placeholderRef.current.dataset.insertBefore === 'true';
 
-      if (targetTaskId) {
-        // Call reorder with the correct target and position
-        onReorder?.(draggedTaskId, targetTaskId);
-      } else {
-        // Check if we're dropping in a different column
-        const dropColumn = Array.from(document.elementsFromPoint(e.clientX, e.clientY))
-          .find(el => el.classList.contains('drop-column')) as HTMLElement;
+      // First handle status change if needed
+      if (targetColumn && targetColumn !== task.status) {
+        onStatusChange(targetColumn as Task['status']);
+      }
 
-        if (dropColumn && dropColumn.dataset.status) {
-          const newStatus = dropColumn.dataset.status as Task['status'];
-          if (newStatus !== task.status) {
-            onStatusChange(newStatus);
-          }
-        }
+      // Then handle reordering if we have a target task
+      if (targetTaskId && onReorder) {
+        onReorder(draggedTaskId, targetTaskId);
       }
     }
   };
@@ -584,24 +664,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
       // Execute the correct action based on placeholder position
       if (placeholderRef.current && placeholderRef.current.parentNode) {
+        const targetColumn = placeholderRef.current.dataset.targetColumn;
         const targetTaskId = placeholderRef.current.dataset.targetTaskId;
         const insertBefore = placeholderRef.current.dataset.insertBefore === 'true';
 
-        if (targetTaskId) {
-          // Call reorder with the correct target ID
-          onReorder?.(task.id, targetTaskId);
-        } else {
-          // Check if we're dropping in a different column
-          const touch = e.changedTouches[0];
-          const dropColumn = Array.from(document.elementsFromPoint(touch.clientX, touch.clientY))
-            .find(el => el.classList.contains('drop-column')) as HTMLElement;
+        // First handle status change if needed
+        if (targetColumn && targetColumn !== task.status) {
+          onStatusChange(targetColumn as Task['status']);
+        }
 
-          if (dropColumn && dropColumn.dataset.status) {
-            const newStatus = dropColumn.dataset.status as Task['status'];
-            if (newStatus !== task.status) {
-              onStatusChange(newStatus);
-            }
-          }
+        // Then handle reordering if we have a target task
+        if (targetTaskId && onReorder) {
+          onReorder(task.id, targetTaskId);
         }
       }
 
