@@ -1,5 +1,10 @@
-// PM Board Experiment Project Conventions
-// This rule file defines coding conventions for the PM Board Experiment project
+---
+description:
+globs:
+alwaysApply: true
+---
+// Bolt Project Conventions
+// This rule file defines coding conventions for the Bolt project
 
 // ====================================================
 // FILE AND DIRECTORY NAMING CONVENTIONS
@@ -14,7 +19,7 @@
 //   ✓ design_kit/
 //   ✗ ProjectBoard.tsx
 //   ✗ taskList.tsx
-//   ✗ Utils.ts
+//   ✗ utils.ts
 //   ✗ task-card/
 //   ✗ DesignKit/
 

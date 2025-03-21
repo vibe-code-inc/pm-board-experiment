@@ -1,6 +1,6 @@
-# Bolt - Task Management Application
+# PM Board Experiment - Task Management Application
 
-Bolt is a modern task management application built with React and TypeScript that helps users organize and track tasks across different projects.
+PM Board Experiment is a modern task management application built with React and TypeScript that helps users organize and track tasks across different projects.
 
 ## Features
 
@@ -54,8 +54,8 @@ Bolt is a modern task management application built with React and TypeScript tha
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/bolt.git
-   cd bolt
+   git clone https://github.com/yourusername/pm-board-experiment.git
+   cd pm-board-experiment
    ```
 
 2. Install dependencies
@@ -81,7 +81,7 @@ Bolt is a modern task management application built with React and TypeScript tha
 
 ### Coding Conventions
 
-Bolt follows specific coding conventions:
+PM Board Experiment follows specific coding conventions:
 
 - File and directory names use snake_case
 - Components use functional component syntax with TypeScript interfaces

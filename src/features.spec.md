@@ -1,7 +1,7 @@
-# Bolt Project Specification
+# PM Board Experiment Project Specification
 
 ## Overview
-Bolt is a task management application that allows users to organize and track tasks across different projects. It provides features for managing tasks with different statuses, priorities, and assignments.
+PM Board Experiment is a task management application that allows users to organize and track tasks across different projects. It provides features for managing tasks with different statuses, priorities, and assignments.
 
 ## Product Requirements
 - Users should be able to view and manage projects
