@@ -1,0 +1,127 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+// Specification Development
+// This rule enforces development practices centered around specifications to ensure requirements are properly documented and implemented.
+
+// ====================================================
+// SPECIFICATION CREATION GUIDELINES
+// ====================================================
+
+// 1. When tasked with modifying code, ALWAYS generate and print a specification first.
+// 2. Specifications must include:
+//    - Technical requirements
+//    - Product requirements
+//    - Behavioral expectations
+//    - Interfaces
+//    - Files/modules to be changed
+
+// ====================================================
+// SPECIFICATION DISCOVERY PROCESS
+// ====================================================
+
+// 1. ALWAYS check for existing specifications before modifying any code.
+// 2. Follow this discovery sequence for every code modification:
+//    a. Check if there's a `features.spec.md` file in the target folder - READ IT FIRST
+//    b. Check if there's a `/specs/<file-youre-editing>.spec.md` file - READ IT NEXT
+//    c. Only proceed with code modifications after understanding all specifications
+// 3. ONLY create specifications for files in the src/ directory.
+
+/*
+// Example specification discovery process:
+Before modifying app/features/task_board/task_list.tsx:
+1. First check: app/features/task_board/features.spec.md
+2. Then check: app/features/task_board/specs/task_list.tsx.spec.md
+*/
+
+// ====================================================
+// SPECIFICATION CREATION/UPDATE WORKFLOW
+// ====================================================
+
+// 1. ALWAYS create or update specification files BEFORE any code files.
+// 2. Create specification files in one of two formats:
+//    a. One specification per package in features.spec.md
+//    b. High-level package spec + individual file specs in specs/ subfolder
+// 3. When using individual file specs, ALWAYS add references to them in the package spec file.
+// 4. When updating existing specifications:
+//    a. Merge task specifications with existing specifications
+//    b. RESPECT existing parts unless explicitly retiring them
+
+/*
+// Example specification workflow:
+For implementing a new task board feature:
+1. First create/update app/features/task_board/features.spec.md
+2. If needed, create app/features/task_board/specs/task_list.tsx.spec.md
+3. Reference the task_list.tsx.spec.md in the features.spec.md file
+4. Only then implement code changes in app/features/task_board/task_list.tsx
+*/
+
+// ====================================================
+// SPECIFICATION COMPLIANCE REQUIREMENTS
+// ====================================================
+
+// 1. ALWAYS RESPECT THE SPECIFICATIONS. ALWAYS RESPECT THE SPECIFICATIONS. ALWAYS RESPECT THE SPECIFICATIONS.
+// 2. Implement code based on the specifications. Implement code based on the specifications. Implement code based on the specifications.
+// 3. Follow EXACTLY the requirements from specifications. Follow EXACTLY the requirements from specifications. Follow EXACTLY the requirements from specifications.
+// 4. Implement ALL requirements that specifications require, PRECISELY. Implement ALL requirements that specifications require, PRECISELY.
+// 5. PREVENT REGRESSIONS. PREVENT REGRESSIONS. PREVENT REGRESSIONS. PREVENT REGRESSIONS. PREVENT REGRESSIONS.
+// 6. ALWAYS DOUBLE-CHECK, TRIPLE-CHECK THAT THE CODE THAT IS SAVED IN FILES IMPLEMENTS SPECIFICATIONS. ALWAYS DOUBLE-CHECK, TRIPLE-CHECK THAT THE CODE THAT IS SAVED IN FILES IMPLEMENTS SPECIFICATIONS.
+
+// ====================================================
+// UNIT TEST EXEMPTION
+// ====================================================
+
+// Unit test files do not require their own specification files.
+
+// ====================================================
+// SPECIFICATION FILE FORMAT
+// ====================================================
+
+// Specification files should follow this general structure:
+/*
+# [Component/Feature Name] Specification
+
+## Overview
+[Brief description of the component/feature]
+
+## Product Requirements
+- [Requirement 1]
+- [Requirement 2]
+...
+
+## Technical Requirements
+- [Requirement 1]
+- [Requirement 2]
+...
+
+## Behavioral Expectations
+- [Expectation 1]
+- [Expectation 2]
+...
+
+## Interfaces
+```typescript
+// Interface definitions
+```
+
+## Related Specifications
+- [Reference to related spec files]
+*/
+
+// ====================================================
+// IMPORTANT NOTES
+// ====================================================
+
+// 1. SPECIFICATIONS FIRST: Always create specifications before writing any code.
+// 2. CHECK EXISTING SPECS: Always check for and read existing specifications before making changes.
+// 3. SPECIFICATION HIERARCHY: Package-level specs should reference file-level specs.
+// 4. RESPECT EXISTING CONTENT: Preserve existing specification content unless explicitly instructed to retire it.
+// 5. PRECISE IMPLEMENTATION: Implement requirements exactly as specified.
+// 6. VERIFICATION: Always verify that implemented code fulfills all specified requirements.
+// 7. REGRESSION PREVENTION: Ensure changes don't break existing functionality described in specifications.
+// 8. UNIT TEST EXEMPTION: Unit test files don't need their own specification files.
+// 9. DOUBLE-CHECK COMPLIANCE: Verify multiple times that code implements all specification requirements.
+// 10. SPECIFICATION UPDATES: Update specifications when requirements change before updating code.
+// 11. SRC DIRECTORY ONLY: Specifications should only be created for files within the src/ directory.
