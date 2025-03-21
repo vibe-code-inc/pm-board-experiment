@@ -1,15 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Edit2 } from 'lucide-react';
+import { Clock, Flag, Edit2, GripVertical } from 'lucide-react';
 import { Task } from '@/types';
 import { TaskModal } from '@/ui/features/task_modal/task_modal';
-import { PriorityBadge } from './components/priority_badge';
-import { DueDate } from './components/due_date';
-import { DragHandle } from './components/drag_handle';
-import { statusColors, getTaskCardStyle } from './task_card_styles';
-import { useAutoScroll } from '@/lib/hooks/use_auto_scroll';
-import { useMobileDetection } from '@/lib/hooks/use_mobile_detection';
-import { useSafeArea } from '@/lib/hooks/use_safe_area';
-import { stopScroll, throttle } from '@/lib/scroll_utils';
 
 interface TaskCardProps {
   task: Task;
@@ -18,6 +10,66 @@ interface TaskCardProps {
   columnTasks?: Task[]; // Tasks in the current column for reordering
   onReorder?: (draggedTaskId: string, targetTaskId: string) => void; // Callback for reordering
 }
+
+const priorityColors = {
+  low: 'bg-blue-100 text-blue-800',
+  medium: 'bg-yellow-100 text-yellow-800',
+  high: 'bg-red-100 text-red-800',
+};
+
+const statusColors = {
+  'todo': 'bg-gray-100',
+  'in-progress': 'bg-purple-100',
+  'done': 'bg-green-100',
+};
+
+// Outside of component, add scroll utility functions
+const EDGE_ZONE_PERCENT = 0.3; // Edge detection zone - 30% of screen dimensions
+const MIN_SCROLL_SPEED = 50; // Minimum scrolling speed in pixels per frame
+const MAX_SCROLL_SPEED = 200; // Maximum scrolling speed in pixels per frame
+const EXPONENTIAL_POWER = 2; // Exponential power for acceleration
+
+// Create a direct, simple scroll function that isn't dependent on the component
+let scrollIntervalId: number | null = null;
+
+// Simple scroll function that uses fixed pixel amounts
+function directScroll(direction: 'left' | 'right' | 'up' | 'down', speed: number) {
+  if (scrollIntervalId) {
+    clearInterval(scrollIntervalId);
+  }
+
+  // Set up interval for continuous scrolling with fixed pixel amounts
+  scrollIntervalId = window.setInterval(() => {
+    if (direction === 'left') {
+      window.scrollBy(-speed, 0);
+    } else if (direction === 'right') {
+      window.scrollBy(speed, 0);
+    } else if (direction === 'up') {
+      window.scrollBy(0, -speed);
+    } else if (direction === 'down') {
+      window.scrollBy(0, speed);
+    }
+  }, 16); // ~60fps
+}
+
+// Stop scrolling function
+function stopScroll() {
+  if (scrollIntervalId) {
+    clearInterval(scrollIntervalId);
+    scrollIntervalId = null;
+  }
+}
+
+// Throttle function to limit frequency of function calls
+const throttle = (func: Function, delay: number) => {
+  let lastCall = 0;
+  return (...args: any[]) => {
+    const now = new Date().getTime();
+    if (now - lastCall < delay) return;
+    lastCall = now;
+    func(...args);
+  };
+};
 
 export const TaskCard: React.FC<TaskCardProps> = ({
   task: initialTask,
@@ -29,24 +81,82 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [task, setTask] = useState(initialTask);
   const [isDragging, setIsDragging] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [touchActive, setTouchActive] = useState(false);
-
   const cardRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement | null>(null);
   const lastHighlightedElements = useRef<Set<Element>>(new Set());
   const scrollAnimationRef = useRef<number | null>(null);
-  const originalPositionRef = useRef<DOMRect | null>(null);
+  const safeAreaRef = useRef({ top: 0, right: 0, bottom: 0, left: 0 });
 
-  // Custom hooks
-  const isMobile = useMobileDetection();
-  const safeArea = useSafeArea();
-  const handleAutoScroll = useAutoScroll();
+  // Add time tracking refs at component level
+  const scrollTimeRef = useRef<number>(0);
+  const lastFrameTimeRef = useRef<number>(0);
 
   // Update local task when initialTask changes
   useEffect(() => {
     setTask(initialTask);
   }, [initialTask]);
+
+  // Detect safe areas for notches and home indicators
+  useEffect(() => {
+    // Try to detect safe areas using CSS environment variables
+    const detectSafeAreas = () => {
+      // Check if environment variables are supported
+      const style = window.getComputedStyle(document.documentElement);
+
+      try {
+        // Use CSS environment variables for safe areas if available
+        const safeTop = parseInt(style.getPropertyValue('env(safe-area-inset-top)') || '0');
+        const safeRight = parseInt(style.getPropertyValue('env(safe-area-inset-right)') || '0');
+        const safeBottom = parseInt(style.getPropertyValue('env(safe-area-inset-bottom)') || '0');
+        const safeLeft = parseInt(style.getPropertyValue('env(safe-area-inset-left)') || '0');
+
+        safeAreaRef.current = {
+          top: safeTop,
+          right: safeRight,
+          bottom: safeBottom,
+          left: safeLeft
+        };
+      } catch (e) {
+        // Fallback to sensible defaults if environment variables aren't supported
+        safeAreaRef.current = {
+          top: 10,
+          right: 10,
+          bottom: 10,
+          left: 10
+        };
+      }
+    };
+
+    detectSafeAreas();
+
+    // Listen for orientationchange events to recalculate safe areas
+    window.addEventListener('orientationchange', detectSafeAreas);
+
+    return () => {
+      window.removeEventListener('orientationchange', detectSafeAreas);
+    };
+  }, []);
+
+  // Detect if we're on a mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.matchMedia('(max-width: 768px)').matches);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      if (placeholderRef.current) {
+        placeholderRef.current.remove();
+        placeholderRef.current = null;
+      }
+    };
+  }, []);
 
   // Cleanup function to cancel any active scroll animation
   const cleanupScrollAnimation = useCallback(() => {
@@ -67,6 +177,78 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     };
   }, [cleanupScrollAnimation]);
 
+  // Auto-scroll function with reliable fixed pixel amounts
+  const handleAutoScroll = useCallback((touchX: number, touchY: number) => {
+    // Get current dimensions
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    // Calculate edge zones
+    const edgeWidth = windowWidth * EDGE_ZONE_PERCENT;
+    const edgeHeight = windowHeight * EDGE_ZONE_PERCENT;
+
+    // Calculate scroll speed based on position
+    let direction: 'left' | 'right' | 'up' | 'down' | null = null;
+    let speed = MIN_SCROLL_SPEED;
+
+    // HORIZONTAL EDGES
+    if (touchX < edgeWidth) {
+      // Left edge
+      direction = 'left';
+      // Calculate how close to the edge (0-1)
+      const edgeFactor = 1 - (touchX / edgeWidth);
+      // Apply exponential scaling
+      const expFactor = Math.pow(edgeFactor, EXPONENTIAL_POWER);
+      // Scale between min and max speed
+      speed = MIN_SCROLL_SPEED + expFactor * (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED);
+    } else if (touchX > windowWidth - edgeWidth) {
+      // Right edge
+      direction = 'right';
+      const edgeFactor = 1 - ((windowWidth - touchX) / edgeWidth);
+      const expFactor = Math.pow(edgeFactor, EXPONENTIAL_POWER);
+      speed = MIN_SCROLL_SPEED + expFactor * (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED);
+    }
+
+    // VERTICAL EDGES - only check if not already scrolling horizontally
+    if (!direction) {
+      if (touchY < edgeHeight) {
+        // Top edge
+        direction = 'up';
+        const edgeFactor = 1 - (touchY / edgeHeight);
+        const expFactor = Math.pow(edgeFactor, EXPONENTIAL_POWER);
+        speed = MIN_SCROLL_SPEED + expFactor * (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED);
+      } else if (touchY > windowHeight - edgeHeight) {
+        // Bottom edge
+        direction = 'down';
+        const edgeFactor = 1 - ((windowHeight - touchY) / edgeHeight);
+        const expFactor = Math.pow(edgeFactor, EXPONENTIAL_POWER);
+        speed = MIN_SCROLL_SPEED + expFactor * (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED);
+      }
+    }
+
+    // Outside viewport gets max speed
+    if (touchX < 0) {
+      direction = 'left';
+      speed = MAX_SCROLL_SPEED * 2; // 2x max speed
+    } else if (touchX > windowWidth) {
+      direction = 'right';
+      speed = MAX_SCROLL_SPEED * 2;
+    } else if (touchY < 0) {
+      direction = 'up';
+      speed = MAX_SCROLL_SPEED * 2;
+    } else if (touchY > windowHeight) {
+      direction = 'down';
+      speed = MAX_SCROLL_SPEED * 2;
+    }
+
+    // Apply scrolling if needed
+    if (direction) {
+      directScroll(direction, Math.round(speed));
+    } else {
+      stopScroll();
+    }
+  }, []);
+
   // When dragging ends, make sure to stop any scrolling
   useEffect(() => {
     return () => {
@@ -74,263 +256,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     };
   }, []);
 
-  // Create a placeholder element for both desktop and mobile
-  const createPlaceholder = useCallback(() => {
-    if (placeholderRef.current) {
-      placeholderRef.current.remove();
-    }
-
-    const card = cardRef.current;
-    if (!card) return;
-
-    const rect = card.getBoundingClientRect();
-    const newPlaceholder = document.createElement('div');
-    newPlaceholder.className = 'task-card-placeholder';
-    newPlaceholder.style.height = `${rect.height}px`;
-    newPlaceholder.style.width = `${rect.width}px`;
-    newPlaceholder.style.margin = '8px 0';
-    newPlaceholder.style.border = '2px dashed #9ca3af';
-    newPlaceholder.style.borderRadius = '8px';
-    newPlaceholder.style.backgroundColor = '#f3f4f6';
-    newPlaceholder.style.boxSizing = 'border-box';
-    newPlaceholder.style.transition = 'all 0.2s ease';
-
-    placeholderRef.current = newPlaceholder;
-
-    return newPlaceholder;
-  }, []);
-
-  // Clear all highlights efficiently
-  const clearHighlights = useCallback(() => {
-    lastHighlightedElements.current.forEach(el => {
-      el.classList.remove('drop-target-highlight', 'insert-above', 'insert-below');
-    });
-    lastHighlightedElements.current.clear();
-  }, []);
-
-  // Handle placeholder positioning for both desktop and mobile
-  const positionPlaceholder = useCallback((x: number, y: number) => {
-    if (!placeholderRef.current) return;
-
-    // Get elements at the pointer location with a bit more precision
-    const elementsAtPoint = document.elementsFromPoint(x, y);
-
-    // Find drop column - looking for a direct match or a parent
-    const dropColumn = elementsAtPoint.find(el => {
-      if (el.classList.contains('drop-column')) return true;
-      // Also check if any parent up to 3 levels is a drop column
-      let parent = el.parentElement;
-      for (let i = 0; i < 3 && parent; i++) {
-        if (parent.classList.contains('drop-column')) return true;
-        parent = parent.parentElement;
-      }
-      return false;
-    }) as HTMLElement;
-
-    // Find the direct column element rather than a child
-    const actualColumn = dropColumn?.classList.contains('drop-column')
-      ? dropColumn
-      : dropColumn?.closest('.drop-column') as HTMLElement;
-
-    // Find target task card with similar approach
-    const targetTaskCard = elementsAtPoint.find(el => {
-      // Don't consider the dragged card itself or its children
-      if (el === cardRef.current || cardRef.current?.contains(el)) return false;
-
-      // Direct match
-      if (el.classList.contains('task-card')) return true;
-
-      // Check parents up to 2 levels
-      let parent = el.parentElement;
-      for (let i = 0; i < 2 && parent; i++) {
-        if (parent.classList.contains('task-card') && parent !== cardRef.current) return true;
-        parent = parent.parentElement;
-      }
-      return false;
-    }) as HTMLElement;
-
-    // Get the actual task card element
-    const actualTaskCard = targetTaskCard?.classList.contains('task-card')
-      ? targetTaskCard
-      : targetTaskCard?.closest('.task-card') as HTMLElement;
-
-    // Clear previous highlights
-    clearHighlights();
-
-    // If drag has moved out of all valid drop areas
-    if (!actualColumn && !actualTaskCard) {
-      if (placeholderRef.current) {
-        placeholderRef.current.style.display = 'none';
-      }
-      return;
-    }
-
-    // Handle drop column highlight and placeholder positioning
-    if (actualColumn) {
-      actualColumn.classList.add('drop-target-highlight');
-      lastHighlightedElements.current.add(actualColumn);
-
-      if (placeholderRef.current) {
-        // Get the task list container in the column (direct child with task-list class)
-        const taskList = actualColumn.querySelector('.task-list');
-        if (!taskList) return;
-
-        // Check if this is an empty column
-        const emptyColumnMessage = taskList.querySelector('.empty-column-message');
-        if (emptyColumnMessage) {
-          // Hide the "drag tasks here" message
-          emptyColumnMessage.classList.add('hidden');
-          lastHighlightedElements.current.add(emptyColumnMessage);
-
-          // Ensure task list is no longer centered
-          taskList.classList.remove('flex', 'items-center', 'justify-center');
-          lastHighlightedElements.current.add(taskList);
-
-          // Add placeholder directly to task list
-          placeholderRef.current.style.display = 'block';
-          taskList.appendChild(placeholderRef.current);
-
-          // Clear any previous position data and set column-specific data
-          placeholderRef.current.dataset.targetColumn = actualColumn.dataset.status || '';
-          delete placeholderRef.current.dataset.targetTaskId;
-          delete placeholderRef.current.dataset.insertBefore;
-          return;
-        }
-
-        // Get all task cards in this column (excluding the dragged card)
-        const columnTaskCards = Array.from(
-          taskList.querySelectorAll('.task-card:not(.dragging):not(.touch-dragging)')
-        ).filter(el => el !== cardRef.current) as HTMLElement[];
-
-        // If there are no task cards in this column, add placeholder
-        if (columnTaskCards.length === 0) {
-          placeholderRef.current.style.display = 'block';
-          taskList.appendChild(placeholderRef.current);
-
-          // Set column-specific data
-          placeholderRef.current.dataset.targetColumn = actualColumn.dataset.status || '';
-          delete placeholderRef.current.dataset.targetTaskId;
-          delete placeholderRef.current.dataset.insertBefore;
-          return;
-        }
-
-        // Find the closest task card based on vertical position
-        let closestCard: HTMLElement | null = null;
-        let closestDistance = Infinity;
-        let insertBefore = true;
-
-        // Find card closest to touch/mouse point
-        for (const taskCard of columnTaskCards) {
-          const rect = taskCard.getBoundingClientRect();
-          const cardMiddleY = rect.top + rect.height / 2;
-          const distance = Math.abs(y - cardMiddleY);
-
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestCard = taskCard;
-            // If point is above middle point, insert before; otherwise, insert after
-            insertBefore = y < cardMiddleY;
-          }
-        }
-
-        if (closestCard && closestCard.parentNode) {
-          placeholderRef.current.style.display = 'block';
-
-          // Store positioning data
-          placeholderRef.current.dataset.targetTaskId = closestCard.dataset.taskId;
-          placeholderRef.current.dataset.insertBefore = insertBefore.toString();
-          placeholderRef.current.dataset.targetColumn = actualColumn.dataset.status || '';
-
-          // Add visual indicator classes to the closest card
-          if (insertBefore) {
-            closestCard.classList.add('insert-above');
-            lastHighlightedElements.current.add(closestCard);
-            closestCard.parentNode.insertBefore(placeholderRef.current, closestCard);
-          } else {
-            closestCard.classList.add('insert-below');
-            lastHighlightedElements.current.add(closestCard);
-            closestCard.parentNode.insertBefore(placeholderRef.current, closestCard.nextSibling);
-          }
-        }
-      }
-    } else if (actualTaskCard && onReorder) {
-      // If we're over a specific task card but not a column
-      lastHighlightedElements.current.add(actualTaskCard);
-
-      // Determine if we're in the top or bottom half of the target card
-      const rect = actualTaskCard.getBoundingClientRect();
-      const midY = rect.top + rect.height / 2;
-      const insertBefore = y < midY;
-
-      // Find the column this task card belongs to
-      const parentColumn = actualTaskCard.closest('.drop-column') as HTMLElement;
-
-      if (placeholderRef.current && parentColumn) {
-        placeholderRef.current.style.display = 'block';
-
-        // Store positioning data
-        placeholderRef.current.dataset.targetTaskId = actualTaskCard.dataset.taskId;
-        placeholderRef.current.dataset.insertBefore = insertBefore.toString();
-        placeholderRef.current.dataset.targetColumn = parentColumn.dataset.status || '';
-
-        // Add visual indicator classes
-        if (insertBefore) {
-          actualTaskCard.classList.add('insert-above');
-          lastHighlightedElements.current.add(actualTaskCard);
-        } else {
-          actualTaskCard.classList.add('insert-below');
-          lastHighlightedElements.current.add(actualTaskCard);
-        }
-
-        // Only move placeholder if it's not already in the right position
-        const isAboveAndShouldBeAbove = insertBefore &&
-          placeholderRef.current.nextSibling === actualTaskCard;
-        const isBelowAndShouldBeBelow = !insertBefore &&
-          placeholderRef.current.previousSibling === actualTaskCard;
-
-        // Only reposition if needed - reduces DOM operations
-        if (!isAboveAndShouldBeAbove && !isBelowAndShouldBeBelow) {
-          if (insertBefore) {
-            actualTaskCard.parentNode?.insertBefore(placeholderRef.current, actualTaskCard);
-          } else {
-            actualTaskCard.parentNode?.insertBefore(placeholderRef.current, actualTaskCard.nextSibling);
-          }
-        }
-      }
-    }
-  }, [clearHighlights, onReorder]);
-
   // For mouse movement during drag
   const handleDragStart = (e: React.DragEvent) => {
     const card = cardRef.current;
     if (!card) return;
 
-    // Explicitly set the data format for Firefox compatibility
-    e.dataTransfer.setData('application/json', JSON.stringify({
-      taskId: task.id,
-      status: task.status
-    }));
-    // For other browsers
-    e.dataTransfer.setData('text/plain', task.id);
-
-    // Set effectAllowed for better cross-browser compatibility
-    e.dataTransfer.effectAllowed = 'move';
-
+    e.dataTransfer.setData('taskId', task.id);
     setIsDragging(true);
 
     // Record initial position for reference
     const rect = card.getBoundingClientRect();
-    originalPositionRef.current = rect;
     card.dataset.originalLeft = rect.left.toString();
     card.dataset.originalTop = rect.top.toString();
     card.dataset.originalWidth = rect.width.toString();
     card.dataset.originalHeight = rect.height.toString();
-
-    // Create a placeholder for desktop dragging
-    const placeholder = createPlaceholder();
-    if (placeholder && card.parentNode) {
-      card.parentNode.insertBefore(placeholder, card.nextSibling);
-    }
 
     // Create a custom drag image for better control
     try {
@@ -365,10 +304,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     // Start mouse movement tracking
     const handleMouseMove = (moveEvent: MouseEvent) => {
       handleAutoScroll(moveEvent.clientX, moveEvent.clientY);
-      positionPlaceholder(moveEvent.clientX, moveEvent.clientY);
     };
 
-    // Add mouse move listener with throttling
+    // Add mouse move listener
     document.addEventListener('mousemove', handleMouseMove);
 
     // Clean up on drag end
@@ -377,64 +315,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       stopScroll();
       window.removeEventListener('dragend', cleanupDrag);
     }, { once: true });
-  };
-
-  // Handle drag over events
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    // Update placeholder position
-    positionPlaceholder(e.clientX, e.clientY);
-  };
-
-  // Add a custom drag enter handler for desktop
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  // Add a custom drop handler for desktop
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-
-    // Prevent default browser behavior
-    if (e.stopPropagation) {
-      e.stopPropagation();
-    }
-
-    // Try to get the dragged task ID from multiple data formats
-    let dragData;
-    try {
-      const jsonData = e.dataTransfer.getData('application/json');
-      if (jsonData) {
-        dragData = JSON.parse(jsonData);
-      }
-    } catch (err) {
-      console.error('Error parsing drag data:', err);
-    }
-
-    // Fallback to plain text if JSON parsing failed
-    const draggedTaskId = dragData?.taskId || e.dataTransfer.getData('text/plain');
-
-    if (!draggedTaskId) {
-      console.error('No task ID found in the drag data');
-      return;
-    }
-
-    // Handle drop based on placeholder position
-    if (placeholderRef.current && placeholderRef.current.parentNode) {
-      const targetColumn = placeholderRef.current.dataset.targetColumn;
-      const targetTaskId = placeholderRef.current.dataset.targetTaskId;
-      const insertBefore = placeholderRef.current.dataset.insertBefore === 'true';
-
-      // First handle status change if needed
-      if (targetColumn && targetColumn !== task.status) {
-        onStatusChange(targetColumn as Task['status']);
-      }
-
-      // Then handle reordering if we have a target task
-      if (targetTaskId && onReorder) {
-        onReorder(draggedTaskId, targetTaskId);
-      }
-    }
   };
 
   // Handle drag end
@@ -456,29 +336,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         });
       }
     }
-
-    // Clean up placeholder and highlights
-    clearHighlights();
-
-    // Restore any hidden empty column messages
-    document.querySelectorAll('.empty-column-message.hidden').forEach(el => {
-      el.classList.remove('hidden');
-    });
-
-    // Restore flex layouts for empty columns
-    document.querySelectorAll('.task-list').forEach(taskList => {
-      if (taskList.childElementCount === 0 ||
-          (taskList.childElementCount === 1 && taskList.children[0].classList.contains('empty-column-message'))) {
-        taskList.classList.add('flex', 'items-center', 'justify-center');
-      }
-    });
-
-    // Remove the placeholder
-    if (placeholderRef.current) {
-      placeholderRef.current.remove();
-      placeholderRef.current = null;
-    }
   };
+
+  // Clear all highlights efficiently
+  const clearHighlights = useCallback(() => {
+    lastHighlightedElements.current.forEach(el => {
+      el.classList.remove('drop-target-highlight', 'insert-above', 'insert-below');
+    });
+    lastHighlightedElements.current.clear();
+  }, []);
 
   // Handle touch start
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -513,9 +379,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       document.body.classList.add('touch-dragging-active');
 
       // Create a placeholder that matches the exact size of the dragged card
-      const placeholder = createPlaceholder();
-      if (placeholder && card.parentNode) {
-        card.parentNode.insertBefore(placeholder, card.nextSibling);
+      if (!placeholderRef.current && cardRef.current) {
+        const newPlaceholder = document.createElement('div');
+        newPlaceholder.className = 'task-card-placeholder';
+
+        // Set exact dimensions to match the card
+        newPlaceholder.style.height = `${rect.height}px`;
+        newPlaceholder.style.width = `${rect.width}px`;
+        newPlaceholder.style.boxSizing = 'border-box';
+        newPlaceholder.style.display = 'none';
+
+        // Insert it right after the current card to preserve list structure initially
+        if (card.parentNode) {
+          card.parentNode.insertBefore(newPlaceholder, card.nextSibling);
+          placeholderRef.current = newPlaceholder;
+        }
       }
     }
   };
@@ -593,10 +471,132 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       card.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
       card.style.opacity = '0.8';
 
-      // Position the placeholder
-      positionPlaceholder(touch.clientX, touch.clientY);
+      // Create highlight effect for potential drop targets
+      const elementsAtTouch = document.elementsFromPoint(touch.clientX, touch.clientY);
+
+      // Look for both columns and other tasks
+      const dropColumn = elementsAtTouch.find(el =>
+        el.classList.contains('drop-column')
+      ) as HTMLElement;
+
+      const targetTaskCard = elementsAtTouch.find(el =>
+        el.classList.contains('task-card') &&
+        el !== card &&
+        !el.contains(card) &&
+        !card.contains(el)
+      ) as HTMLElement;
+
+      // Clear previous highlights efficiently
+      clearHighlights();
+
+      // If we've moved out of the original column, hide the placeholder at its original position
+      if (placeholderRef.current && !placeholderRef.current.parentNode?.contains(dropColumn)) {
+        placeholderRef.current.style.display = 'none';
+      }
+
+      // Add highlight to the column we're over
+      if (dropColumn) {
+        dropColumn.classList.add('drop-target-highlight');
+        lastHighlightedElements.current.add(dropColumn);
+
+        if (placeholderRef.current) {
+          // Get the task list container in the column
+          const taskList = dropColumn.querySelector('.task-list');
+          if (!taskList) return;
+
+          // Check if this is an empty column
+          const emptyColumnMessage = taskList.querySelector('.empty-column-message');
+          if (emptyColumnMessage) {
+            // Hide the "drag tasks here" message when dragging over empty column
+            emptyColumnMessage.classList.add('hidden');
+            lastHighlightedElements.current.add(emptyColumnMessage);
+
+            // Ensure task list is no longer centered (remove flex)
+            taskList.classList.remove('flex', 'items-center', 'justify-center');
+            lastHighlightedElements.current.add(taskList);
+
+            // Add placeholder directly to task list
+            placeholderRef.current.style.display = 'block';
+            taskList.appendChild(placeholderRef.current);
+            return;
+          }
+
+          // Get all task cards in this column (excluding the dragged card)
+          const columnTaskCards = Array.from(taskList.querySelectorAll('.task-card:not(.touch-dragging)')) as HTMLElement[];
+
+          // If there are no task cards in this column, add placeholder
+          if (columnTaskCards.length === 0) {
+            placeholderRef.current.style.display = 'block';
+            taskList.appendChild(placeholderRef.current);
+            return;
+          }
+
+          // Find the closest task card based on vertical position
+          let closestCard: HTMLElement | null = null;
+          let closestDistance = Infinity;
+          let insertBefore = true;
+
+          // Find card closest to touch point
+          for (const taskCard of columnTaskCards) {
+            const rect = taskCard.getBoundingClientRect();
+            const cardMiddleY = rect.top + rect.height / 2;
+            const distance = Math.abs(touch.clientY - cardMiddleY);
+
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestCard = taskCard;
+              // If touch is above middle point, insert before; otherwise, insert after
+              insertBefore = touch.clientY < cardMiddleY;
+            }
+          }
+
+          if (closestCard && closestCard.parentNode) {
+            placeholderRef.current.style.display = 'block';
+
+            // Insert the placeholder at the appropriate position
+            if (insertBefore) {
+              closestCard.parentNode.insertBefore(placeholderRef.current, closestCard);
+              // Add indicator class but no additional border
+              lastHighlightedElements.current.add(closestCard);
+            } else {
+              closestCard.parentNode.insertBefore(placeholderRef.current, closestCard.nextSibling);
+              // Add indicator class but no additional border
+              lastHighlightedElements.current.add(closestCard);
+            }
+          }
+        }
+      } else if (targetTaskCard && onReorder) {
+        // If we're over a specific task card
+        // Don't add drop-target-highlight to task cards to avoid double border
+        lastHighlightedElements.current.add(targetTaskCard);
+
+        // Determine if we're in the top or bottom half of the target card
+        const rect = targetTaskCard.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+
+        if (placeholderRef.current) {
+          placeholderRef.current.style.display = 'block';
+
+          // Only move placeholder if it's not already in the right position
+          const isAboveAndShouldBeAbove = touch.clientY < midY &&
+            placeholderRef.current.nextSibling === targetTaskCard;
+          const isBelowAndShouldBeBelow = touch.clientY >= midY &&
+            placeholderRef.current.previousSibling === targetTaskCard;
+
+          // Only reposition if needed - reduces DOM operations
+          if (!isAboveAndShouldBeAbove && !isBelowAndShouldBeBelow) {
+            if (touch.clientY < midY) {
+              // Don't add border classes that change dimensions
+              targetTaskCard.parentNode?.insertBefore(placeholderRef.current, targetTaskCard);
+            } else {
+              // Don't add border classes that change dimensions
+              targetTaskCard.parentNode?.insertBefore(placeholderRef.current, targetTaskCard.nextSibling);
+            }
+          }
+        }
+      }
     }, 16),
-    [touchActive, isDragging, positionPlaceholder]
+    [touchActive, isDragging, clearHighlights, onReorder]
   );
 
   useEffect(() => {
@@ -662,21 +662,48 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         document.body.classList.remove('touch-dragging-active');
       }, 100);
 
-      // Execute the correct action based on placeholder position
+      // Find the element we're over
+      const touch = e.changedTouches[0];
+      const elementsAtTouch = document.elementsFromPoint(touch.clientX, touch.clientY);
+
+      // Check if we're over another task card first (for reordering)
+      const targetTaskCard = elementsAtTouch.find(el =>
+        el.classList.contains('task-card') &&
+        el !== card &&
+        !el.contains(card) &&
+        !card.contains(el)
+      ) as HTMLElement;
+
+      // Find the drop column
+      const dropColumn = elementsAtTouch.find(el =>
+        el.classList.contains('drop-column')
+      ) as HTMLElement;
+
+      // Execute the correct action based on where the card was dropped
       if (placeholderRef.current && placeholderRef.current.parentNode) {
-        const targetColumn = placeholderRef.current.dataset.targetColumn;
-        const targetTaskId = placeholderRef.current.dataset.targetTaskId;
-        const insertBefore = placeholderRef.current.dataset.insertBefore === 'true';
+        // Find nearby task cards to determine position
+        const prevCard = placeholderRef.current.previousElementSibling as HTMLElement;
+        const nextCard = placeholderRef.current.nextElementSibling as HTMLElement;
 
-        // First handle status change if needed
-        if (targetColumn && targetColumn !== task.status) {
-          onStatusChange(targetColumn as Task['status']);
-        }
+        if (dropColumn && dropColumn.dataset.status) {
+          // If dropped in a different column, update status
+          const newStatus = dropColumn.dataset.status as Task['status'];
 
-        // Then handle reordering if we have a target task
-        if (targetTaskId && onReorder) {
-          onReorder(task.id, targetTaskId);
+          if (newStatus !== task.status) {
+            onStatusChange(newStatus);
+          } else if (prevCard && prevCard.dataset.taskId && prevCard !== card) {
+            // If in same column, reorder based on placeholder position
+            onReorder?.(task.id, prevCard.dataset.taskId);
+          } else if (nextCard && nextCard.dataset.taskId && nextCard !== card) {
+            onReorder?.(task.id, nextCard.dataset.taskId);
+          }
+        } else if (targetTaskCard && targetTaskCard.dataset.taskId) {
+          // Direct drop on a task card
+          onReorder?.(task.id, targetTaskCard.dataset.taskId);
         }
+      } else if (dropColumn && dropColumn.dataset.status) {
+        // Simple column drop without specific position
+        onStatusChange(dropColumn.dataset.status as Task['status']);
       }
 
       // Clear all highlights
@@ -731,13 +758,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     <>
       <div
         ref={cardRef}
-        className={getTaskCardStyle(task.status, isDragging)}
+        className={`task-card p-3 md:p-4 rounded-lg shadow-sm ${statusColors[task.status]} transition-all hover:shadow-md cursor-move group ${isDragging ? 'opacity-60' : ''} select-none`}
         draggable="true"
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        onDragOver={handleDragOver}
-        onDragEnter={handleDragEnter}
-        onDrop={handleDrop}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchCancel}
@@ -748,7 +772,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
           <div className="flex items-start gap-2">
             {isMobile && (
-              <DragHandle innerRef={dragHandleRef} />
+              <div
+                ref={dragHandleRef}
+                className="touch-drag-handle mt-1 text-gray-400 transition-colors hover:text-gray-600 active:text-blue-500"
+                aria-label="Drag handle"
+              >
+                <GripVertical className="w-4 h-4" />
+              </div>
             )}
             <h3 className="font-semibold text-gray-800 text-sm md:text-base line-clamp-2">{task.title}</h3>
           </div>
@@ -776,8 +806,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </p>
 
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
-          <PriorityBadge priority={task.priority} />
-          {task.dueDate && <DueDate date={task.dueDate} />}
+          <span className={`text-xs px-2 py-0.5 rounded ${priorityColors[task.priority]}`}>
+            <Flag className="w-3 h-3 inline mr-1" />
+            {task.priority}
+          </span>
+          {task.dueDate && (
+            <span className="text-xs text-gray-600 flex items-center truncate max-w-[120px]">
+              <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
+              <span className="truncate">{new Date(task.dueDate).toLocaleDateString()}</span>
+            </span>
+          )}
           {task.assignee && (
             <span className="text-xs bg-gray-100 px-2 py-0.5 rounded truncate max-w-[120px]">
               {task.assignee}
