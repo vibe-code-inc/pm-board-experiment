@@ -1,0 +1,96 @@
+---
+description: Engineering and design principles for high-quality code
+globs: 
+alwaysApply: true
+---
+// Engineering and Design Rules
+// This rule file defines engineering and design principles for sustainable, maintainable, and high-quality code.
+
+// ====================================================
+// CODE ORGANIZATION PRINCIPLES
+// ====================================================
+
+// 1. Prefer carefully rewriting existing code rather than solving a problem simply by generating more and more code.
+// 2. If a file gets too big anyway, consider refactoring (BUT ALWAYS RESPECT SPECIFICATIONS as defined in @specifications.mdc).
+// 3. Prefer modularity in general - break down complex functionality into smaller, focused components.
+// 4. ALWAYS follow project conventions defined in @conventions.mdc.
+// 5. Build reasonable abstractions that balance flexibility and simplicity.
+// 6. Keep files and components relatively small.
+
+// Examples:
+// ✓ Refactoring a 300-line component into smaller sub-components with clear responsibilities
+// ✓ Optimizing existing code paths before adding new ones
+// ✓ Consolidating duplicate logic into shared utilities
+// ✗ Adding more and more code to solve new requirements without revisiting existing architecture
+// ✗ Creating components that try to do too many things
+
+// ====================================================
+// TYPE SYSTEM USAGE
+// ====================================================
+
+// 1. Prefer types over interfaces, unless it's where an interface makes sense (e.g., defining an interface that will have class implementations).
+// 2. Prefer union types with string literals over enums.
+// 3. Use proper type annotations for function parameters and return values.
+
+// Examples:
+// ✓ type TaskStatus = 'todo' | 'in-progress' | 'done';
+// ✓ type TaskPriority = 'low' | 'medium' | 'high';
+// ✓ interface TaskService { /* methods that will be implemented by a class */ }
+// ✓ type Task = { /* task properties */ };
+// ✗ enum TaskStatus { TODO, IN_PROGRESS, DONE }
+// ✗ using 'any' instead of specific types
+
+// ====================================================
+// STATE AND VARIABLE MANAGEMENT
+// ====================================================
+
+// 1. Do not use magic numbers - extract numeric literals into named constants.
+// 2. Use constants where reasonable, especially for values that might change in the future.
+// 3. Do not use global variables - prefer proper scoping and dependency injection.
+// 4. Use dependency injection where reasonable to improve testability and flexibility.
+
+// Examples:
+// ✓ const MAX_TASKS_PER_COLUMN = 20;
+// ✓ const TASK_CARD_HEIGHT = 120;
+// ✓ function TaskList({ taskService }: { taskService: TaskService }) { /* ... */ }
+// ✗ if (tasks.length > 20) { /* ... */ }
+// ✗ let globalTaskList = [];
+
+// ====================================================
+// CODE QUALITY AND PERFORMANCE
+// ====================================================
+
+// 1. Optimize for quality and performance but ALWAYS RESPECT SPECIFICATIONS.
+// 2. When making assumptions (rather than relying on facts), mention this in a respective spec and in code comments.
+// 3. Prefer simplicity and readability over clever solutions.
+// 4. Be careful with performance optimizations and make sure they're actually needed before implementing them.
+
+// Examples:
+// ✓ // Assuming tasks are sorted by priority from the API (see task_service.spec.md)
+// ✓ Using memoization for expensive computations
+// ✓ Breaking complex logic into well-named helper functions
+// ✗ Premature optimizations without measurement
+// ✗ Overly complex solutions that are hard to understand
+
+// ====================================================
+// IMPORTANT REMINDERS
+// ====================================================
+
+// 1. DO NOT commit unless you are explicitly allowed to (see @commits.mdc).
+// 2. ALWAYS maintain alignment with specifications defined in @specifications.mdc.
+// 3. ALWAYS follow project conventions in @conventions.mdc.
+// 4. Be cautious when modifying existing code - understand the impact before making changes.
+// 5. Remember that code is read much more often than it is written - optimize for readability.
+
+// ====================================================
+// DECISION MAKING HIERARCHY
+// ====================================================
+
+// When making engineering and design decisions, follow this priority order:
+// 1. SPECIFICATIONS (as defined in @specifications.mdc) - these must be respected above all else
+// 2. PROJECT CONVENTIONS (as defined in @conventions.mdc)
+// 3. CODE QUALITY PRINCIPLES (as defined in this file)
+// 4. PERFORMANCE CONSIDERATIONS
+// 5. DEVELOPER CONVENIENCE
+
+// The higher priority item always takes precedence when there's a conflict.

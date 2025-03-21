@@ -1,5 +1,5 @@
 ---
-description: 
+description: Required rules for handling shell commands
 globs: 
 alwaysApply: true
 ---

@@ -1,7 +1,7 @@
 ---
-description: 
+description: The required rules for formatting and handling commits
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 // Conventional Commits
 // This rule enforces the Conventional Commits 1.0.0 specification for commit messages, ensuring a structured and consistent commit history.
@@ -22,6 +22,11 @@ alwaysApply: false
 // 2. When I say "please commit these changes" or similar phrasing
 // 3. When I ask you to "commit with message X"
 // These are ALL considered explicit requests to commit. A simple "commit" command is a valid explicit request.
+
+// IMPORTANT: COMMIT PERMISSION IS ONE-TIME ONLY
+// Each explicit request to commit gives you permission to make ONLY ONE commit.
+// After making that single commit, you MUST receive another explicit request before making any additional commits.
+// This rule applies EVERY TIME - one request, one commit. No exceptions.
 
 // ====================================================
 // COMMIT TYPE GUIDELINES

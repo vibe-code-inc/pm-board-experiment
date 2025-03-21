@@ -1,5 +1,5 @@
 ---
-description: 
+description: Required rules for building features and creating, updating, and handling any code changes
 globs: 
 alwaysApply: true
 ---
