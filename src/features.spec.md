@@ -9,6 +9,7 @@ PM Board is a task management application that allows users to organize and trac
 - Tasks should be organized by status (todo, in-progress, done)
 - Tasks should display relevant information such as title, description, priority, assignee, and due date
 - Users should be able to create, edit, and update task status
+- Users should be able to drag and drop tasks between status columns
 - The interface should be intuitive and provide a modern, responsive design
 
 ## Technical Requirements
@@ -17,12 +18,17 @@ PM Board is a task management application that allows users to organize and trac
 - Follows the project's established coding conventions and directory structure
 - Provides type safety with well-defined interfaces
 - Uses Tailwind CSS for styling
+- Implements responsive design for different screen sizes
+- Uses custom hooks for state management and logic reuse
+- Implements drag-and-drop functionality for task management
 
 ## Behavioral Expectations
 - The application should be responsive and work on different screen sizes
 - Task status changes should be reflected immediately in the UI
 - Task editing should be done through a modal interface
 - The application should provide visual cues for task priority and status
+- Drag and drop operations should provide visual feedback
+- Empty states should be handled gracefully with appropriate UI elements
 
 ## Core Data Structures
 ```typescript
@@ -49,4 +55,6 @@ export interface Project {
 - [Features - Task Management](./features/task_management/features.spec.md)
 - [UI - Base Components](./ui/base/features.spec.md)
 - [UI - Feature Components](./ui/features/features.spec.md)
+- [UI - Task Card](./ui/features/task_card/features.spec.md)
+- [UI - Task Modal](./ui/features/task_modal/features.spec.md)
 - [Lib - Utilities](./lib/features.spec.md)

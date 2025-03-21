@@ -10,6 +10,7 @@ The Library utilities provide helper functions, custom hooks, and utility module
 - Write unit tests for utility functions
 - Document utility functions with clear JSDoc comments
 - Optimize performance for frequently used utilities
+- Ensure utilities are tree-shakable for better bundle size optimization
 
 ## Utility Categories
 The lib directory includes the following categories of utilities:
@@ -20,6 +21,7 @@ General utility functions for common operations:
 - String manipulation
 - Array and object transformations
 - Class name merging (cn utility)
+- Date formatting and manipulation
 
 ### Hooks
 Custom React hooks:
@@ -27,6 +29,7 @@ Custom React hooks:
 - State management hooks
 - API request hooks
 - UI interaction hooks
+- Drag and drop hooks
 
 ### Scroll Utils
 Utilities for managing scroll behavior:
@@ -34,6 +37,7 @@ Utilities for managing scroll behavior:
 - Scroll position management
 - Scroll event handling
 - Virtualized list utilities
+- Scroll-based animations
 
 ## Interfaces (Example for cn utility)
 ```typescript

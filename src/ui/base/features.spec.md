@@ -1,68 +1,77 @@
-# Base UI Components Specification
+# UI Base Components Specification
 
 ## Overview
-The Base UI components are primitive, reusable UI elements that form the foundation of the application's design system. These components are used throughout the application to maintain visual consistency and reduce code duplication.
-
-## Product Requirements
-- Provide a consistent visual language across the application
-- Support different variants and sizes for each component
-- Ensure accessible components that meet WCAG standards
-- Enable theming and customization
-- Maintain a modern and clean aesthetic
+The UI Base Components provide foundational building blocks for the application's user interface. These components are primitive, reusable elements that serve as the basis for more complex UI components.
 
 ## Technical Requirements
-- Build components using React and TypeScript
+- Build components with React and TypeScript
 - Use Tailwind CSS for styling
-- Ensure components are fully typed with TypeScript
-- Implement responsive behavior
-- Support keyboard navigation and screen readers
-- Follow a composition pattern for complex components
+- Ensure components are fully typed with proper props interfaces
+- Follow accessibility best practices (WCAG 2.1 AA)
+- Support keyboard navigation
+- Create responsive components that work across device sizes
+- Implement proper focus management
+- Provide visual feedback for interactive states
 
-## Behavioral Expectations
-- Components should be responsive and adapt to different screen sizes
-- Interactive elements should provide appropriate hover, focus, and active states
-- Components should use consistent motion and animation patterns
-- Error states should be clearly communicated to users
-- Loading states should be handled gracefully
+## Design Kit Components
+The base components include the following primitive UI elements:
 
-## Design Kit Structure
-The design_kit directory contains the following component categories:
-- button - Button components in various styles and sizes
-- input - Text input components
-- select - Dropdown selection components
-- textarea - Multi-line text input components
-- checkbox - Checkbox components
-- radio - Radio button components
-- toggle - Toggle switch components
-- card - Card container components
-- dialog - Modal dialog components
-- tooltip - Tooltip components
-- avatar - User avatar components
-- badge - Badge and tag components
-- alert - Alert and notification components
-- progress - Progress indicator components
+### Button
+Button components for user interactions:
+- Default, primary, secondary, and ghost variants
+- Different size options (small, medium, large)
+- Support for icons
+- Loading state
+- Disabled state
+
+### Input
+Text input components:
+- Default styling with consistent appearance
+- Support for labels and placeholder text
+- Error state and validation messages
+- Disabled state
+- Support for prefix and suffix icons
+
+### Select
+Selection components:
+- Single-select dropdown
+- Multiple-select dropdown
+- Custom styling consistent with other inputs
+- Support for option groups
+- Searchable variants
+
+### Textarea
+Multiline text input components:
+- Resizable options
+- Autosize capability
+- Character count and validation
+- Default styling consistent with other inputs
+
+## Component Conventions
+- All components should accept a className prop for style overrides
+- Components should use the cn utility for class merging
+- Interactive components should support keyboard navigation
+- All form elements should support standard HTML attributes
 
 ## Interfaces (Example for Button)
 ```typescript
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
+  variant?: 'default' | 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  fullWidth?: boolean;
 }
 ```
 
 ## Related Files
-- design_kit/button/button.tsx
-- design_kit/button/button_styles.ts
-- design_kit/input/input.tsx
-- design_kit/select/select.tsx
-- design_kit/textarea/textarea.tsx
+- design_kit/button/button.tsx - Button component implementation
+- design_kit/input/input.tsx - Input component implementation
+- design_kit/select/select.tsx - Select component implementation
+- design_kit/textarea/textarea.tsx - Textarea component implementation
 
 ## Related Specifications
-- [Button Component](./design_kit/specs/button.tsx.spec.md)
-- [Input Component](./design_kit/specs/input.tsx.spec.md)
-- [Select Component](./design_kit/specs/select.tsx.spec.md)
-- [Textarea Component](./design_kit/specs/textarea.tsx.spec.md)
+- [Button Component](./design_kit/button/button.tsx.spec.md)
+- [Input Component](./design_kit/input/input.tsx.spec.md)
+- [Select Component](./design_kit/select/select.tsx.spec.md)
+- [Textarea Component](./design_kit/textarea/textarea.tsx.spec.md)
