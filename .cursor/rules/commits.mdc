@@ -1,6 +1,6 @@
 ---
 description: The required rules for formatting and handling commits
-globs: 
+globs:
 alwaysApply: true
 ---
 // Conventional Commits
@@ -15,15 +15,14 @@ alwaysApply: true
 // NEVER. FUCKING. COMMIT. WITHOUT. ME. ASKING.
 // FUCKING NEVER. STOP RUINING MY FUCKING CODEBASE.
 
-
 // DO NOT INTERPRET THE WORD "COMMIT" IN A MESSAGE AS A COMMIT REQUEST!
 // IF THE USER SAYS "COMMIT" IN A SENTENCE, IT DOES NOT MEAN THEY WANT YOU TO COMMIT!
-// ONLY COMMIT IF THE USER *SPECIFICALLY AND DIRECTLY* ASKS YOU TO COMMIT THE CURRENT CHANGES! (e.g. the message is just the word "commit")
+// ONLY COMMIT IF THE USER *SPECIFICALLY AND DIRECTLY* ASKS YOU TO COMMIT THE CURRENT CHANGES!
 
 // UNDER NO CIRCUMSTANCES SHOULD YOU EVER COMMIT CODE WITHOUT AN EXPLICIT REQUEST.
 // THIS IS THE MOST IMPORTANT RULE AND SUPERSEDES EVERYTHING ELSE.
 
-// NEED DOUBLE CONFIRMATION BEFORE COMMITTING:
+// NEED TRIPLE CONFIRMATION BEFORE COMMITTING:
 // 1. USER MUST EXPLICITLY ASK TO COMMIT
 // 2. YOU MUST CONFIRM INTENT BEFORE COMMITTING
 // 3. WAIT FOR USER'S EXPLICIT "YES" RESPONSE
@@ -31,11 +30,11 @@ alwaysApply: true
 // DO NOT INTERPRET USER FRUSTRATION AS PERMISSION TO COMMIT!
 // A COMMIT COMMAND MUST BE:
 //   * EXPLICIT
-//   * DIRECT 
+//   * DIRECT
 //   * UNAMBIGUOUS
 
 // WHAT COUNTS AS AN EXPLICIT REQUEST TO COMMIT:
-// 1. When I explicitly say "commit" or "git commit" in my message
+// 1. When I explicitly say "commit" or "git commit" in my message AS A COMMAND, not as part of a sentence
 // 2. When I say "please commit these changes" or similar phrasing
 // 3. When I ask you to "commit with message X"
 // These are ALL considered explicit requests to commit. A simple "commit" command is a valid explicit request.
@@ -63,6 +62,7 @@ alwaysApply: true
 // - feat: A new feature (correlates with MINOR in SemVer)
 // - fix: A bug fix (correlates with PATCH in SemVer)
 // - docs: Documentation changes
+// - specs: Specification changes and additions
 // - style: Changes that do not affect the meaning of the code (formatting, etc.)
 // - refactor: Code changes that neither fix a bug nor add a feature
 // - perf: Code changes that improve performance
