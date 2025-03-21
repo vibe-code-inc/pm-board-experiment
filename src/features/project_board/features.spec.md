@@ -26,6 +26,9 @@ The Project Board feature provides a visual kanban-style interface for managing 
 ## Behavioral Expectations
 - Tasks should move smoothly between columns when dragged
 - Visual feedback should be provided during drag operations
+- When dragging a card, each column must show a placeholder at potential drop positions, shifting neighboring cards up and down
+- The column that a card is dragged over must receive a blue border for visual feedback
+- When dropping a card, it should be placed at exactly the position where the card placeholder was shown at the moment of dropping
 - Status updates should be reflected immediately
 - Task cards should be expandable/clickable to view and edit details
 - Empty columns should display a placeholder message

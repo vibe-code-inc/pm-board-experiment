@@ -32,6 +32,7 @@ The Task Card component displays a visual representation of a task within the ap
 - Due date should be formatted appropriately
 - Due date should be highlighted if near or past
 - Card should provide visual feedback during drag operations
+- When being dragged, a placeholder with the same dimensions as the card and a blue border must appear at potential drop positions
 - Long text fields should be properly truncated with ellipsis
 - Empty fields should be handled gracefully
 
