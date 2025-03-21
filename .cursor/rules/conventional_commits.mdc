@@ -113,11 +113,14 @@ fix(i18n): correct strings.ts files to follow guidelines
 // 2. ALWAYS check BOTH staged AND unstaged changes using `git --no-pager diff` AND `git --no-pager diff --staged` before writing commit messages.
 // 3. Commit messages MUST accurately reflect ALL code changes, not just what was discussed in conversations.
 // 4. ALWAYS ensure ALL relevant changes are staged before committing. Use `git add` to stage any unstaged changes that should be part of the commit.
-// 5. NEVER leave relevant changes unstaged.
+// 5. NEVER leave relevant changes unstaged. IMPORTANT: NEVER COMMIT WITHOUT FIRST CHECKING FOR UNSTAGED CHANGES THAT SHOULD BE INCLUDED. THIS IS CRITICAL.
 // 6. NEVER base commit messages solely on conversation context. Always examine the actual diff to ensure accuracy.
 // 7. ALWAYS compare against the previous commit explicitly using `git diff --no-pager HEAD` to ensure proper context.
 // 8. Before committing changes, ALWAYS check the full diff against the previous commit using `git diff --no-pager HEAD`.
 // 9. After staging changes with `git add`, ALWAYS verify what's being committed with `git diff --no-pager --staged`.
+// 10. CRITICAL: Before finalizing ANY commit, run `git status` to check for ANY unstaged files that might be part of the same logical change. If you find related unstaged changes, check the file content add them with `git add` before committing, if they are relevant to the commit.
+// 11. Never leave out changes that must belong in the same commit.
+// 12. Try not to mix independent changes that belong in separate commits.
 
 // ====================================================
 // BREAKING CHANGES
@@ -229,5 +232,5 @@ This change adds a new type of commit messages to the Cursor rule:
 // 8. COMMIT BODY: Whenever possible and makes sense, generate the commit description body.
 // 9. BLANK LINES: Do not insert blank lines between bullet points in the commit description body.
 // 10. COMPREHENSIVE DESCRIPTIONS: Commit messages MUST cover ALL significant changes in the diff, not just a subset of them.
-// 11. STAGE ALL RELEVANT CHANGES: NEVER leave relevant changes unstaged. Always use `git add` to stage all changes that should be part of the commit.
+// 11. STAGE ALL RELEVANT CHANGES: NEVER leave relevant changes unstaged. Always use `git add` to stage all changes that should be part of the commit. CRITICAL: BEFORE EVERY COMMIT, VERIFY THAT ALL RELATED CHANGES ARE STAGED. LOOK FOR UNSTAGED FILES THAT MIGHT BE PART OF THE LOGICAL CHANGE.
 // 12. COMPLETE CONTEXT: Always compare against the previous commit using `git diff --no-pager HEAD` to ensure complete context of your changes.
