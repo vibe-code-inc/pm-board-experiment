@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Project, Task } from '@/types';
-import { ProjectBoard } from '@/features/project_board/project_board';
+import { Project, Task } from './types';
+import { ProjectBoard } from './features/project_board/project_board';
 import { Layout } from 'lucide-react';
 
 const initialProject: Project = {
   id: '1',
   name: 'Website Redesign',
   description: 'Complete overhaul of the company website with modern design and improved UX',
+  createdAt: '2024-03-15',
+  updatedAt: '2024-03-30',
   tasks: [
     // To Do Column
     {
@@ -17,6 +19,8 @@ const initialProject: Project = {
       priority: 'high',
       assignee: 'Alex Wong',
       dueDate: '2024-04-20',
+      createdAt: '2024-03-15',
+      updatedAt: '2024-03-15',
     },
     {
       id: '2',
@@ -26,6 +30,8 @@ const initialProject: Project = {
       priority: 'medium',
       assignee: 'Jenna Liu',
       dueDate: '2024-04-25',
+      createdAt: '2024-03-16',
+      updatedAt: '2024-03-16',
     },
     {
       id: '3',
@@ -35,6 +41,8 @@ const initialProject: Project = {
       priority: 'medium',
       assignee: 'Marcus Green',
       dueDate: '2024-04-22',
+      createdAt: '2024-03-16',
+      updatedAt: '2024-03-16',
     },
     {
       id: '4',
@@ -44,6 +52,8 @@ const initialProject: Project = {
       priority: 'high',
       assignee: 'Emily Chen',
       dueDate: '2024-04-28',
+      createdAt: '2024-03-17',
+      updatedAt: '2024-03-17',
     },
     {
       id: '5',
@@ -53,6 +63,8 @@ const initialProject: Project = {
       priority: 'low',
       assignee: 'Kevin Smith',
       dueDate: '2024-05-05',
+      createdAt: '2024-03-18',
+      updatedAt: '2024-03-18',
     },
 
     // In Progress Column
@@ -64,6 +76,8 @@ const initialProject: Project = {
       priority: 'high',
       assignee: 'Sarah Chen',
       dueDate: '2024-04-15',
+      createdAt: '2024-03-19',
+      updatedAt: '2024-03-25',
     },
     {
       id: '7',
@@ -73,6 +87,8 @@ const initialProject: Project = {
       priority: 'high',
       assignee: 'David Kumar',
       dueDate: '2024-04-18',
+      createdAt: '2024-03-20',
+      updatedAt: '2024-03-26',
     },
     {
       id: '8',
@@ -82,6 +98,8 @@ const initialProject: Project = {
       priority: 'medium',
       assignee: 'Rachel Park',
       dueDate: '2024-04-19',
+      createdAt: '2024-03-21',
+      updatedAt: '2024-03-26',
     },
     {
       id: '9',
@@ -91,6 +109,8 @@ const initialProject: Project = {
       priority: 'medium',
       assignee: 'Thomas Moore',
       dueDate: '2024-04-21',
+      createdAt: '2024-03-22',
+      updatedAt: '2024-03-27',
     },
     {
       id: '10',
@@ -100,6 +120,8 @@ const initialProject: Project = {
       priority: 'low',
       assignee: 'Olivia Johnson',
       dueDate: '2024-04-26',
+      createdAt: '2024-03-23',
+      updatedAt: '2024-03-28',
     },
 
     // Done Column
@@ -111,6 +133,8 @@ const initialProject: Project = {
       priority: 'medium',
       assignee: 'Mike Johnson',
       dueDate: '2024-03-30',
+      createdAt: '2024-03-01',
+      updatedAt: '2024-03-30',
     },
     {
       id: '12',
@@ -120,6 +144,8 @@ const initialProject: Project = {
       priority: 'low',
       assignee: 'Jennifer Wu',
       dueDate: '2024-03-25',
+      createdAt: '2024-03-02',
+      updatedAt: '2024-03-25',
     },
     {
       id: '13',
@@ -129,6 +155,8 @@ const initialProject: Project = {
       priority: 'high',
       assignee: 'Alex Wong',
       dueDate: '2024-04-02',
+      createdAt: '2024-03-10',
+      updatedAt: '2024-04-02',
     },
     {
       id: '14',
@@ -138,6 +166,8 @@ const initialProject: Project = {
       priority: 'medium',
       assignee: 'Chris Taylor',
       dueDate: '2024-03-18',
+      createdAt: '2024-03-05',
+      updatedAt: '2024-03-18',
     },
     {
       id: '15',
@@ -147,18 +177,21 @@ const initialProject: Project = {
       priority: 'medium',
       assignee: 'Maya Patel',
       dueDate: '2024-03-29',
+      createdAt: '2024-03-10',
+      updatedAt: '2024-03-29',
     },
   ],
 };
 
-function App() {
+// App component implements the main application shell
+export const App: React.FC = () => {
   const [project, setProject] = useState<Project>(initialProject);
 
   const handleTaskUpdate = (taskId: string, newStatus: Task['status']) => {
     setProject((prev) => ({
       ...prev,
       tasks: prev.tasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
+        task.id === taskId ? { ...task, status: newStatus, updatedAt: new Date().toISOString().split('T')[0] } : task
       ),
     }));
   };
@@ -167,7 +200,7 @@ function App() {
     setProject((prev) => ({
       ...prev,
       tasks: prev.tasks.map((task) =>
-        task.id === updatedTask.id ? updatedTask : task
+        task.id === updatedTask.id ? { ...updatedTask, updatedAt: new Date().toISOString().split('T')[0] } : task
       ),
     }));
   };
@@ -177,10 +210,10 @@ function App() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center">
           <Layout className="w-6 h-6 text-blue-600 mr-2" />
-          <h1 className="text-xl font-semibold text-gray-900">Project Hub</h1>
+          <h1 className="text-xl font-semibold text-gray-900">PM Board</h1>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto py-6">
+      <main className="max-w-7xl mx-auto py-6 px-4">
         <ProjectBoard
           project={project}
           onTaskUpdate={handleTaskUpdate}
@@ -189,6 +222,4 @@ function App() {
       </main>
     </div>
   );
-}
-
-export default App;
+};

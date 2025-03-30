@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Task, Project } from '@/types';
 import { TaskCard } from '@/ui/features/task_card/task_card';
 import { Info, X } from 'lucide-react';
+import { TaskModal } from '@/ui/features/task_modal/task_modal';
 
 interface ProjectBoardProps {
   project: Project;
@@ -21,6 +22,8 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
   const [isMobile, setIsMobile] = useState(false);
   const [localProject, setLocalProject] = useState<Project>(project);
   const [dragInProgress, setDragInProgress] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Update local project when props change
   useEffect(() => {
@@ -235,6 +238,18 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
     }
   }, []);
 
+  // Handle task selection for editing
+  const handleTaskEdit = (task: Task) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  };
+
+  // Handle task saving from modal
+  const handleSaveTask = (updatedTask: Task) => {
+    onTaskEdit(updatedTask);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="project-board-container p-4 md:p-6 min-h-screen">
       {/* Mobile drag and drop guide */}
@@ -294,7 +309,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
                       key={task.id}
                       task={task}
                       onStatusChange={(status) => onTaskUpdate(task.id, status)}
-                      onEdit={() => onTaskEdit(task)}
+                      onEdit={() => handleTaskEdit(task)}
                       columnTasks={tasks}
                       onReorder={handleReorder}
                     />
@@ -305,6 +320,16 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
           );
         })}
       </div>
+
+      {/* Task Modal */}
+      {selectedTask && (
+        <TaskModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          task={selectedTask}
+          onSave={handleSaveTask}
+        />
+      )}
     </div>
   );
 }
