@@ -131,6 +131,111 @@ For implementing a new task board feature:
 //    - Benefits: Reduces complexity, improves maintainability, speeds up development, prevents feature creep
 
 // ====================================================
+// SPECIFICATION EXTENSION EXAMPLES - VALID VS INVALID
+// ====================================================
+
+/*
+// VALID EXAMPLE - Adding a feature while respecting SOLID principles:
+
+SCENARIO: A TextInput component exists, and we need to add conditional disabling based on form state.
+
+VALID APPROACH:
+1. Update text_input.specs.md to add support for a simple `disabled` prop:
+   ```
+   // Add to TextInputProps interface:
+   // Whether the input is disabled
+   disabled?: boolean;
+   ```
+
+2. Create a new specification for form_field_controller.specs.md:
+   ```
+   # Form Field Controller Specification
+
+   ## Overview
+   The Form Field Controller determines field states based on form conditions.
+
+   ## Technical Requirements
+   - Evaluate form field states based on business rules
+   - Return disabled states for specific fields based on current form values
+   - Maintain separation of concerns by keeping business logic separate from UI
+
+   ## Interface
+   type FormFieldController = {
+     getFieldStates: (formValues: FormValues) => FieldStates;
+   }
+
+   type FieldStates = {
+     [fieldName: string]: {
+       disabled: boolean;
+       // other states as needed
+     }
+   }
+   ```
+
+3. Update user_form.specs.md to inject the controller:
+   ```
+   # User Form Specification
+
+   ## Dependencies
+   - TextInput component
+   - FormFieldController
+
+   ## Behavior
+   - Inject FormFieldController to determine field states
+   - Pass disabled state to TextInput components based on controller output
+   ```
+
+BENEFITS:
+- TextInput remains simple with a focused responsibility
+- Business logic is properly encapsulated in its own controller
+- Form component handles coordination but doesn't contain business logic
+- Each component has a single responsibility
+- Easy to test each part independently
+*/
+
+/*
+// INVALID EXAMPLE - Violating SOLID principles:
+
+SCENARIO: Same as above - A TextInput component exists, and we need to add conditional disabling based on form state.
+
+INVALID APPROACH:
+1. Modify text_input.specs.md to include form-specific business logic:
+   ```
+   // Add to TextInputProps interface:
+   // Form context to determine disabled state
+   formValues?: FormValues;
+   // Field name to check against business rules
+   fieldName?: string;
+   // Whether this field should be disabled when another field has a specific value
+   disableWhenFieldHasValue?: {
+     otherFieldName: string;
+     value: any;
+   }
+   ```
+
+2. Implement complex business logic directly in TextInput:
+   ```typescript
+   // Inside TextInput component:
+   const isDisabled = () => {
+     if (props.disabled) return true;
+     if (props.formValues && props.fieldName && props.disableWhenFieldHasValue) {
+       const { otherFieldName, value } = props.disableWhenFieldHasValue;
+       return props.formValues[otherFieldName] === value;
+     }
+     return false;
+   };
+   ```
+
+PROBLEMS:
+- TextInput now has multiple responsibilities (rendering input + business logic)
+- The component is tightly coupled to form validation rules
+- Testing becomes more complex as the component has too many concerns
+- Reusability is reduced as the component has form-specific logic
+- Changes to business rules require modifying a UI component
+- Violates Single Responsibility and Dependency Inversion principles
+*/
+
+// ====================================================
 // FILES THAT MUST NOT HAVE SPECIFICATIONS
 // ====================================================
 
