@@ -51,10 +51,19 @@ export interface Project {
 ```
 
 ## Related Specifications
-- [Features - Project Board](./features/project_board/features.spec.md)
-- [Features - Task Management](./features/task_management/features.spec.md)
-- [UI - Base Components](./ui/base/features.spec.md)
-- [UI - Feature Components](./ui/features/features.spec.md)
-- [UI - Task Card](./ui/features/task_card/features.spec.md)
-- [UI - Task Modal](./ui/features/task_modal/features.spec.md)
-- [Lib - Utilities](./lib/features.spec.md)
+
+### Core Files
+- [App Component](./app.specs.md)
+- [Main Entry Point](./main.specs.md)
+- [Types](./types.specs.md)
+
+### Features
+- [Project Board Feature](./features/project_board/project_board.package_specs.md)
+- [Task Management Feature](./features/task_management/task_management.package_specs.md)
+
+### UI Components
+- [Base UI Components](./ui/base/base.package_specs.md)
+- [Feature UI Components](./ui/features/features.package_specs.md)
+
+### Utilities
+- [Library Utilities](./lib/lib.package_specs.md)

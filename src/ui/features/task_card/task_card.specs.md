@@ -14,6 +14,8 @@ The Task Card component displays a visual representation of a task within the ap
 - Support drag-and-drop for task status changes
 - Provide visual feedback for interactive states
 - Show appropriate truncation for overly long content
+- Support touch-based drag and drop on mobile devices
+- Provide a vertical grip handle for dragging on mobile
 
 ## Technical Requirements
 - Build with React and TypeScript
@@ -23,7 +25,11 @@ The Task Card component displays a visual representation of a task within the ap
 - Support drag-and-drop functionality
 - Optimize rendering performance
 - Ensure full type safety
-- Use modular subcomponents for maintainability
+- Implement auto-scrolling during drag operations
+- Detect safe areas for notched mobile devices
+- Support touchscreen-based drag and drop
+- Handle both mouse and touch events appropriately
+- Implement throttling for performance-critical operations
 
 ## Behavioral Expectations
 - Card should be draggable between status columns
@@ -35,49 +41,43 @@ The Task Card component displays a visual representation of a task within the ap
 - When being dragged, a placeholder with the same dimensions as the card and a blue border must appear at potential drop positions
 - Long text fields should be properly truncated with ellipsis
 - Empty fields should be handled gracefully
+- Auto-scrolling should activate when dragging near screen edges
+- Touch-based dragging should only activate when using the grip handle
+- Screen should auto-scroll during dragging operations
 
 ## Component Structure
-The Task Card consists of the following sections:
-- Header (title, status indicator)
-- Body (description)
-- Footer (metadata - assignee, due date, priority)
+The Task Card is implemented as a single component with sections for:
+- Header area (title, status indicator)
+- Body area (description)
+- Footer area (metadata - assignee, due date, priority)
+- Modal for editing task details
+- Drag handle for mobile interaction
 
 ## Interfaces
 ```typescript
 interface TaskCardProps {
   task: Task;
-  onClick?: (taskId: string) => void;
-  onDragStart?: (e: React.DragEvent, taskId: string) => void;
-  onDragEnd?: (e: React.DragEvent) => void;
-  className?: string;
+  onStatusChange: (status: Task['status']) => void;
+  onEdit: (task: Task) => void;
+  columnTasks?: Task[]; // Tasks in the current column for reordering
+  onReorder?: (draggedTaskId: string, targetTaskId: string) => void; // Callback for reordering
 }
 
-interface TaskCardHeaderProps {
-  title: string;
-  status: Task['status'];
-  className?: string;
-}
+// Color maps for visual styling
+const priorityColors = {
+  low: 'bg-blue-100 text-blue-800',
+  medium: 'bg-yellow-100 text-yellow-800',
+  high: 'bg-red-100 text-red-800',
+};
 
-interface TaskCardBodyProps {
-  description: string;
-  className?: string;
-}
-
-interface TaskCardFooterProps {
-  priority: Task['priority'];
-  assignee?: string;
-  dueDate?: string;
-  className?: string;
-}
+const statusColors = {
+  'todo': 'bg-gray-100',
+  'in-progress': 'bg-purple-100',
+  'done': 'bg-green-100',
+};
 ```
 
-## Related Files
-- task_card.tsx - Main task card component
-- components/task_card_header.tsx - Header subcomponent
-- components/task_card_body.tsx - Body subcomponent
-- components/task_card_footer.tsx - Footer subcomponent
-
 ## Related Specifications
-- [Task Card Component](./components/task_card_header.tsx.spec.md)
-- [Task Modal Component](../task_modal/features.spec.md)
-- [Project Board Feature](../../../features/project_board/features.spec.md)
+- [Feature UI Components](../features.package_specs.md)
+- [Task Modal Component](../task_modal/task_modal.specs.md)
+- [Project Board Feature](../../../features/project_board/project_board.package_specs.md)

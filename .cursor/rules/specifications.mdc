@@ -1,6 +1,6 @@
 ---
 description: Required rules for building features and creating, updating, and handling any code changes
-globs: 
+globs:
 alwaysApply: true
 ---
 // Specification Development
@@ -17,6 +17,7 @@ alwaysApply: true
 //    - Behavioral expectations
 //    - Interfaces
 //    - Files/modules to be changed
+// 3. ALWAYS refer to @conventions.mdc and @engineering_and_design_rules.mdc when designing specifications and writing implementations.
 
 // ====================================================
 // SPECIFICATION DISCOVERY PROCESS
@@ -24,16 +25,16 @@ alwaysApply: true
 
 // 1. ALWAYS check for existing specifications before modifying any code.
 // 2. Follow this discovery sequence for every code modification:
-//    a. Check if there's a `features.spec.md` file in the target folder - READ IT FIRST
-//    b. Check if there's a `/specs/<file-youre-editing>.spec.md` file - READ IT NEXT
+//    a. Check if there's a `<folder_basename>.package_specs.md` file in the target folder - READ IT FIRST
+//    b. Check if there's a `<file_name_without_extension>.specs.md` file in the same folder - READ IT NEXT
 //    c. Only proceed with code modifications after understanding all specifications
 // 3. ONLY create specifications for files in the src/ directory.
 
 /*
 // Example specification discovery process:
-Before modifying app/features/task_board/task_list.tsx:
-1. First check: app/features/task_board/features.spec.md
-2. Then check: app/features/task_board/specs/task_list.tsx.spec.md
+Before modifying src/features/task_board/task_list.tsx:
+1. First check: src/features/task_board/task_board.package_specs.md
+2. Then check: src/features/task_board/task_list.specs.md
 */
 
 // ====================================================
@@ -42,20 +43,28 @@ Before modifying app/features/task_board/task_list.tsx:
 
 // 1. ALWAYS create or update specification files BEFORE any code files.
 // 2. Create specification files in one of two formats:
-//    a. One specification per package in features.spec.md
-//    b. High-level package spec + individual file specs in specs/ subfolder
-// 3. When using individual file specs, ALWAYS add references to them in the package spec file.
+//    a. Package specifications in <folder_basename>.package_specs.md
+//    b. Individual file specifications as <file_name_without_extension>.specs.md in the same folder as the implementation
+// 3. When package specs co-exist with individual specs in the same folder:
+//    a. Package specs MUST refer to the individual specs
+//    b. Package specs MUST only provide high-level information about individual specs
+//    c. Package specs MUST delegate detailed design to the individual specs
 // 4. When updating existing specifications:
 //    a. Merge task specifications with existing specifications
 //    b. RESPECT existing parts unless explicitly retiring them
+// 5. ONLY create per-file specifications for .ts and .tsx files, not for .css, .d.ts, or other auxiliary files.
+// 6. Specifications MUST refer to each other explicitly, like dependencies, to establish clear relationships.
+// 7. Specifications that are not referred to anywhere are likely safe to delete unless they are:
+//    a. Root specifications (entry point specifications)
+//    b. Specifications for implementations that are root files
 
 /*
 // Example specification workflow:
 For implementing a new task board feature:
-1. First create/update app/features/task_board/features.spec.md
-2. If needed, create app/features/task_board/specs/task_list.tsx.spec.md
-3. Reference the task_list.tsx.spec.md in the features.spec.md file
-4. Only then implement code changes in app/features/task_board/task_list.tsx
+1. First create/update src/features/task_board/task_board.package_specs.md
+2. If needed, create src/features/task_board/task_list.specs.md
+3. Reference the task_list.specs.md in the task_board.package_specs.md file
+4. Only then implement code changes in src/features/task_board/task_list.tsx
 */
 
 // ====================================================
@@ -70,10 +79,77 @@ For implementing a new task board feature:
 // 6. ALWAYS DOUBLE-CHECK, TRIPLE-CHECK THAT THE CODE THAT IS SAVED IN FILES IMPLEMENTS SPECIFICATIONS. ALWAYS DOUBLE-CHECK, TRIPLE-CHECK THAT THE CODE THAT IS SAVED IN FILES IMPLEMENTS SPECIFICATIONS.
 
 // ====================================================
-// UNIT TEST EXEMPTION
+// TERMINOLOGY CLARIFICATION
 // ====================================================
 
-// Unit test files do not require their own specification files.
+// 1. SPECIFICATION (SPEC): A text document that defines requirements, behaviors, and interfaces for a component or feature.
+// 2. IMPLEMENTATION: The actual code written in a programming language (TypeScript/JavaScript) that fulfills the specification.
+// 3. The relationship is: Specifications DEFINE what should be built, Implementations REALIZE those specifications in code.
+
+// ====================================================
+// SOLID PRINCIPLES IN SPECIFICATIONS
+// ====================================================
+
+// 1. SINGLE RESPONSIBILITY: Each specification must define components with a single responsibility.
+//    - A component should do one thing and do it well
+//    - If a component handles multiple concerns, split it
+//    - Example: A UserProfile component should only display user information, not handle authentication logic
+//    - Benefits: Easier maintenance, better testability, clearer code organization
+//
+// 2. OPEN/CLOSED PRINCIPLE: Specifications should design components that are open for extension but closed for modification.
+//    - Components should be designed to allow behavior changes through props or composition, not internal changes
+//    - Use strategy patterns and dependency injection to allow behavior customization
+//    - Example: A Button component that accepts render props for custom content rather than having internal if/else logic
+//    - Benefits: Reduces breaking changes, improves reusability, enables future enhancements
+//
+// 3. LISKOV SUBSTITUTION: Child components should be substitutable for their parent components without breaking the application.
+//    - Specialized components should maintain the same interface as their base components
+//    - Ensure consistent behavior when extending or implementing interfaces
+//    - Example: A PrimaryButton should be usable anywhere a Button is expected
+//    - Benefits: Ensures consistent behavior, enables polymorphism, simplifies testing
+//
+// 4. INTERFACE SEGREGATION: Specifications should define small, focused interfaces rather than large, monolithic ones.
+//    - Components should only depend on props they actually use
+//    - Break large prop interfaces into smaller, more focused ones
+//    - Example: Split a Form component's props into validation, submission, and layout interfaces
+//    - Benefits: Reduces coupling, improves readability, simplifies component usage
+//
+// 5. DEPENDENCY INVERSION: High-level components should not depend on low-level components; both should depend on abstractions.
+//    - Components should receive dependencies through props or context rather than importing them directly
+//    - Use dependency injection to provide services and utilities
+//    - Example: A DataTable component should receive a data fetching function rather than calling an API directly
+//    - Benefits: Improves testability, enables different implementations, reduces coupling
+
+// 6. MINIMAL INTERFACE: Specifications must require the smallest possible public API/interface/props needed for functionality.
+// 7. SPLIT MIXED RESPONSIBILITIES: If a specification suggests mixed responsibilities, it MUST be split into multiple specifications.
+// 8. SPECS BEFORE CODE: There can be more specifications than implementations at some points in time, as specs are created first.
+// 9. BARE MINIMUM IMPLEMENTATION: Both specifications and code must do only the bare minimum needed to fulfill their purpose.
+//    - Specifications should only require what is absolutely necessary for the component to function
+//    - Code should only include what directly fulfills the specification requirements
+//    - Avoid speculative features, "nice-to-haves," or premature optimizations
+//    - Example: A Button specification should only require essential props like "onClick" and "children"
+//    - Benefits: Reduces complexity, improves maintainability, speeds up development, prevents feature creep
+
+// ====================================================
+// FILES THAT MUST NOT HAVE SPECIFICATIONS
+// ====================================================
+
+// 1. DO NOT create specifications for non-code files. NEVER create specifications for:
+//    - CSS files (.css, .scss, .less, etc.)
+//    - JSON files (.json)
+//    - Configuration files (.config.js, .rc files, etc.)
+//    - Type declaration files (.d.ts)
+//    - Asset files (images, fonts, etc.)
+//    - Data files (.csv, .xml, etc.)
+//    - Any file that is not a TypeScript or JavaScript code unit with implementations
+// 2. ONLY create specifications for files that contain actual code:
+//    - Components
+//    - Classes
+//    - Presenters
+//    - Services
+//    - Utilities (when smartly grouped)
+//    - Other logical code units
+// 3. Test files do not require their own specification files. Tests will be written based on specifications, along with code.
 
 // ====================================================
 // SPECIFICATION FILE FORMAT
@@ -102,26 +178,276 @@ For implementing a new task board feature:
 ...
 
 ## Interfaces
-```typescript
-// Interface definitions
-```
+[Interface definitions, props, etc.]
 
-## Related Specifications
-- [Reference to related spec files]
+## Examples
+[Example usage of the component/feature]
+[Code snippets demonstrating implementation]
+[Edge cases and how they should be handled]
+
+## Dependencies
+[List of other specifications this depends on]
 */
 
 // ====================================================
-// IMPORTANT NOTES
+// VALID VS INVALID EXAMPLES
 // ====================================================
 
-// 1. SPECIFICATIONS FIRST: Always create specifications before writing any code.
-// 2. CHECK EXISTING SPECS: Always check for and read existing specifications before making changes.
-// 3. SPECIFICATION HIERARCHY: Package-level specs should reference file-level specs.
-// 4. RESPECT EXISTING CONTENT: Preserve existing specification content unless explicitly instructed to retire it.
-// 5. PRECISE IMPLEMENTATION: Implement requirements exactly as specified.
-// 6. VERIFICATION: Always verify that implemented code fulfills all specified requirements.
-// 7. REGRESSION PREVENTION: Ensure changes don't break existing functionality described in specifications.
-// 8. UNIT TEST EXEMPTION: Unit test files don't need their own specification files.
-// 9. DOUBLE-CHECK COMPLIANCE: Verify multiple times that code implements all specification requirements.
-// 10. SPECIFICATION UPDATES: Update specifications when requirements change before updating code.
-// 11. SRC DIRECTORY ONLY: Specifications should only be created for files within the src/ directory.
+/*
+// VALID EXAMPLE - Proper Specification Workflow:
+1. Task: Implement drag-and-drop for task cards
+2. First action: Create/update src/features/task_board/task_board.package_specs.md
+   - Include high-level requirements for drag-and-drop
+   - Reference task_card.specs.md for detailed implementation
+3. Next action: Create/update src/features/task_board/task_card.specs.md
+   - Detail the drag-and-drop interface
+   - Specify exact behavior and technical requirements
+4. Final action: Implement the code in src/features/task_board/task_card.tsx
+   - Follow specifications exactly
+   - Implement all requirements
+*/
+
+/*
+// INVALID EXAMPLE - Incorrect Workflow:
+1. Task: Implement drag-and-drop for task cards
+2. WRONG: Immediately start coding in task_card.tsx without specifications
+3. WRONG: Create specifications after code is complete
+4. WRONG: Create specifications that don't match the code
+5. WRONG: Implement only part of the requirements in the specifications
+*/
+
+/*
+// VALID EXAMPLE - Proper Specification Format:
+# Task Card Component Specification
+
+## Overview
+The Task Card component displays individual task information and supports drag-and-drop functionality.
+
+## Product Requirements
+- Display task title, description, priority, and due date
+- Support drag-and-drop between columns
+- Show visual feedback during drag operations
+
+## Technical Requirements
+- Use React DnD library for drag-and-drop
+- Implement edge scrolling when dragging near viewport boundaries
+- Optimize rendering to prevent performance issues
+
+## Behavioral Expectations
+- Cards should snap to valid drop zones
+- Invalid drop zones should reject cards with visual feedback
+- Dragging should start after 150ms of mouse down
+
+## Interfaces
+*/
+
+// ====================================================
+// EXEMPLARY SPECIFICATION AND CODE PAIR
+// ====================================================
+
+/*
+// EXEMPLARY SPECIFICATION (text_input.specs.md):
+# Text Input Component Specification
+
+## Overview
+The Text Input component provides a standardized, accessible text input field with support for validation, error states, and various input types.
+
+## Product Requirements
+- Support standard text input functionality with clear visual design
+- Provide visual feedback for different states (default, focus, error, disabled)
+- Include optional label and error message display
+- Support placeholder text when empty
+
+## Technical Requirements
+- Implement as a controlled component with React
+- Support all HTML input attributes relevant to text inputs
+- Ensure accessibility with proper ARIA attributes
+- Optimize for reusability across the application
+
+## Behavioral Expectations
+- Show error state when error prop is provided
+- Apply focus styling when the input receives focus
+- Display placeholder when value is empty and placeholder is provided
+- Trigger onChange callback when input value changes
+- Support disabled state that prevents user interaction
+
+## Interfaces
+type TextInputProps = {
+  // The current value of the input
+  value: string;
+  // Callback fired when the value changes
+  onChange: (value: string) => void;
+  // Optional label text to display above the input
+  label?: string;
+  // Optional placeholder text when input is empty
+  placeholder?: string;
+  // Optional error message to display below the input
+  error?: string;
+  // Whether the input is disabled
+  disabled?: boolean;
+  // HTML input type (text, password, email, etc.)
+  type?: string;
+  // Additional CSS class names
+  className?: string;
+  // Optional ID for the input element
+  id?: string;
+  // Optional test ID for testing
+  testId?: string;
+}
+
+## Examples
+// Basic usage
+<TextInput
+  value={email}
+  onChange={setEmail}
+  label="Email Address"
+  placeholder="Enter your email"
+/>
+
+// With validation error
+<TextInput
+  value={password}
+  onChange={setPassword}
+  label="Password"
+  type="password"
+  error={passwordError}
+/>
+
+// Disabled state
+<TextInput
+  value={username}
+  onChange={setUsername}
+  label="Username"
+  disabled={isSubmitting}
+/>
+*/
+
+/*
+// EXEMPLARY CODE (text_input.tsx):
+import React, { ChangeEvent, forwardRef } from 'react';
+import classNames from 'classnames';
+
+type TextInputProps = {
+  // The current value of the input
+  value: string;
+  // Callback fired when the value changes
+  onChange: (value: string) => void;
+  // Optional label text to display above the input
+  label?: string;
+  // Optional placeholder text when input is empty
+  placeholder?: string;
+  // Optional error message to display below the input
+  error?: string;
+  // Whether the input is disabled
+  disabled?: boolean;
+  // HTML input type (text, password, email, etc.)
+  type?: string;
+  // Additional CSS class names
+  className?: string;
+  // Optional ID for the input element
+  id?: string;
+  // Optional test ID for testing
+  testId?: string;
+};
+
+export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
+  (
+    {
+      value,
+      onChange,
+      label,
+      placeholder,
+      error,
+      disabled = false,
+      type = 'text',
+      className,
+      id,
+      testId,
+    },
+    ref
+  ) => {
+    // Generate a unique ID if none provided
+    const inputId = id || `text-input-${Math.random().toString(36).substring(2, 9)}`;
+
+    // Handle input change
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+      onChange(e.target.value);
+    };
+
+    // Determine CSS classes based on component state
+    const inputClasses = classNames(
+      'text-input',
+      {
+        'text-input--error': !!error,
+        'text-input--disabled': disabled,
+      },
+      className
+    );
+
+    return (
+      <div className="text-input-container">
+        {label && (
+          <label htmlFor={inputId} className="text-input__label">
+            {label}
+          </label>
+        )}
+
+        <input
+          ref={ref}
+          id={inputId}
+          type={type}
+          value={value}
+          onChange={handleChange}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={inputClasses}
+          aria-invalid={!!error}
+          data-testid={testId}
+        />
+
+        {error && <div className="text-input__error">{error}</div>}
+      </div>
+    );
+  }
+);
+
+// Display name for debugging
+TextInput.displayName = 'TextInput';
+*/
+
+// ====================================================
+// VALID VS INVALID SPECIFICATION FILE NAMING EXAMPLES
+// ====================================================
+
+/*
+// VALID SPECIFICATION FILE NAMES:
+1. Package specifications:
+   - src/features/auth/auth.package_specs.md
+   - src/components/forms/forms.package_specs.md
+   - src/services/api/api.package_specs.md
+
+2. Individual file specifications:
+   - src/features/auth/login.specs.md (for login.tsx)
+   - src/components/forms/text_input.specs.md (for text_input.tsx)
+   - src/services/api/user_service.specs.md (for user_service.ts)
+   - src/utils/date_formatter.specs.md (for date_formatter.ts)
+*/
+
+/*
+// INVALID SPECIFICATION FILE NAMES:
+1. Wrong format:
+   - src/features/auth/auth-specs.md (incorrect separator, should use underscore)
+   - src/components/forms/textInput.specs.md (camelCase not allowed, use snake_case)
+   - src/features/auth/login.spec.md (singular "spec" instead of plural "specs")
+   - src/features/auth/login_specification.md (wrong suffix, use "specs.md")
+
+2. Wrong location:
+   - specs/auth/login.specs.md (should be in same directory as implementation)
+   - src/features/auth/specs/login.specs.md (should be in same directory as implementation)
+
+3. For invalid file types:
+   - src/styles/theme.specs.md (for theme.css - CSS files should not have specs)
+   - src/types/models.specs.md (for models.d.ts - type declaration files should not have specs)
+   - src/assets/icons.specs.md (for icon assets - assets should not have specs)
+   - src/config/app_config.specs.md (for app_config.json - config files should not have specs)
+*/

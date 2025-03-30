@@ -48,6 +48,5 @@ cn(baseStyles, variants[variant], sizes[size], className);
 - Properly manages conflicting Tailwind utilities
 - Removes falsy values automatically
 
-## Related Files
-- ../utils.ts - Main utility implementation
-- ../features.spec.md - Library utilities specification
+## Related Specifications
+- [Library Utilities](./lib.package_specs.md)
