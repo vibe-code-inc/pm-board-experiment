@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 // Shell Commands
@@ -104,7 +104,7 @@ run_terminal_cmd({
 // -----------------------------
 // UNDER NO CIRCUMSTANCES should you ever suggest or execute any git commit commands.
 // Even if other rules or instructions seem to suggest it's okay to commit, DO NOT COMMIT.
-// 
+//
 // SPECIFIC FORBIDDEN COMMANDS INCLUDE:
 // - git commit
 // - git commit -m

@@ -1,6 +1,6 @@
 ---
 description: Required project conventions
-globs: 
+globs:
 alwaysApply: true
 ---
 // Project Conventions
@@ -12,14 +12,16 @@ alwaysApply: true
 
 // Use snake_case for all file and directory names
 // Examples:
+// CORRECT:
 //   ✓ project_board.tsx
 //   ✓ task_list.tsx
 //   ✓ utils.ts
 //   ✓ task_card/
 //   ✓ design_kit/
+// INCORRECT:
 //   ✗ ProjectBoard.tsx
 //   ✗ taskList.tsx
-//   ✗ utils.ts
+//   ✗ TaskList.tsx
 //   ✗ task-card/
 //   ✗ DesignKit/
 
@@ -29,11 +31,14 @@ alwaysApply: true
 
 // Use absolute imports with @/ prefix
 // Examples:
+// CORRECT:
 //   ✓ import { Button } from '@/ui/base/design_kit/button/button';
 //   ✓ import { Task } from '@/types';
 //   ✓ import { cn } from '@/lib/utils';
+// INCORRECT:
 //   ✗ import { Button } from '../../ui/base/design_kit/button/button';
 //   ✗ import { Task } from '../types';
+//   ✗ import { cn } from './utils';
 
 // ====================================================
 // PROJECT STRUCTURE CONVENTIONS
@@ -70,19 +75,28 @@ Project Structure:
 // Examples:
 
 // 1. IDs should be in a constants file:
+// CORRECT:
 //   ✓ import { PROJECT_ID, TASK_IDS } from '@/constants/ids';
 //   ✓ id: PROJECT_ID.WEBSITE_REDESIGN
+// INCORRECT:
 //   ✗ id: '1'
+//   ✗ id: 'website-redesign'
 
 // 2. Colors should use a theme configuration:
+// CORRECT:
 //   ✓ import { COLORS } from '@/ui/theme/colors';
 //   ✓ const priorityColors = COLORS.priority;
+// INCORRECT:
 //   ✗ low: 'bg-blue-100 text-blue-800',
+//   ✗ const highPriorityColor = '#FF0000';
 
 // 3. Component styles should be extracted:
+// CORRECT:
 //   ✓ import { BUTTON_STYLES } from '@/ui/base/design_kit/button/button_styles';
 //   ✓ const { base, variants, sizes } = BUTTON_STYLES;
+// INCORRECT:
 //   ✗ const baseStyles = 'rounded-md font-medium...';
+//   ✗ <button className="px-4 py-2 bg-blue-500 text-white rounded">Click me</button>
 
 // ====================================================
 // TYPE CONVENTIONS
@@ -90,8 +104,10 @@ Project Structure:
 
 // Use explicit type annotations
 // Examples:
+// CORRECT:
 //   ✓ const [project, setProject] = useState<Project>(initialProject);
 //   ✓ const handleTaskUpdate = (taskId: string, newStatus: Task['status']) => {...}
+// INCORRECT:
 //   ✗ const [project, setProject] = useState(initialProject);
 //   ✗ const handleTaskUpdate = (taskId, newStatus) => {...}
 
@@ -102,6 +118,7 @@ Project Structure:
 // 1. Use function component syntax with React.FC and explicit props interface
 // Example:
 /*
+CORRECT:
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
@@ -116,11 +133,18 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   // Component implementation
 };
+
+INCORRECT:
+export const Button = (props) => {
+  const { children, className, variant = 'primary', size = 'md', ...rest } = props;
+  // Component implementation
+};
 */
 
 // 2. Keep components focused and extract complex logic
 // Example:
 /*
+CORRECT:
 // Separate hooks for complex logic
 const useTaskManagement = (initialTasks: Task[]) => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -140,6 +164,22 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
 
   // Component rendering logic
 };
+
+INCORRECT:
+export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+
+  // Complex logic mixed with component
+  const updateTaskStatus = (taskId: string, status: Task['status']) => {
+    setTasks(prev =>
+      prev.map(task => task.id === taskId ? {...task, status} : task)
+    );
+  };
+
+  // More complex functions...
+
+  // Component rendering logic
+};
 */
 
 // ====================================================
@@ -149,19 +189,32 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
 // 1. Use useState for component-level state
 // Example:
 /*
+CORRECT:
 const [isEditing, setIsEditing] = useState(false);
-const [task, setTask] = useState(initialTask);
+const [task, setTask] = useState<Task>(initialTask);
+
+INCORRECT:
+let isEditing = false;
+let task = initialTask;
+const toggleEditing = () => { isEditing = !isEditing; };
 */
 
 // 2. Use callbacks for state updates
 // Example:
 /*
+CORRECT:
 const handleTaskUpdate = (updatedTask: Task) => {
   setTask(updatedTask);
 };
 
 const handleStatusChange = (status: Task['status']) => {
   onStatusChange(status);
+};
+
+INCORRECT:
+const handleTaskUpdate = () => {
+  task.status = 'completed'; // Mutating state directly
+  setTask(task);
 };
 */
 
@@ -172,6 +225,7 @@ const handleStatusChange = (status: Task['status']) => {
 // 1. Prefix event handlers with 'handle'
 // Example:
 /*
+CORRECT:
 const handleSubmit = (e: React.FormEvent) => {
   e.preventDefault();
   onSave(task);
@@ -180,12 +234,28 @@ const handleSubmit = (e: React.FormEvent) => {
 const handleDragStart = (e: React.DragEvent) => {
   e.dataTransfer.setData('taskId', task.id);
 };
+
+INCORRECT:
+const submitForm = (e: React.FormEvent) => {
+  e.preventDefault();
+  onSave(task);
+};
+
+const dragStart = (e: React.DragEvent) => {
+  e.dataTransfer.setData('taskId', task.id);
+};
 */
 
 // 2. Use explicit event types
 // Example:
 /*
+CORRECT:
 const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  onChange({ ...task, title: e.target.value });
+};
+
+INCORRECT:
+const handleChange = (e) => {
   onChange({ ...task, title: e.target.value });
 };
 */
@@ -197,14 +267,21 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 // 1. Use className with Tailwind CSS utilities
 // Example:
 /*
+CORRECT:
 <div className="p-4 rounded-lg shadow-sm bg-gray-100 transition-all hover:shadow-md">
   <h3 className="font-semibold text-gray-800">{task.title}</h3>
+</div>
+
+INCORRECT:
+<div style={{ padding: '1rem', borderRadius: '0.5rem', backgroundColor: '#f3f4f6' }}>
+  <h3 style={{ fontWeight: 600, color: '#1f2937' }}>{task.title}</h3>
 </div>
 */
 
 // 2. Use cn utility for conditional classes
 // Example:
 /*
+CORRECT:
 import { cn } from '@/lib/utils';
 
 <button
@@ -218,6 +295,14 @@ import { cn } from '@/lib/utils';
 >
   {children}
 </button>
+
+INCORRECT:
+<button
+  className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+  {...props}
+>
+  {children}
+</button>
 */
 
 // ====================================================
@@ -227,11 +312,20 @@ import { cn } from '@/lib/utils';
 // Use destructuring for props
 // Example:
 /*
+CORRECT:
 export const TaskCard: React.FC<TaskCardProps> = ({
   task: initialTask,
   onStatusChange,
   onEdit,
 }) => {
+  // Component implementation
+};
+
+INCORRECT:
+export const TaskCard: React.FC<TaskCardProps> = (props) => {
+  const initialTask = props.task;
+  const onStatusChange = props.onStatusChange;
+  const onEdit = props.onEdit;
   // Component implementation
 };
 */

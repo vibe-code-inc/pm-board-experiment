@@ -1,6 +1,6 @@
 ---
 description: CRITICAL - NEVER COMMIT WITHOUT EXPLICIT PERMISSION
-globs: 
+globs:
 alwaysApply: true
 ---
 // NEVER COMMIT WITHOUT EXPLICIT PERMISSION

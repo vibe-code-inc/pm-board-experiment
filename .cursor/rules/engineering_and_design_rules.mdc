@@ -13,13 +13,15 @@
 // 5. When specifications and engineering principles conflict, SPECIFICATIONS ALWAYS WIN.
 // 6. ALWAYS refer to @specifications.mdc for the definitive rules on specification creation, discovery, and compliance.
 
-// Valid and Invalid Examples:
-// ✓ Following the exact component structure defined in specifications
-// ✓ Implementing all behavior specified in the spec, even if it seems redundant
-// ✓ Using the exact naming conventions and interfaces as defined in the specs
-// ✗ "Improving" on specifications by changing the design without approval
-// ✗ Omitting required functionality because it seems unnecessary
-// ✗ Changing interface definitions from what's specified in the specs
+// CORRECT vs INCORRECT Examples:
+// CORRECT:
+//   ✓ Following the exact component structure defined in specifications
+//   ✓ Implementing all behavior specified in the spec, even if it seems redundant
+//   ✓ Using the exact naming conventions and interfaces as defined in the specs
+// INCORRECT:
+//   ✗ "Improving" on specifications by changing the design without approval
+//   ✗ Omitting required functionality because it seems unnecessary
+//   ✗ Changing interface definitions from what's specified in the specs
 
 // ====================================================
 // CODE ORGANIZATION PRINCIPLES
@@ -33,15 +35,17 @@
 // 6. Keep files and components relatively small, but NEVER refactor solely based on file size if it contradicts specifications.
 // 7. Follow the project structure and file naming conventions defined in @conventions.mdc.
 
-// Valid and Invalid Examples:
-// ✓ Refactoring a 300-line component into smaller sub-components with clear responsibilities
-// ✓ Optimizing existing code paths before adding new ones
-// ✓ Consolidating duplicate logic into shared utilities
-// ✓ Following the file structure defined in specifications exactly
-// ✗ Adding more and more code to solve new requirements without revisiting existing architecture
-// ✗ Creating components that try to do too many things
-// ✗ Refactoring code when specifications explicitly require the current structure
-// ✗ Breaking specifications to achieve "cleaner" code
+// CORRECT vs INCORRECT Examples:
+// CORRECT:
+//   ✓ Refactoring a 300-line component into smaller sub-components with clear responsibilities
+//   ✓ Optimizing existing code paths before adding new ones
+//   ✓ Consolidating duplicate logic into shared utilities
+//   ✓ Following the file structure defined in specifications exactly
+// INCORRECT:
+//   ✗ Adding more and more code to solve new requirements without revisiting existing architecture
+//   ✗ Creating components that try to do too many things
+//   ✗ Refactoring code when specifications explicitly require the current structure
+//   ✗ Breaking specifications to achieve "cleaner" code
 
 // ====================================================
 // SOLID PRINCIPLES - COMPREHENSIVE IMPLEMENTATION
@@ -58,13 +62,15 @@
 //    - When a component handles multiple responsibilities, extract them into separate components
 //    - However, NEVER violate specifications for the sake of SRP
 
-// Valid and Invalid SRP Examples:
-// ✓ A TaskCard component that only displays task information and handles its UI interactions
-// ✓ Separating API data fetching into a dedicated service or hook
-// ✓ Extracting validation logic into a separate validator module
-// ✗ A UserProfile component that also handles authentication, navigation, and data fetching
-// ✗ A utility function that both formats data and makes API calls
-// ✗ Breaking a component into smaller parts when specifications require it to be a single unit
+// CORRECT vs INCORRECT SRP Examples:
+// CORRECT:
+//   ✓ A TaskCard component that only displays task information and handles its UI interactions
+//   ✓ Separating API data fetching into a dedicated service or hook
+//   ✓ Extracting validation logic into a separate validator module
+// INCORRECT:
+//   ✗ A UserProfile component that also handles authentication, navigation, and data fetching
+//   ✗ A utility function that both formats data and makes API calls
+//   ✗ Breaking a component into smaller parts when specifications require it to be a single unit
 
 // 2. OPEN/CLOSED PRINCIPLE (OCP):
 //    Components should be open for extension but closed for modification.
@@ -73,13 +79,15 @@
 //    - Allow for customization through well-defined extension points
 //    - But ALWAYS validate extensions against specifications
 
-// Valid and Invalid OCP Examples:
-// ✓ A Button component that accepts render props for custom content
-// ✓ A Table component that can be extended with custom cell renderers
-// ✓ Using strategy pattern for pluggable behaviors as specified in specs
-// ✗ Hardcoding behaviors that will likely need to change
-// ✗ Using internal if/else logic instead of accepting strategy components
-// ✗ Modifying core component code for feature-specific behavior
+// CORRECT vs INCORRECT OCP Examples:
+// CORRECT:
+//   ✓ A Button component that accepts render props for custom content
+//   ✓ A Table component that can be extended with custom cell renderers
+//   ✓ Using strategy pattern for pluggable behaviors as specified in specs
+// INCORRECT:
+//   ✗ Hardcoding behaviors that will likely need to change
+//   ✗ Using internal if/else logic instead of accepting strategy components
+//   ✗ Modifying core component code for feature-specific behavior
 
 // 3. LISKOV SUBSTITUTION PRINCIPLE (LSP):
 //    Subtypes must be substitutable for their base types without altering the correctness of the program.
@@ -88,13 +96,15 @@
 //    - When extending a component, preserve its core behavior
 //    - But NEVER violate specifications in pursuit of LSP
 
-// Valid and Invalid LSP Examples:
-// ✓ A PrimaryButton that behaves the same as a Button with different styling
-// ✓ A specialized DataTable that supports all the same props as a regular Table
-// ✓ A FormInput that can be used anywhere a base Input is expected
-// ✗ A PrimaryButton that ignores the onClick handler expected by Button
-// ✗ A specialized component that changes the expected prop behavior
-// ✗ Adding unexpected side effects to extended components
+// CORRECT vs INCORRECT LSP Examples:
+// CORRECT:
+//   ✓ A PrimaryButton that behaves the same as a Button with different styling
+//   ✓ A specialized DataTable that supports all the same props as a regular Table
+//   ✓ A FormInput that can be used anywhere a base Input is expected
+// INCORRECT:
+//   ✗ A PrimaryButton that ignores the onClick handler expected by Button
+//   ✗ A specialized component that changes the expected prop behavior
+//   ✗ Adding unexpected side effects to extended components
 
 // 4. INTERFACE SEGREGATION PRINCIPLE (ISP):
 //    Clients should not be forced to depend on interfaces they don't use.
@@ -103,13 +113,15 @@
 //    - Prefer multiple specific interfaces over one general interface
 //    - But NEVER contradict interface definitions in specifications
 
-// Valid and Invalid ISP Examples:
-// ✓ Splitting Form component props into validation, submission, and layout interfaces
-// ✓ Using specific prop types like ButtonProps, IconButtonProps instead of a generic Props
-// ✓ Creating focused custom hooks that only expose what's needed
-// ✗ Creating components that require many unused props
-// ✗ Large, monolithic interfaces with many unrelated properties
-// ✗ Breaking specified interfaces into smaller ones without updating specifications
+// CORRECT vs INCORRECT ISP Examples:
+// CORRECT:
+//   ✓ Splitting Form component props into validation, submission, and layout interfaces
+//   ✓ Using specific prop types like ButtonProps, IconButtonProps instead of a generic Props
+//   ✓ Creating focused custom hooks that only expose what's needed
+// INCORRECT:
+//   ✗ Creating components that require many unused props
+//   ✗ Large, monolithic interfaces with many unrelated properties
+//   ✗ Breaking specified interfaces into smaller ones without updating specifications
 
 // 5. DEPENDENCY INVERSION PRINCIPLE (DIP):
 //    High-level modules should not depend on low-level modules. Both should depend on abstractions.
@@ -118,13 +130,15 @@
 //    - Avoid importing concrete implementations directly in components
 //    - But NEVER break specifications to implement dependency inversion
 
-// Valid and Invalid DIP Examples:
-// ✓ A DataTable receiving a data fetching function rather than calling an API directly
-// ✓ Using context to provide service implementations throughout the app
-// ✓ Injecting logger, API client, and other dependencies as specified
-// ✗ Hardcoding API calls inside components
-// ✗ Direct imports of concrete implementations instead of using abstractions
-// ✗ Changing the dependency structure defined in specifications
+// CORRECT vs INCORRECT DIP Examples:
+// CORRECT:
+//   ✓ A DataTable receiving a data fetching function rather than calling an API directly
+//   ✓ Using context to provide service implementations throughout the app
+//   ✓ Injecting logger, API client, and other dependencies as specified
+// INCORRECT:
+//   ✗ Hardcoding API calls inside components
+//   ✗ Direct imports of concrete implementations instead of using abstractions
+//   ✗ Changing the dependency structure defined in specifications
 
 // ====================================================
 // TYPE SYSTEM USAGE
@@ -136,17 +150,19 @@
 // 4. ALWAYS use explicit type annotations as required by @conventions.mdc.
 // 5. Follow the type conventions in @conventions.mdc exactly.
 
-// Valid and Invalid Examples:
-// ✓ type TaskStatus = 'todo' | 'in-progress' | 'done';
-// ✓ type TaskPriority = 'low' | 'medium' | 'high';
-// ✓ interface TaskService { /* methods that will be implemented by a class */ }
-// ✓ type Task = { /* task properties */ };
-// ✓ const [project, setProject] = useState<Project>(initialProject); // Following conventions
-// ✓ const handleTaskUpdate = (taskId: string, newStatus: Task['status']) => {...}
-// ✗ enum TaskStatus { TODO, IN_PROGRESS, DONE }
-// ✗ using 'any' instead of specific types
-// ✗ const [project, setProject] = useState(initialProject); // Missing explicit type annotation
-// ✗ const handleTaskUpdate = (taskId, newStatus) => {...} // Missing type annotations
+// CORRECT vs INCORRECT Examples:
+// CORRECT:
+//   ✓ type TaskStatus = 'todo' | 'in-progress' | 'done';
+//   ✓ type TaskPriority = 'low' | 'medium' | 'high';
+//   ✓ interface TaskService { /* methods that will be implemented by a class */ }
+//   ✓ type Task = { /* task properties */ };
+//   ✓ const [project, setProject] = useState<Project>(initialProject); // Following conventions
+//   ✓ const handleTaskUpdate = (taskId: string, newStatus: Task['status']) => {...}
+// INCORRECT:
+//   ✗ enum TaskStatus { TODO, IN_PROGRESS, DONE }
+//   ✗ using 'any' instead of specific types
+//   ✗ const [project, setProject] = useState(initialProject); // Missing explicit type annotation
+//   ✗ const handleTaskUpdate = (taskId, newStatus) => {...} // Missing type annotations
 
 // ====================================================
 // STATE AND VARIABLE MANAGEMENT
@@ -165,20 +181,22 @@
 // 7. Use the specific conventions for state management defined in @conventions.mdc, including useState for component-level state
 //    and callbacks for state updates.
 
-// Valid and Invalid Examples:
-// ✓ const MAX_TASKS_PER_COLUMN = 20;
-// ✓ const TASK_CARD_HEIGHT = 120;
-// ✓ function TaskList({ taskService }: { taskService: TaskService }) { /* ... */ }
-// ✓ class TaskStateManager { /* manages shared task state */ }
-// ✓ const [taskState, taskActions] = useTaskStore(); // Using a dedicated store
-// ✓ import { PROJECT_ID } from '@/constants/ids'; // Following conventions
-// ✓ import { COLORS } from '@/ui/theme/colors'; // Using theme constants
-// ✗ if (tasks.length > 20) { /* ... */ } // Magic number
-// ✗ let globalTaskList = []; // Global variable
-// ✗ Using React context for state sharing without proper abstraction
-// ✗ Prop drilling through multiple component layers
-// ✗ id: '1' // Not using constants as required by conventions
-// ✗ backgroundColor: '#f3f4f6' // Hardcoded color value
+// CORRECT vs INCORRECT Examples:
+// CORRECT:
+//   ✓ const MAX_TASKS_PER_COLUMN = 20;
+//   ✓ const TASK_CARD_HEIGHT = 120;
+//   ✓ function TaskList({ taskService }: { taskService: TaskService }) { /* ... */ }
+//   ✓ class TaskStateManager { /* manages shared task state */ }
+//   ✓ const [taskState, taskActions] = useTaskStore(); // Using a dedicated store
+//   ✓ import { PROJECT_ID } from '@/constants/ids'; // Following conventions
+//   ✓ import { COLORS } from '@/ui/theme/colors'; // Using theme constants
+// INCORRECT:
+//   ✗ if (tasks.length > 20) { /* ... */ } // Magic number
+//   ✗ let globalTaskList = []; // Global variable
+//   ✗ Using React context for state sharing without proper abstraction
+//   ✗ Prop drilling through multiple component layers
+//   ✗ id: '1' // Not using constants as required by conventions
+//   ✗ backgroundColor: '#f3f4f6' // Hardcoded color value
 
 // ====================================================
 // CODE QUALITY AND PERFORMANCE
@@ -190,15 +208,17 @@
 // 4. Be careful with performance optimizations and make sure they're actually needed before implementing them.
 // 5. When specifications and performance considerations conflict, ALWAYS prioritize specifications.
 
-// Valid and Invalid Examples:
-// ✓ // Assuming tasks are sorted by priority from the API (see task_service.specs.md)
-// ✓ Using memoization for expensive computations when justified
-// ✓ Breaking complex logic into well-named helper functions
-// ✓ Implementing performance optimizations exactly as specified
-// ✗ Premature optimizations without measurement
-// ✗ Overly complex solutions that are hard to understand
-// ✗ Optimizing for performance when specifications explicitly require a different approach
-// ✗ Making unspecified "improvements" to performance that change behavior
+// CORRECT vs INCORRECT Examples:
+// CORRECT:
+//   ✓ // Assuming tasks are sorted by priority from the API (see task_service.specs.md)
+//   ✓ Using memoization for expensive computations when justified
+//   ✓ Breaking complex logic into well-named helper functions
+//   ✓ Implementing performance optimizations exactly as specified
+// INCORRECT:
+//   ✗ Premature optimizations without measurement
+//   ✗ Overly complex solutions that are hard to understand
+//   ✗ Optimizing for performance when specifications explicitly require a different approach
+//   ✗ Making unspecified "improvements" to performance that change behavior
 
 // ====================================================
 // ALIGNMENT WITH SPECIFICATIONS - EXEMPLARY PRACTICES
@@ -214,15 +234,17 @@
 // 6. When something is ambiguous, refer to existing code patterns or seek clarification.
 // 7. Follow the specification creation, discovery, and update workflow as defined in @specifications.mdc.
 
-// Valid and Invalid Examples:
-// ✓ Implementing a component with exactly the props defined in its spec
-// ✓ Following the behavior description in specs precisely
-// ✓ Using the exact data structures and types defined in specs
-// ✓ Updating specifications before changing implementation
-// ✗ Adding "helpful" features not mentioned in specifications
-// ✗ Changing behavior from what's defined in specs for "better UX"
-// ✗ Renaming props or interfaces from what's defined in specs
-// ✗ Implementing only part of what's required in specifications
+// CORRECT vs INCORRECT Examples:
+// CORRECT:
+//   ✓ Implementing a component with exactly the props defined in its spec
+//   ✓ Following the behavior description in specs precisely
+//   ✓ Using the exact data structures and types defined in specs
+//   ✓ Updating specifications before changing implementation
+// INCORRECT:
+//   ✗ Adding "helpful" features not mentioned in specifications
+//   ✗ Changing behavior from what's defined in specs for "better UX"
+//   ✗ Renaming props or interfaces from what's defined in specs
+//   ✗ Implementing only part of what's required in specifications
 
 // ====================================================
 // COMPONENT CONVENTIONS
@@ -266,7 +288,7 @@
 // ====================================================
 
 /*
-// VALID APPROACH:
+// CORRECT APPROACH:
 1. Task: Add a new feature to TaskCard
 2. First step: Read task_card.specs.md and any related specs thoroughly
 3. Implementation aligns exactly with specifications:
@@ -276,7 +298,7 @@
    - Makes engineering decisions that respect specs
 4. Result: Code that perfectly matches specifications
 
-// INVALID APPROACH:
+// INCORRECT APPROACH:
 1. Task: Add a new feature to TaskCard
 2. Problem: Skip reading specifications or read incompletely
 3. Implementation issues:

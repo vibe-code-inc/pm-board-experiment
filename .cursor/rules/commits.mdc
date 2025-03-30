@@ -86,16 +86,16 @@ alwaysApply: true
 */
 
 // Examples:
-// ✓ feat: add new user authentication feature
-// ✓ fix(auth): resolve token expiration issues
-// ✓ docs: update README with new installation instructions
-// ✓ feat(api)!: change response format
-// ✓ fix: correct calculation error
+// ✅ CORRECT: feat: add new user authentication feature
+// ✅ CORRECT: fix(auth): resolve token expiration issues
+// ✅ CORRECT: docs: update README with new installation instructions
+// ✅ CORRECT: feat(api)!: change response format
+// ✅ CORRECT: fix: correct calculation error
 //
 //   Close #123
-// ✗ update user authentication
-// ✗ fixed bug
-// ✗ feat:missing space after colon
+// ❌ INCORRECT: update user authentication
+// ❌ INCORRECT: fixed bug
+// ❌ INCORRECT: feat:missing space after colon
 
 // ====================================================
 // LIST FORMATTING IN COMMIT BODIES
@@ -106,6 +106,7 @@ alwaysApply: true
 
 // Example of correct list formatting:
 /*
+✅ CORRECT:
 fix(i18n): correct strings.ts files to follow guidelines
 
 - Add missing parameters to string functions
@@ -116,6 +117,7 @@ fix(i18n): correct strings.ts files to follow guidelines
 
 // Example of incorrect list formatting:
 /*
+❌ INCORRECT:
 fix(i18n): correct strings.ts files to follow guidelines
 
 - Add missing parameters to string functions
