@@ -53,15 +53,13 @@ export const TaskList: React.FC<TaskListProps> = ({
             <div className="flex space-x-2">
               <button
                 onClick={() => handleEdit(task)}
-                className="text-blue-500 text-sm hover:underline"
-                aria-label={`Edit ${task.title}`}
+                className="text-blue-500"
               >
                 Edit
               </button>
               <button
                 onClick={() => handleDelete(task.id)}
-                className="text-red-500 text-sm hover:underline"
-                aria-label={`Delete ${task.title}`}
+                className="text-red-500"
               >
                 Delete
               </button>
@@ -73,7 +71,7 @@ export const TaskList: React.FC<TaskListProps> = ({
               {task.priority}
             </span>
             <span>{task.assignee || 'Unassigned'}</span>
-            <span className="capitalize">{task.status}</span>
+            <span>{task.status}</span>
           </div>
         </div>
       ))}

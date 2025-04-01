@@ -215,7 +215,7 @@ export const App: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">PM Board</h1>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto py-6 px-4">
+      <main className="max-w-7xl mx-auto px-4 py-6">
         <ProjectBoard
           project={project}
           onTaskUpdate={handleTaskUpdate}

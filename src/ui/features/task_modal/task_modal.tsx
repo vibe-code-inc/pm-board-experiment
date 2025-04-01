@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
 import { Task } from '@/types';
-import { Button } from '@/ui/base/design_kit/button/button';
-import { Input } from '@/ui/base/design_kit/input/input';
-import { Select } from '@/ui/base/design_kit/select/select';
-import { Textarea } from '@/ui/base/design_kit/textarea/textarea';
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   task: Task;
   onSave: (task: Task) => void;
-  onChange?: (task: Task) => void;
   onDelete?: (taskId: string) => void;
 }
 
@@ -20,7 +14,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   onClose,
   task,
   onSave,
-  onChange,
   onDelete,
 }) => {
   // State for form fields and validation
@@ -36,15 +29,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   // Form field change handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    const updatedFormData = {
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value,
-    };
-
-    setFormData(updatedFormData);
-
-    // Call onChange if it exists
-    onChange?.(updatedFormData);
+    }));
 
     // Clear any errors for this field
     if (errors[name]) {
@@ -82,12 +70,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
     // Save logic with loading state
     setIsSubmitting(true);
-    try {
-      onSave(formData);
-      onClose();
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSave(formData);
+    setIsSubmitting(false);
+    onClose();
   };
 
   // Delete handler with confirmation
@@ -116,92 +101,144 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg p-4 md:p-6 w-full max-w-lg mx-auto my-8 md:my-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg md:text-xl font-semibold">Edit Task</h2>
-          <Button variant="ghost" onClick={onClose} className="p-1 md:p-2">
-            <X className="w-5 h-5" />
-          </Button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 overflow-hidden">
+        <div className="px-6 py-4 border-b">
+          <h2 className="text-xl font-semibold">{formData.id ? 'Edit Task' : 'New Task'}</h2>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            error={errors.title}
-            required
-          />
-          <Textarea
-            label="Description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            error={errors.description}
-            rows={3}
-            required
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select
-              label="Priority"
-              name="priority"
-              value={formData.priority}
-              onChange={handleChange}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </Select>
-            <Select
-              label="Status"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-            >
-              <option value="todo">To Do</option>
-              <option value="in-progress">In Progress</option>
-              <option value="done">Done</option>
-            </Select>
+
+        <form onSubmit={handleSubmit}>
+          <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
+            {/* Title field */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Title
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.title ? 'border-red-500' : 'border-gray-300'
+                }`}
+                required
+              />
+              {errors.title && (
+                <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+              )}
+            </div>
+
+            {/* Status field */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="todo">To Do</option>
+                <option value="in-progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+
+            {/* Priority field */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Priority
+              </label>
+              <select
+                name="priority"
+                value={formData.priority}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+
+            {/* Description field */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={3}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
+                required
+              ></textarea>
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+              )}
+            </div>
+
+            {/* Assignee field */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Assignee
+              </label>
+              <input
+                type="text"
+                name="assignee"
+                value={formData.assignee || ''}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+
+            {/* Due date field */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Due Date
+              </label>
+              <input
+                type="date"
+                name="dueDate"
+                value={formData.dueDate || ''}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              type="date"
-              label="Due Date"
-              name="dueDate"
-              value={formData.dueDate || ''}
-              onChange={handleChange}
-            />
-            <Input
-              label="Assignee"
-              name="assignee"
-              value={formData.assignee || ''}
-              onChange={handleChange}
-              placeholder="Enter assignee name"
-            />
-          </div>
-          <div className="flex justify-between items-center pt-4">
+
+          <div className="px-6 py-4 border-t flex justify-between items-center">
             {onDelete && (
-              <Button
+              <button
                 type="button"
-                variant="secondary"
-                onClick={handleDelete}
                 className="text-red-600"
+                onClick={handleDelete}
               >
                 Delete
-              </Button>
+              </button>
             )}
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:space-x-3">
-              <Button variant="secondary" onClick={onClose} className="w-full sm:w-auto">
+
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded"
+                onClick={onClose}
+              >
                 Cancel
-              </Button>
-              <Button
+              </button>
+
+              <button
                 type="submit"
-                className="w-full sm:w-auto"
+                className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
-              </Button>
+                {isSubmitting ? 'Saving...' : 'Save'}
+              </button>
             </div>
           </div>
         </form>
