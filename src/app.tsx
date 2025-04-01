@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Project, Task } from './types';
-import { ProjectBoard } from './features/project_board/project_board';
-import { Layout } from 'lucide-react';
+import { Project, Task } from '@/types';
+import { ProjectBoard } from '@/features/project_board/project_board';
 
 const initialProject: Project = {
   id: '1',
@@ -187,11 +186,15 @@ const initialProject: Project = {
 export const App: React.FC = () => {
   const [project, setProject] = useState<Project>(initialProject);
 
-  const handleTaskUpdate = (taskId: string, newStatus: Task['status']) => {
+  const handleTaskUpdate = (taskId: string, updates: Partial<Task>) => {
     setProject((prev) => ({
       ...prev,
       tasks: prev.tasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus, updatedAt: new Date().toISOString().split('T')[0] } : task
+        task.id === taskId ? {
+          ...task,
+          ...updates,
+          updatedAt: new Date().toISOString().split('T')[0]
+        } : task
       ),
     }));
   };
@@ -208,9 +211,8 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center">
-          <Layout className="w-6 h-6 text-blue-600 mr-2" />
-          <h1 className="text-xl font-semibold text-gray-900">PM Board</h1>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-gray-900">PM Board</h1>
         </div>
       </header>
       <main className="max-w-7xl mx-auto py-6 px-4">

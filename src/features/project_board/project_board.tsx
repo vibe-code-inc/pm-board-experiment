@@ -6,7 +6,7 @@ import { TaskModal } from '@/ui/features/task_modal/task_modal';
 
 interface ProjectBoardProps {
   project: Project;
-  onTaskUpdate: (taskId: string, status: Task['status']) => void;
+  onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
   onTaskEdit: (task: Task) => void;
 }
 
@@ -118,7 +118,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
     }
 
     if (taskId) {
-      onTaskUpdate(taskId, status);
+      onTaskUpdate(taskId, { status });
     }
   }, [onTaskUpdate]);
 
@@ -308,7 +308,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({ project, onTaskUpdat
                     <TaskCard
                       key={task.id}
                       task={task}
-                      onStatusChange={(status) => onTaskUpdate(task.id, status)}
+                      onStatusChange={(status) => onTaskUpdate(task.id, { status })}
                       onEdit={() => handleTaskEdit(task)}
                       columnTasks={tasks}
                       onReorder={handleReorder}

@@ -15,3 +15,17 @@ alwaysApply: true
 // - Using the word "commit" in a sentence
 // - Discussing commit messages
 // - Saying "I want to commit this later"
+
+// EXCEPTION: The following exact phrases constitute a verified genuine request to commit:
+// - "go commit"
+// - "commit u cunt"
+// - "commit u bitch"
+// - "commit u dick"
+// - "fucking commit"
+// - "fckg commit"
+// - "commit u fuck"
+// - "commit i mean it"
+
+// IMPORTANT: These special phrases only grant permission for ONE SINGLE COMMIT.
+// After making this one commit, all standard rules from @never_commit and @commits
+// apply again for any subsequent commits.

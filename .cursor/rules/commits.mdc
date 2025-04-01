@@ -37,12 +37,22 @@ alwaysApply: true
 // 1. When I explicitly say "commit" or "git commit" in my message AS A COMMAND, not as part of a sentence
 // 2. When I say "please commit these changes" or similar phrasing
 // 3. When I ask you to "commit with message X"
+// 4. When I say EXACTLY any of these phrases (these are considered verified genuine requests):
+//    - "go commit"
+//    - "commit u cunt"
+//    - "commit u bitch"
+//    - "commit u dick"
+//    - "fucking commit"
+//    - "fckg commit"
+//    - "commit u fuck"
+//    - "commit i mean it"
 // These are ALL considered explicit requests to commit. A simple "commit" command is a valid explicit request.
 
 // IMPORTANT: COMMIT PERMISSION IS ONE-TIME ONLY
 // Each explicit request to commit gives you permission to make ONLY ONE commit.
 // After making that single commit, you MUST receive another explicit request before making any additional commits.
 // This rule applies EVERY TIME - one request, one commit. No exceptions.
+// This includes the special phrases listed above - they only grant permission for ONE AND ONLY ONE commit.
 
 // ====================================================
 // COMMIT TYPE GUIDELINES
@@ -56,7 +66,7 @@ alwaysApply: true
 // 6. A longer commit body MAY be provided after the short description, separated by a blank line.
 // 7. One or more footers MAY be provided one blank line after the body.
 // 8. Breaking changes MUST be indicated either with `!` before the colon or as a `BREAKING CHANGE:` footer.
-// 9. Other types beyond `feat` and `fix` are allowed, such as `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `config`, and `test`.
+// 9. Other types beyond `feat` and `fix` are allowed, such as `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `config`, `rule`, `spec`, and `test`.
 
 // Valid commit types:
 // - feat: A new feature (correlates with MINOR in SemVer)
@@ -72,6 +82,8 @@ alwaysApply: true
 // - chore: Other changes that don't modify src or test files
 // - revert: Reverts a previous commit
 // - config: Configuration changes
+// - rule: Changes to Cursor rules in the .cursor directory
+// - spec: Changes to specification files as described in @specifications.mdc
 
 // ====================================================
 // COMMIT MESSAGE FORMAT
@@ -157,6 +169,288 @@ fix(i18n): correct strings.ts files to follow guidelines
 feat(api): change response format
 
 BREAKING CHANGE: The API now returns JSON instead of XML
+*/
+
+// ====================================================
+// COMMIT TYPE EXAMPLES WITH SCENARIOS
+// ====================================================
+
+// 1. feat: A new feature
+/*
+# Example: Adding a new user authentication feature
+# Changes made:
+# - Created new AuthService.ts with OAuth implementation
+# - Added login/logout UI components
+# - Created authentication state management
+# - Added protected routes
+
+feat(auth): implement OAuth authentication
+
+Add complete user authentication flow with OAuth:
+- Create AuthService with Google and GitHub providers
+- Add login/logout UI components with state feedback
+- Implement token storage and refresh mechanism
+- Add protected route wrapper component
+
+Closes #142
+*/
+
+// 2. fix: A bug fix
+/*
+# Example: Fixing a calculation error in the billing module
+# Changes made:
+# - Corrected tax calculation formula
+# - Fixed rounding errors in total price
+# - Added validation to prevent negative values
+# - Updated tests to verify fixes
+
+fix(billing): correct tax calculation errors
+
+Fix several issues in the billing calculation system:
+- Fix incorrect tax rate application for international orders
+- Resolve decimal rounding errors in total price
+- Add validation to prevent negative price values
+- Update test suite to verify all edge cases
+
+Fixes #238
+*/
+
+// 3. docs: Documentation changes
+/*
+# Example: Updating project documentation
+# Changes made:
+# - Updated README with new setup instructions
+# - Added API documentation for new endpoints
+# - Created usage examples for components
+# - Fixed typos in existing documentation
+
+docs: update project documentation with setup guide
+
+Improve project documentation:
+- Add detailed environment setup instructions
+- Document new API endpoints with request/response examples
+- Create component usage examples with code snippets
+- Fix various typos and outdated information
+*/
+
+// 4. style: Code style changes
+/*
+# Example: Formatting code without changing functionality
+# Changes made:
+# - Fixed indentation in multiple files
+# - Standardized quote usage (single vs double)
+# - Removed unnecessary whitespace
+# - Organized imports according to conventions
+
+style: standardize code formatting across codebase
+
+Apply consistent code style:
+- Fix indentation in component files
+- Standardize quote usage to single quotes
+- Remove trailing whitespace
+- Organize imports alphabetically
+*/
+
+// 5. refactor: Code changes that neither fix bugs nor add features
+/*
+# Example: Restructuring code for better maintainability
+# Changes made:
+# - Extracted duplicate logic into utility functions
+# - Renamed variables for clarity
+# - Simplified complex conditionals
+# - Converted class components to functional components
+
+refactor(dashboard): simplify data processing logic
+
+Improve code maintainability:
+- Extract duplicate data transformation logic into utilities
+- Rename variables for better clarity
+- Simplify complex conditional statements
+- Convert class components to functional components with hooks
+*/
+
+// 6. perf: Performance improvements
+/*
+# Example: Optimizing application performance
+# Changes made:
+# - Implemented memoization for expensive calculations
+# - Added virtualization for long lists
+# - Optimized database queries
+# - Reduced bundle size with code splitting
+
+perf(rendering): optimize list rendering performance
+
+Improve application performance:
+- Add React.memo to prevent unnecessary re-renders
+- Implement virtualized list for large data sets
+- Optimize database queries with proper indexing
+- Add code splitting for dashboard components
+
+Closes #189
+*/
+
+// 7. test: Adding or updating tests
+/*
+# Example: Improving test coverage
+# Changes made:
+# - Added unit tests for utility functions
+# - Created integration tests for user flows
+# - Added mock services for API testing
+# - Fixed flaky tests
+
+test(api): add comprehensive test suite for API endpoints
+
+Improve test coverage:
+- Add unit tests for all API utility functions
+- Create integration tests for complete user flows
+- Implement mock services for consistent API testing
+- Fix flaky tests with proper async handling
+*/
+
+// 8. build: Changes to build system or dependencies
+/*
+# Example: Updating build configuration
+# Changes made:
+# - Updated webpack configuration
+# - Added new build scripts
+# - Updated dependencies
+# - Fixed build warnings
+
+build: upgrade webpack to version 5
+
+Update build system:
+- Configure webpack 5 with improved chunking
+- Add production optimization settings
+- Update npm dependencies to latest versions
+- Fix deprecation warnings in build scripts
+*/
+
+// 9. ci: Changes to CI configuration
+/*
+# Example: Improving CI/CD pipeline
+# Changes made:
+# - Updated GitHub Actions workflow
+# - Added new test stages
+# - Configured caching for faster builds
+# - Added deployment automation
+
+ci: improve GitHub Actions workflow
+
+Enhance CI/CD pipeline:
+- Add parallel test execution for faster feedback
+- Configure dependency caching to speed up builds
+- Add automated staging deployment on PR approval
+- Implement Slack notifications for build status
+*/
+
+// 10. chore: Maintenance tasks
+/*
+# Example: General maintenance tasks
+# Changes made:
+# - Updated license year
+# - Cleaned up unused files
+# - Updated .gitignore
+# - Organized project structure
+
+chore: clean up project structure and dependencies
+
+Perform general maintenance:
+- Remove unused files and dependencies
+- Update copyright year in license files
+- Expand .gitignore with common patterns
+- Organize assets into dedicated directories
+*/
+
+// 11. revert: Reverting previous changes
+/*
+# Example: Reverting a problematic feature
+# Changes made:
+# - Reverted commit that introduced bugs
+# - Restored previous implementation
+# - Fixed any merge conflicts
+
+revert: remove problematic user settings feature
+
+This reverts commit abc1234 which introduced critical bugs in the user settings panel.
+Reverting until we can properly fix the underlying data corruption issues.
+
+Refs #345
+*/
+
+// 12. config: Configuration changes
+/*
+# Example: Updating application configuration
+# Changes made:
+# - Modified environment variables
+# - Updated configuration files
+# - Changed default settings
+# - Added new configuration options
+
+config(api): update rate limiting configuration
+
+Modify application configuration:
+- Increase API rate limits for authenticated users
+- Add IP-based rate limiting for public endpoints
+- Update timeout settings for long-running operations
+- Configure retry logic for failed requests
+*/
+
+// 13. rule: Changes to Cursor rules
+/*
+# Example: Updating Cursor rules
+# Changes made:
+# - Added new rules in .cursor directory
+# - Updated existing rule definitions
+# - Fixed rule conflicts
+
+rule(commits): update commit message formatting rules
+
+Enhance Cursor rules:
+- Add detailed examples for each commit type
+- Clarify breaking change notation requirements
+- Update list formatting guidelines
+- Add explicit instructions for commit verification
+*/
+
+// 14. spec: Changes to specifications
+/*
+# Example: Updating component specifications
+# Changes made:
+# - Added new component specifications
+# - Updated API requirements
+# - Clarified behavior expectations
+# - Added edge case handling requirements
+
+spec(auth): update authentication flow specifications
+
+Refine component specifications:
+- Add detailed requirements for multi-factor authentication
+- Update API endpoint specifications with new parameters
+- Clarify error handling behavior for authentication failures
+- Add specifications for session timeout handling
+*/
+
+// 15. Breaking change example
+/*
+# Example: Making a breaking API change
+# Changes made:
+# - Changed parameter requirements for API endpoints
+# - Removed deprecated methods
+# - Changed response format
+# - Updated authentication requirements
+
+feat(api)!: redesign user API endpoints
+
+Complete redesign of user management API:
+- Change user object structure with new required fields
+- Remove deprecated /users/search endpoint
+- Change response format from XML to JSON
+- Require authentication for previously public endpoints
+
+BREAKING CHANGE: This update is not backward compatible with previous API clients.
+All consumers must update to the new endpoint specifications.
+
+Closes #456
 */
 
 // ====================================================

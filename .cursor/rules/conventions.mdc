@@ -102,6 +102,43 @@ Project Structure:
 // TYPE CONVENTIONS
 // ====================================================
 
+// Use types instead of interfaces for most cases
+// Only use interfaces when:
+// 1. You're defining a contract that will be implemented by a class
+// 2. You need declaration merging
+// 3. You're working with multiple implementations of the same contract
+
+// Examples:
+// CORRECT:
+//   ✓ type Task = {
+//       id: string;
+//       title: string;
+//       status: 'todo' | 'in-progress' | 'done';
+//     };
+//
+//   ✓ type ButtonProps = {
+//       variant?: 'primary' | 'secondary' | 'ghost';
+//       size?: 'sm' | 'md' | 'lg';
+//     } & React.ButtonHTMLAttributes<HTMLButtonElement>;
+//
+//   ✓ // Interface for a service contract that will have implementations
+//     interface TaskService {
+//       getTasks(): Promise<Task[]>;
+//       createTask(task: Omit<Task, 'id'>): Promise<Task>;
+//     }
+//
+// INCORRECT:
+//   ✗ interface Task {
+//       id: string;
+//       title: string;
+//       status: 'todo' | 'in-progress' | 'done';
+//     }
+//
+//   ✗ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+//       variant?: 'primary' | 'secondary' | 'ghost';
+//       size?: 'sm' | 'md' | 'lg';
+//     }
+
 // Use explicit type annotations
 // Examples:
 // CORRECT:
@@ -111,18 +148,25 @@ Project Structure:
 //   ✗ const [project, setProject] = useState(initialProject);
 //   ✗ const handleTaskUpdate = (taskId, newStatus) => {...}
 
+// Use union types with string literals over enums
+// Examples:
+// CORRECT:
+//   ✓ type TaskStatus = 'todo' | 'in-progress' | 'done';
+// INCORRECT:
+//   ✗ enum TaskStatus { TODO, IN_PROGRESS, DONE }
+
 // ====================================================
 // COMPONENT CONVENTIONS
 // ====================================================
 
-// 1. Use function component syntax with React.FC and explicit props interface
+// 1. Use function component syntax with React.FC and explicit props type
 // Example:
 /*
 CORRECT:
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonProps = {
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
-}
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export const Button: React.FC<ButtonProps> = ({
   children,
@@ -135,6 +179,11 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 INCORRECT:
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+}
+
 export const Button = (props) => {
   const { children, className, variant = 'primary', size = 'md', ...rest } = props;
   // Component implementation
@@ -146,7 +195,12 @@ export const Button = (props) => {
 /*
 CORRECT:
 // Separate hooks for complex logic
-const useTaskManagement = (initialTasks: Task[]) => {
+type UseTaskManagementReturn = {
+  tasks: Task[];
+  updateTaskStatus: (taskId: string, status: Task['status']) => void;
+};
+
+const useTaskManagement = (initialTasks: Task[]): UseTaskManagementReturn => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   const updateTaskStatus = (taskId: string, status: Task['status']) => {
@@ -159,6 +213,10 @@ const useTaskManagement = (initialTasks: Task[]) => {
 };
 
 // Use in component
+type TaskBoardProps = {
+  initialTasks: Task[];
+};
+
 export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
   const { tasks, updateTaskStatus } = useTaskManagement(initialTasks);
 
@@ -166,6 +224,10 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
 };
 
 INCORRECT:
+interface TaskBoardProps {
+  initialTasks: Task[];
+}
+
 export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
@@ -179,6 +241,70 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
   // More complex functions...
 
   // Component rendering logic
+};
+*/
+
+// 3. Implement the bare minimum needed to fulfill specifications
+// Example:
+/*
+CORRECT:
+// Only implementing what's required in specifications
+type TaskCardProps = {
+  task: Task;
+  onStatusChange: (taskId: string, status: Task['status']) => void;
+};
+
+export const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange }) => {
+  const handleStatusChange = (status: Task['status']) => {
+    onStatusChange(task.id, status);
+  };
+
+  return (
+    <div className="p-4 bg-white rounded shadow">
+      <h3 className="font-medium">{task.title}</h3>
+      <StatusSelector
+        currentStatus={task.status}
+        onChange={handleStatusChange}
+      />
+    </div>
+  );
+};
+
+INCORRECT:
+// Adding extra features not specified in requirements
+type TaskCardProps = {
+  task: Task;
+  onStatusChange: (taskId: string, status: Task['status']) => void;
+};
+
+export const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Extra unspecified functionality
+  const handleStatusChange = (status: Task['status']) => {
+    onStatusChange(task.id, status);
+  };
+
+  return (
+    <div
+      className={`p-4 bg-white rounded shadow ${isHovered ? 'shadow-lg' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      <h3 className="font-medium">{task.title}</h3>
+      {isExpanded && <p>{task.description}</p>}
+      <StatusSelector
+        currentStatus={task.status}
+        onChange={handleStatusChange}
+      />
+      {/* Unspecified extra features */}
+      <button onClick={(e) => { e.stopPropagation(); console.log('Extra action'); }}>
+        Extra Action
+      </button>
+    </div>
+  );
 };
 */
 
@@ -313,6 +439,12 @@ INCORRECT:
 // Example:
 /*
 CORRECT:
+type TaskCardProps = {
+  task: Task;
+  onStatusChange: (status: Task['status']) => void;
+  onEdit: (task: Task) => void;
+};
+
 export const TaskCard: React.FC<TaskCardProps> = ({
   task: initialTask,
   onStatusChange,
@@ -322,10 +454,51 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 };
 
 INCORRECT:
+interface TaskCardProps {
+  task: Task;
+  onStatusChange: (status: Task['status']) => void;
+  onEdit: (task: Task) => void;
+}
+
 export const TaskCard: React.FC<TaskCardProps> = (props) => {
   const initialTask = props.task;
   const onStatusChange = props.onStatusChange;
   const onEdit = props.onEdit;
   // Component implementation
+};
+*/
+
+// ====================================================
+// SPECIFICATION REFERENCE CONVENTIONS
+// ====================================================
+
+// 1. Always reference specifications in your code when implementing requirements
+// Example:
+/*
+CORRECT:
+// Implements task drag-and-drop as specified in task_card.specs.md
+export const TaskDragLayer: React.FC = () => {
+  // Implementation that fulfills specifications
+};
+
+INCORRECT:
+export const TaskDragLayer: React.FC = () => {
+  // Implementation without reference to specifications
+};
+*/
+
+// 2. When making assumptions or design decisions, document them in specifications first
+// Example:
+/*
+CORRECT:
+// Assuming tasks are sorted by priority from API (see task_service.specs.md)
+const renderTasksByPriority = () => {
+  // Implementation based on documented assumption
+};
+
+INCORRECT:
+// Making undocumented assumptions
+const renderTasksByPriority = () => {
+  // Implementation relies on undocumented assumption about task ordering
 };
 */

@@ -11,6 +11,7 @@ interface TaskModalProps {
   onClose: () => void;
   task: Task;
   onSave: (task: Task) => void;
+  onChange?: (task: Task) => void;
   onDelete?: (taskId: string) => void;
 }
 
@@ -19,6 +20,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   onClose,
   task,
   onSave,
+  onChange,
   onDelete,
 }) => {
   // State for form fields and validation
@@ -34,10 +36,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   // Form field change handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    const updatedFormData = {
+      ...formData,
       [name]: value,
-    }));
+    };
+
+    setFormData(updatedFormData);
+
+    // Call onChange if it exists
+    onChange?.(updatedFormData);
 
     // Clear any errors for this field
     if (errors[name]) {

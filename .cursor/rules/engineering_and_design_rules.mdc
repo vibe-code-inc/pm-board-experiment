@@ -34,6 +34,7 @@
 // 5. Build reasonable abstractions that balance flexibility and simplicity.
 // 6. Keep files and components relatively small, but NEVER refactor solely based on file size if it contradicts specifications.
 // 7. Follow the project structure and file naming conventions defined in @conventions.mdc.
+// 8. Follow the specification creation, discovery, and update workflow exactly as defined in @specifications.mdc.
 
 // CORRECT vs INCORRECT Examples:
 // CORRECT:
@@ -140,15 +141,35 @@
 //   ✗ Direct imports of concrete implementations instead of using abstractions
 //   ✗ Changing the dependency structure defined in specifications
 
+// 6. MINIMAL INTERFACE PRINCIPLE:
+//    Components should expose the smallest possible public API needed for their functionality.
+//    - Implement the bare minimum needed to fulfill the specifications
+//    - Avoid speculative features or "nice-to-haves" not in specifications
+//    - Only expose what's necessary for the component to function
+
+// CORRECT vs INCORRECT MINIMAL INTERFACE Examples:
+// CORRECT:
+//   ✓ A Button component that only exposes essential props like "onClick" and "children"
+//   ✓ Implementing exactly what the specifications require, no more
+//   ✓ Keeping component APIs focused on their specific purpose
+// INCORRECT:
+//   ✗ Adding extra props "just in case" they might be needed later
+//   ✗ Implementing features not specified in requirements
+//   ✗ Creating overly complex APIs with unnecessary flexibility
+
 // ====================================================
 // TYPE SYSTEM USAGE
 // ====================================================
 
-// 1. Prefer types over interfaces, unless it's where an interface makes sense (e.g., defining an interface that will have class implementations).
-// 2. Prefer union types with string literals over enums.
-// 3. Use proper type annotations for function parameters and return values as specified in @conventions.mdc.
-// 4. ALWAYS use explicit type annotations as required by @conventions.mdc.
-// 5. Follow the type conventions in @conventions.mdc exactly.
+// 1. Use types instead of interfaces for most cases, as specified in @conventions.mdc.
+// 2. Only use interfaces when:
+//    a. You're defining a contract that will be implemented by a class
+//    b. You need declaration merging
+//    c. You're working with multiple implementations of the same contract
+// 3. Prefer union types with string literals over enums.
+// 4. Use explicit type annotations for function parameters and return values.
+// 5. ALWAYS use explicit type annotations as required by @conventions.mdc.
+// 6. Follow the type conventions in @conventions.mdc exactly.
 
 // CORRECT vs INCORRECT Examples:
 // CORRECT:
@@ -163,12 +184,13 @@
 //   ✗ using 'any' instead of specific types
 //   ✗ const [project, setProject] = useState(initialProject); // Missing explicit type annotation
 //   ✗ const handleTaskUpdate = (taskId, newStatus) => {...} // Missing type annotations
+//   ✗ interface Task { /* task properties */ } // Using interface when a type is more appropriate
 
 // ====================================================
 // STATE AND VARIABLE MANAGEMENT
 // ====================================================
 
-// 1. Do not use magic numbers - extract numeric literals into named constants.
+// 1. Extract hardcoded values into constants files as specified in @conventions.mdc.
 // 2. Use constants where reasonable, especially for values that might change in the future.
 // 3. Do not use global variables - prefer proper scoping and dependency injection.
 // 4. Use dependency injection where reasonable to improve testability and flexibility.
@@ -177,36 +199,42 @@
 //    b. Using an existing suitable shared dependency where appropriate
 //    c. Ensuring the state management approach adheres to SOLID principles
 //    d. Documenting the state sharing pattern in specifications
-// 6. Follow state management conventions in @conventions.mdc.
-// 7. Use the specific conventions for state management defined in @conventions.mdc, including useState for component-level state
-//    and callbacks for state updates.
+// 6. Follow state management conventions in @conventions.mdc, including:
+//    a. Using useState for component-level state
+//    b. Using callbacks for state updates
 
 // CORRECT vs INCORRECT Examples:
 // CORRECT:
-//   ✓ const MAX_TASKS_PER_COLUMN = 20;
-//   ✓ const TASK_CARD_HEIGHT = 120;
+//   ✓ import { PROJECT_ID, TASK_IDS } from '@/constants/ids';
+//   ✓ id: PROJECT_ID.WEBSITE_REDESIGN
+//   ✓ import { COLORS } from '@/ui/theme/colors';
+//   ✓ const priorityColors = COLORS.priority;
+//   ✓ import { BUTTON_STYLES } from '@/ui/base/design_kit/button/button_styles';
 //   ✓ function TaskList({ taskService }: { taskService: TaskService }) { /* ... */ }
-//   ✓ class TaskStateManager { /* manages shared task state */ }
-//   ✓ const [taskState, taskActions] = useTaskStore(); // Using a dedicated store
-//   ✓ import { PROJECT_ID } from '@/constants/ids'; // Following conventions
-//   ✓ import { COLORS } from '@/ui/theme/colors'; // Using theme constants
+//   ✓ const [isEditing, setIsEditing] = useState(false);
+//   ✓ const handleTaskUpdate = (updatedTask: Task) => { setTask(updatedTask); };
 // INCORRECT:
-//   ✗ if (tasks.length > 20) { /* ... */ } // Magic number
+//   ✗ id: '1'
+//   ✗ id: 'website-redesign'
+//   ✗ const highPriorityColor = '#FF0000';
 //   ✗ let globalTaskList = []; // Global variable
-//   ✗ Using React context for state sharing without proper abstraction
-//   ✗ Prop drilling through multiple component layers
-//   ✗ id: '1' // Not using constants as required by conventions
-//   ✗ backgroundColor: '#f3f4f6' // Hardcoded color value
+//   ✗ let isEditing = false; // Mutable variable instead of state
+//   ✗ const handleTaskUpdate = () => { task.status = 'completed'; setTask(task); }; // Mutating state directly
 
 // ====================================================
 // CODE QUALITY AND PERFORMANCE
 // ====================================================
 
 // 1. Optimize for quality and performance but ALWAYS RESPECT SPECIFICATIONS.
-// 2. When making assumptions (rather than relying on facts), mention this in a respective spec and in code comments.
+// 2. When making assumptions (rather than relying on facts), mention this in the relevant specification and in code comments.
 // 3. Prefer simplicity and readability over clever solutions.
 // 4. Be careful with performance optimizations and make sure they're actually needed before implementing them.
 // 5. When specifications and performance considerations conflict, ALWAYS prioritize specifications.
+// 6. Follow the BARE MINIMUM IMPLEMENTATION principle from @specifications.mdc:
+//    - Both specifications and code must do only the bare minimum needed to fulfill their purpose
+//    - Specifications should only require what is absolutely necessary for the component to function
+//    - Code should only include what directly fulfills the specification requirements
+//    - Avoid speculative features, "nice-to-haves," or premature optimizations
 
 // CORRECT vs INCORRECT Examples:
 // CORRECT:
@@ -214,11 +242,13 @@
 //   ✓ Using memoization for expensive computations when justified
 //   ✓ Breaking complex logic into well-named helper functions
 //   ✓ Implementing performance optimizations exactly as specified
+//   ✓ Implementing only what the specifications require
 // INCORRECT:
 //   ✗ Premature optimizations without measurement
 //   ✗ Overly complex solutions that are hard to understand
 //   ✗ Optimizing for performance when specifications explicitly require a different approach
 //   ✗ Making unspecified "improvements" to performance that change behavior
+//   ✗ Adding features not required by specifications
 
 // ====================================================
 // ALIGNMENT WITH SPECIFICATIONS - EXEMPLARY PRACTICES
@@ -227,12 +257,16 @@
 // 1. Start by reading ALL relevant specifications thoroughly:
 //    - Package specs (e.g., task_board.package_specs.md)
 //    - Individual component specs (e.g., task_card.specs.md)
-// 2. Implement ALL requirements specified, EXACTLY as they are defined.
-// 3. Follow the exact interfaces, props, and behaviors defined in specs.
-// 4. Do not add unspecified features or behaviors without updating specs first.
-// 5. Do not remove or modify specified behavior without spec changes.
-// 6. When something is ambiguous, refer to existing code patterns or seek clarification.
-// 7. Follow the specification creation, discovery, and update workflow as defined in @specifications.mdc.
+// 2. Follow the specification discovery process in @specifications.mdc:
+//    a. Check if there's a `<folder_basename>.package_specs.md` file in the target folder - READ IT FIRST
+//    b. Check if there's a `<file_name_without_extension>.specs.md` file in the same folder - READ IT NEXT
+//    c. Only proceed with code modifications after understanding all specifications
+// 3. Implement ALL requirements specified, EXACTLY as they are defined.
+// 4. Follow the exact interfaces, props, and behaviors defined in specs.
+// 5. Do not add unspecified features or behaviors without updating specs first.
+// 6. Do not remove or modify specified behavior without spec changes.
+// 7. When something is ambiguous, refer to existing code patterns or seek clarification.
+// 8. Follow the specification creation, discovery, and update workflow as defined in @specifications.mdc.
 
 // CORRECT vs INCORRECT Examples:
 // CORRECT:
@@ -251,22 +285,28 @@
 // ====================================================
 
 // 1. Follow the component conventions defined in @conventions.mdc exactly.
-// 2. Use function component syntax with React.FC and explicit props interface as specified in @conventions.mdc.
+// 2. Use function component syntax with React.FC and explicit props type as specified in @conventions.mdc.
 // 3. Keep components focused and extract complex logic as shown in the examples in @conventions.mdc.
-// 4. Use event handler conventions from @conventions.mdc, including prefixing with 'handle' and using explicit event types.
-// 5. Follow the CSS & styling conventions in @conventions.mdc, including using Tailwind CSS utilities and the cn utility for conditional classes.
+// 4. Use event handler conventions from @conventions.mdc, including:
+//    a. Prefixing event handlers with 'handle'
+//    b. Using explicit event types
+// 5. Follow the CSS & styling conventions in @conventions.mdc, including:
+//    a. Using className with Tailwind CSS utilities
+//    b. Using the cn utility for conditional classes
 // 6. Use destructuring for props as shown in the examples in @conventions.mdc.
 
 // ====================================================
 // IMPORTANT REMINDERS
 // ====================================================
 
-// 1. DO NOT commit unless you are explicitly allowed to (see @commits.mdc).
+// 1. NEVER commit without explicit permission, triple confirmation, and following the exact rules in @commits.mdc.
 // 2. ALWAYS maintain alignment with specifications defined in @specifications.mdc.
 // 3. ALWAYS follow project conventions in @conventions.mdc.
 // 4. Be cautious when modifying existing code - understand the impact before making changes.
 // 5. Remember that code is read much more often than it is written - optimize for readability.
 // 6. NEVER make engineering decisions that contradict specifications or conventions.
+// 7. PREVENT REGRESSIONS. Ensure all changes preserve existing functionality unless specifications explicitly require changes.
+// 8. ALWAYS DOUBLE-CHECK, TRIPLE-CHECK THAT THE CODE THAT IS SAVED IN FILES IMPLEMENTS SPECIFICATIONS.
 
 // ====================================================
 // DECISION MAKING HIERARCHY
@@ -288,9 +328,12 @@
 // ====================================================
 
 /*
-// CORRECT APPROACH:
+// VALID APPROACH:
 1. Task: Add a new feature to TaskCard
-2. First step: Read task_card.specs.md and any related specs thoroughly
+2. First steps:
+   a. Check for task_board.package_specs.md and read it first
+   b. Check for task_card.specs.md and read it thoroughly
+   c. Read the project conventions in @conventions.mdc
 3. Implementation aligns exactly with specifications:
    - Uses the interface defined in specs
    - Implements all required behavior
@@ -298,7 +341,7 @@
    - Makes engineering decisions that respect specs
 4. Result: Code that perfectly matches specifications
 
-// INCORRECT APPROACH:
+// INVALID APPROACH:
 1. Task: Add a new feature to TaskCard
 2. Problem: Skip reading specifications or read incompletely
 3. Implementation issues:

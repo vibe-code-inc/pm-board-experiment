@@ -824,14 +824,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </div>
       </div>
 
-      {isEditing && (
-        <TaskModal
-          task={task}
-          onClose={() => setIsEditing(false)}
-          onSave={handleSave}
-          onChange={handleTaskUpdate}
-        />
-      )}
+      <TaskModal
+        isOpen={isEditing}
+        task={task}
+        onClose={() => setIsEditing(false)}
+        onSave={handleSave}
+        onChange={handleTaskUpdate}
+      />
     </>
   );
 };
