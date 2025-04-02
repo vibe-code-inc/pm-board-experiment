@@ -10,63 +10,89 @@ The Select component provides a standardized, accessible dropdown selection fiel
 - Maintain consistent appearance with other form elements
 - Support responsive design for different screen sizes
 - Allow for selection from predefined options
+- Ensure accessibility for all users including keyboard and screen reader users
+- Provide clear visual feedback for different states (default, focus, error, disabled)
 
 ## Technical Requirements
 - Implement as a controlled component with React and TypeScript
 - Extend the standard HTML select element attributes
-- Use Tailwind CSS for styling
-- Support accessibility features with proper ARIA attributes
+- Use Tailwind CSS for styling with project conventions
+- Support accessibility features with proper ARIA attributes and labeling
 - Ensure proper integration with form validation
 - Support nesting of option elements as children
 - Implement consistent error state styling
+- Use types instead of interfaces as per project conventions
+- Implement proper ID generation for label association
+- Follow single responsibility principle
+- Create a reusable component that maintains focus states
+- Support all standard HTML select attributes
 
 ## Behavioral Expectations
-- Display label when provided
+- Display label when provided with proper HTML association
 - Show error message below the select when error prop is provided
 - Apply error styling when in error state
 - Support all standard HTML select behaviors
 - Pass through all unspecified props to the underlying select element
 - Maintain proper focus states and keyboard navigation
 - Allow for selection of options through keyboard and mouse interaction
+- Properly handle form submission
+- Announce error messages to screen readers
+- Allow custom styling through className prop
+- Provide proper focus indicators for keyboard users
 
-## Interfaces
+## Component Structure
 ```typescript
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+type SelectProps = {
   // Optional label text to display above the select
   label?: string;
   // Optional error message to display below the select
   error?: string;
-}
-```
+  // Optional ID for the select (auto-generated if not provided)
+  id?: string;
+} & React.SelectHTMLAttributes<HTMLSelectElement>;
 
-## Component Implementation
-```typescript
 export const Select: React.FC<SelectProps> = ({
   className,
   children,
   label,
   error,
+  id,
   ...props
 }) => {
+  // Generate a unique ID if not provided for label association
+  const selectId = id || `select-${Math.random().toString(36).substring(2, 9)}`;
+
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor={selectId}
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           {label}
         </label>
       )}
       <select
+        id={selectId}
         className={cn(
           "w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm md:text-base py-1.5 md:py-2",
-          error && "border-red-500",
+          error ? "border-red-500" : "",
           className
         )}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${selectId}-error` : undefined}
         {...props}
       >
         {children}
       </select>
       {error && (
-        <p className="mt-1 text-xs md:text-sm text-red-600">{error}</p>
+        <p
+          id={`${selectId}-error`}
+          className="mt-1 text-xs md:text-sm text-red-600"
+          role="alert"
+        >
+          {error}
+        </p>
       )}
     </div>
   );
@@ -108,6 +134,16 @@ export const Select: React.FC<SelectProps> = ({
   <option value="feature">Feature</option>
   <option value="bug">Bug</option>
   <option value="task">Task</option>
+</Select>
+
+// Disabled state
+<Select
+  name="read-only-field"
+  label="Read Only Selection"
+  disabled
+  value="fixed-option"
+>
+  <option value="fixed-option">Cannot be changed</option>
 </Select>
 ```
 

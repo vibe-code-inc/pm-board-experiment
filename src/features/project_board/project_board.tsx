@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { Task, Project } from '@/types';
+import React, { useState, useRef } from 'react';
+import { Task, Project, TaskStatus } from '@/types';
 import { TaskCard } from '@/ui/features/task_card/task_card';
 import { TaskModal } from '@/ui/features/task_modal/task_modal';
 
-interface ProjectBoardProps {
+type ProjectBoardProps = {
   project: Project;
   onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
   onTaskEdit: (task: Task) => void;
-}
+};
 
 export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   project,
@@ -18,6 +18,12 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   const [tasks, setTasks] = useState<Task[]>(project.tasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [draggedOverColumn, setDraggedOverColumn] = useState<TaskStatus | null>(null);
+
+  // Refs for drop targets (columns)
+  const todoColumnRef = useRef<HTMLDivElement>(null);
+  const inProgressColumnRef = useRef<HTMLDivElement>(null);
+  const doneColumnRef = useRef<HTMLDivElement>(null);
 
   // Task filtering by status
   const todoTasks = tasks.filter(task => task.status === 'todo');
@@ -55,10 +61,50 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
     setIsModalOpen(false);
   };
 
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, status: TaskStatus) => {
+    e.preventDefault();
+    setDraggedOverColumn(status);
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetStatus: TaskStatus) => {
+    e.preventDefault();
+    setDraggedOverColumn(null);
+
+    const taskId = e.dataTransfer.getData('taskId');
+    const sourceStatus = e.dataTransfer.getData('taskStatus') as TaskStatus;
+
+    // Only update if the status actually changed
+    if (sourceStatus !== targetStatus) {
+      handleStatusChange(taskId, targetStatus);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDraggedOverColumn(null);
+  };
+
+  // Helper to get column class based on drag state
+  const getColumnClass = (status: TaskStatus) => {
+    return `bg-white rounded-lg shadow p-4 flex flex-col ${
+      draggedOverColumn === status
+        ? 'ring-2 ring-blue-500 ring-opacity-70'
+        : ''
+    }`;
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
       {/* Todo Column */}
-      <div className="bg-white rounded-lg shadow p-4 flex flex-col">
+      <div
+        ref={todoColumnRef}
+        className={getColumnClass('todo')}
+        onDragOver={(e) => handleDragOver(e, 'todo')}
+        onDrop={(e) => handleDrop(e, 'todo')}
+        onDragLeave={handleDragLeave}
+        data-column="todo"
+      >
         <h2 className="text-lg font-semibold mb-4">Todo ({todoTasks.length})</h2>
         <div className="flex-1 overflow-y-auto">
           {todoTasks.map(task => (
@@ -76,7 +122,14 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
       </div>
 
       {/* In Progress Column */}
-      <div className="bg-white rounded-lg shadow p-4 flex flex-col">
+      <div
+        ref={inProgressColumnRef}
+        className={getColumnClass('in-progress')}
+        onDragOver={(e) => handleDragOver(e, 'in-progress')}
+        onDrop={(e) => handleDrop(e, 'in-progress')}
+        onDragLeave={handleDragLeave}
+        data-column="in-progress"
+      >
         <h2 className="text-lg font-semibold mb-4">In Progress ({inProgressTasks.length})</h2>
         <div className="flex-1 overflow-y-auto">
           {inProgressTasks.map(task => (
@@ -94,7 +147,14 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
       </div>
 
       {/* Done Column */}
-      <div className="bg-white rounded-lg shadow p-4 flex flex-col">
+      <div
+        ref={doneColumnRef}
+        className={getColumnClass('done')}
+        onDragOver={(e) => handleDragOver(e, 'done')}
+        onDrop={(e) => handleDrop(e, 'done')}
+        onDragLeave={handleDragLeave}
+        data-column="done"
+      >
         <h2 className="text-lg font-semibold mb-4">Done ({doneTasks.length})</h2>
         <div className="flex-1 overflow-y-auto">
           {doneTasks.map(task => (

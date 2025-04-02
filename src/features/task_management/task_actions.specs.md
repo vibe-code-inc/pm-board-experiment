@@ -7,11 +7,15 @@ The Task Actions utility provides a set of functions for common task operations 
 - Implement utility functions for task CRUD operations
 - Create helper functions for task validation
 - Provide functions for task filtering and sorting
-- Use TypeScript for full type safety
-- Include proper error handling
+- Use TypeScript for full type safety with proper typing
+- Include proper error handling with typed error responses
 - Support batch operations on multiple tasks
 - Export functions individually for tree-shaking optimization
 - Document functions with JSDoc comments
+- Follow single responsibility principle for each function
+- Use immutable data patterns for all operations
+- Implement proper error handling with meaningful error messages
+- Ensure type safety across all operations
 
 ## Functional Requirements
 - Create function to generate a new task with default values
@@ -21,9 +25,21 @@ The Task Actions utility provides a set of functions for common task operations 
 - Create function to filter tasks by various criteria
 - Implement sorting functions for different task attributes
 - Support batch operations for updating multiple tasks
+- Ensure all operations are pure functions without side effects
+- Provide defensive programming with proper input validation
 
 ## Implementation Details
 ```typescript
+/**
+ * Type for validation errors
+ */
+export type ValidationErrors = Record<string, string> | null;
+
+/**
+ * Type for sorting direction
+ */
+export type SortDirection = 'asc' | 'desc';
+
 /**
  * Creates a new task with default values and the provided overrides
  * @param taskData Partial task data to override defaults
@@ -48,11 +64,17 @@ export const createTask = (taskData: Partial<Task> = {}): Task => {
  * @param task Task to validate
  * @returns Object with validation errors or null if valid
  */
-export const validateTask = (task: Task): Record<string, string> | null => {
+export const validateTask = (task: Task): ValidationErrors => {
   const errors: Record<string, string> = {};
 
   if (!task.title.trim()) {
     errors.title = 'Title is required';
+  } else if (task.title.length > 100) {
+    errors.title = 'Title must be less than 100 characters';
+  }
+
+  if (!task.description.trim()) {
+    errors.description = 'Description is required';
   }
 
   if (!['todo', 'in-progress', 'done'].includes(task.status)) {
@@ -61,6 +83,13 @@ export const validateTask = (task: Task): Record<string, string> | null => {
 
   if (!['low', 'medium', 'high'].includes(task.priority)) {
     errors.priority = 'Invalid priority value';
+  }
+
+  if (task.dueDate) {
+    const dueDate = new Date(task.dueDate);
+    if (isNaN(dueDate.getTime())) {
+      errors.dueDate = 'Invalid date format';
+    }
   }
 
   return Object.keys(errors).length > 0 ? errors : null;
@@ -76,8 +105,26 @@ export const updateTask = (task: Task, updates: Partial<Task>): Task => {
   return {
     ...task,
     ...updates,
+    // Ensure updatedAt is always refreshed
     updatedAt: new Date().toISOString(),
   };
+};
+
+/**
+ * Updates multiple tasks that match a predicate function
+ * @param tasks Array of original tasks
+ * @param predicate Function to determine which tasks to update
+ * @param updates Partial updates to apply
+ * @returns New array with updated tasks
+ */
+export const updateTasks = (
+  tasks: Task[],
+  predicate: (task: Task) => boolean,
+  updates: Partial<Task>
+): Task[] => {
+  return tasks.map(task =>
+    predicate(task) ? updateTask(task, updates) : task
+  );
 };
 
 /**
@@ -88,6 +135,19 @@ export const updateTask = (task: Task, updates: Partial<Task>): Task => {
  */
 export const deleteTask = (tasks: Task[], taskId: string): Task[] => {
   return tasks.filter(task => task.id !== taskId);
+};
+
+/**
+ * Deletes multiple tasks that match a predicate function
+ * @param tasks Array of tasks
+ * @param predicate Function to determine which tasks to delete
+ * @returns New array with matching tasks removed
+ */
+export const deleteTasks = (
+  tasks: Task[],
+  predicate: (task: Task) => boolean
+): Task[] => {
+  return tasks.filter(task => !predicate(task));
 };
 
 /**
@@ -124,7 +184,7 @@ export const filterTasks = (tasks: Task[], filters: Partial<TaskFilters>): Task[
 export const sortTasks = (
   tasks: Task[],
   field: keyof Task = 'updatedAt',
-  direction: 'asc' | 'desc' = 'desc'
+  direction: SortDirection = 'desc'
 ): Task[] => {
   return [...tasks].sort((a, b) => {
     const valueA = a[field];
@@ -138,6 +198,14 @@ export const sortTasks = (
 };
 ```
 
+## Error Handling
+- All functions should validate their inputs
+- Invalid inputs should result in meaningful error messages
+- Errors should be properly typed for consistent handling
+- Functions should fail gracefully with clear error messages
+- Error messages should be user-friendly and actionable
+
 ## Related Specifications
 - [Task Management Features](./task_management.package_specs.md)
 - [Task Manager Component](./task_manager.specs.md)
+- [Task Types](../../types.specs.md)

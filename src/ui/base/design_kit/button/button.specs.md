@@ -3,41 +3,51 @@
 ## Overview
 The Button component provides a standardized button element with various visual styles and sizes. It serves as a fundamental interactive element used throughout the application for triggering actions.
 
+## Product Requirements
+- Provide a consistent button appearance across the application
+- Support various visual styles to indicate different types of actions
+- Support different sizes for various contexts and layouts
+- Provide visual feedback for interactive states (hover, focus, active)
+- Indicate loading states during asynchronous operations
+- Support icon placement for enhanced visual communication
+- Ensure buttons are accessible to all users including keyboard and screen reader users
+
 ## Technical Requirements
 - Implement with React and TypeScript
 - Support all standard HTML button attributes
-- Use Tailwind CSS for styling
-- Support different visual variants
-- Support different sizes
-- Support disabled state
-- Support loading state with spinner
-- Support icons (leading and trailing)
-- Ensure accessibility compliance
-- Support keyboard navigation
-- Use the `cn` utility for class merging
+- Use Tailwind CSS for styling with the project's class naming conventions
+- Support different visual variants (primary, secondary, ghost, destructive, link)
+- Support different sizes (small, medium, large)
+- Support disabled state with visual indication
+- Support loading state with spinner animation
+- Support icons in leading and trailing positions
+- Ensure accessibility compliance (ARIA attributes, focus states)
+- Support keyboard navigation and interactions
+- Use the `cn` utility from lib/utils for conditional class merging
+- Follow single responsibility principle by focusing solely on button presentation
+- Implement proper TypeScript types (not interfaces) as per project conventions
 
-## Variants
-- **Primary**: Used for the main call-to-action on a page
-- **Secondary**: Used for secondary actions
-- **Ghost**: A subtle button with no background or border
-- **Destructive**: Used for destructive actions (deletion, etc.)
-- **Link**: Styled to look like a link but behaves like a button
-
-## Sizes
-- **Small**: Compact size for tight spaces
-- **Medium**: Default size for most contexts
-- **Large**: Larger size for emphasis
+## Behavioral Expectations
+- Buttons should provide visual feedback on hover, focus, and active states
+- Disabled buttons should prevent interactions and appear visually distinct
+- Loading buttons should show a spinner and prevent multiple clicks
+- Buttons should handle touch and mouse interactions appropriately
+- Focus states should be clearly visible for keyboard navigation
+- Buttons should respond to Enter and Space key presses
+- Buttons with icons should maintain proper alignment and spacing
+- All variants should maintain consistent height within their size category
+- The component should accept and properly handle all standard HTML button attributes
 
 ## Props Interface
 ```typescript
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonProps = {
   variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'link';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   className?: string;
-}
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 ```
 
 ## Implementation Details
@@ -84,6 +94,7 @@ export const Button: React.FC<ButtonProps> = ({
         className
       )}
       disabled={disabled || isLoading}
+      aria-disabled={disabled || isLoading}
       {...props}
     >
       {isLoading && (
@@ -92,6 +103,7 @@ export const Button: React.FC<ButtonProps> = ({
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <circle
             className="opacity-25"
@@ -108,9 +120,9 @@ export const Button: React.FC<ButtonProps> = ({
           ></path>
         </svg>
       )}
-      {!isLoading && leftIcon && <span className="mr-2">{leftIcon}</span>}
+      {!isLoading && leftIcon && <span className="mr-2" aria-hidden="true">{leftIcon}</span>}
       {children}
-      {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}
+      {!isLoading && rightIcon && <span className="ml-2" aria-hidden="true">{rightIcon}</span>}
     </button>
   );
 };
