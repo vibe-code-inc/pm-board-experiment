@@ -145,18 +145,23 @@ fix(i18n): correct strings.ts files to follow guidelines
 // GIT DIFF AND STAGING PRACTICES
 // ====================================================
 
-// 1. When using `git diff`, always include the `--no-pager` option to prevent paging.
-// 2. ALWAYS check BOTH staged AND unstaged changes using `git --no-pager diff` AND `git --no-pager diff --staged` before writing commit messages.
-// 3. Commit messages MUST accurately reflect ALL code changes, not just what was discussed in conversations.
-// 4. ALWAYS ensure ALL relevant changes are staged before committing. Use `git add` to stage any unstaged changes that should be part of the commit.
-// 5. NEVER leave relevant changes unstaged. IMPORTANT: NEVER COMMIT WITHOUT FIRST CHECKING FOR UNSTAGED CHANGES THAT SHOULD BE INCLUDED. THIS IS CRITICAL.
-// 6. NEVER base commit messages solely on conversation context. Always examine the actual diff to ensure accuracy.
-// 7. ALWAYS compare against the previous commit explicitly using `git diff --no-pager HEAD` to ensure proper context.
-// 8. Before committing changes, ALWAYS check the full diff against the previous commit using `git diff --no-pager HEAD`.
-// 9. After staging changes with `git add`, ALWAYS verify what's being committed with `git diff --no-pager --staged`.
-// 10. CRITICAL: Before finalizing ANY commit, run `git status` to check for ANY unstaged files that might be part of the same logical change. If you find related unstaged changes, check the file content add them with `git add` before committing, if they are relevant to the commit.
-// 11. Never leave out changes that must belong in the same commit.
-// 12. Try not to mix independent changes that belong in separate commits.
+// ⚠️ CRITICAL: ALWAYS REVIEW EVERY SINGLE LINE OF CODE BEFORE COMMITTING ⚠️
+// 1. ALWAYS run `git --no-pager diff HEAD` before writing commit messages to review ALL changes line by line.
+// 2. CAREFULLY READ AND UNDERSTAND EVERY CHANGED LINE to ensure you fully comprehend what the changes do.
+// 3. NEVER write commit messages based solely on conversation or assumptions - base them on the ACTUAL CODE CHANGES.
+// 4. When using `git diff`, always include the `--no-pager` option to prevent paging.
+// 5. ALWAYS check BOTH staged AND unstaged changes using `git --no-pager diff` AND `git --no-pager diff --staged` before writing commit messages.
+// 6. Commit messages MUST accurately reflect ALL code changes, not just what was discussed in conversations.
+// 7. ALWAYS ensure ALL relevant changes are staged before committing. Use `git add` to stage any unstaged changes that should be part of the commit.
+// 8. NEVER leave relevant changes unstaged. IMPORTANT: NEVER COMMIT WITHOUT FIRST CHECKING FOR UNSTAGED CHANGES THAT SHOULD BE INCLUDED. THIS IS CRITICAL.
+// 9. NEVER base commit messages solely on conversation context. Always examine the actual diff to ensure accuracy.
+// 10. ALWAYS compare against the previous commit explicitly using `git diff --no-pager HEAD` to ensure proper context.
+// 11. Before committing changes, ALWAYS check the full diff against the previous commit using `git diff --no-pager HEAD`.
+// 12. After staging changes with `git add`, ALWAYS verify what's being committed with `git diff --no-pager --staged`.
+// 13. CRITICAL: Before finalizing ANY commit, run `git status` to check for ANY unstaged files that might be part of the same logical change. If you find related unstaged changes, check the file content add them with `git add` before committing, if they are relevant to the commit.
+// 14. Never leave out changes that must belong in the same commit.
+// 15. Try not to mix independent changes that belong in separate commits.
+// 16. ⚠️ REVIEWING EVERY LINE IS NON-NEGOTIABLE: You CANNOT write an accurate commit message without understanding exactly what changed in the code.
 
 // ====================================================
 // BREAKING CHANGES
@@ -464,6 +469,9 @@ Closes #456
 git --no-pager diff HEAD
 git --no-pager diff --staged
 
+# REVIEW EVERY SINGLE LINE OF CODE CAREFULLY
+# Understand exactly what each change does and why it's needed
+
 # Make sure all relevant changes are staged
 git add path/to/relevant/unstaged/files
 
@@ -485,6 +493,9 @@ Refs: #123
 git --no-pager diff HEAD
 git --no-pager diff --staged
 
+# REVIEW EVERY SINGLE LINE OF CODE CAREFULLY
+# Understand the root cause of the bug and how the changes fix it
+
 # Make sure all relevant changes are staged
 git add path/to/relevant/unstaged/files
 
@@ -503,6 +514,10 @@ fix(auth): resolve token expiration and validation issues
 # Check all changes and stage them
 git --no-pager diff HEAD
 git --no-pager diff --staged
+
+# REVIEW EVERY SINGLE LINE OF CODE CAREFULLY
+# Understand the full impact of the breaking changes
+
 git add .
 
 feat(api)!: change response format
@@ -516,6 +531,10 @@ BREAKING CHANGE: The API now returns JSON instead of XML
 # Check all changes
 git --no-pager diff HEAD
 git --no-pager diff --staged
+
+# REVIEW EVERY SINGLE LINE CAREFULLY
+# Ensure documentation accurately reflects the current state of the code
+
 git add path/to/docs
 
 docs: update README with new installation instructions
@@ -527,6 +546,10 @@ docs: update README with new installation instructions
 # Check all changes
 git --no-pager diff HEAD
 git --no-pager diff --staged
+
+# REVIEW EVERY SINGLE LINE CAREFULLY
+# Understand the impact of each configuration change
+
 git add path/to/config/files
 
 config(rules): update cursor rules for commit message formatting
@@ -552,3 +575,4 @@ This change adds a new type of commit messages to the Cursor rule:
 // 10. COMPREHENSIVE DESCRIPTIONS: Commit messages MUST cover ALL significant changes in the diff, not just a subset of them.
 // 11. STAGE ALL RELEVANT CHANGES: NEVER leave relevant changes unstaged. Always use `git add` to stage all changes that should be part of the commit. CRITICAL: BEFORE EVERY COMMIT, VERIFY THAT ALL RELATED CHANGES ARE STAGED. LOOK FOR UNSTAGED FILES THAT MIGHT BE PART OF THE LOGICAL CHANGE.
 // 12. COMPLETE CONTEXT: Always compare against the previous commit using `git diff --no-pager HEAD` to ensure complete context of your changes.
+// 13. ⚠️ LINE-BY-LINE REVIEW: You MUST review EVERY SINGLE LINE of code that has changed before writing a commit message. This is the ONLY way to ensure your commit message accurately reflects what actually changed.
