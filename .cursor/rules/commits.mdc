@@ -162,6 +162,8 @@ fix(i18n): correct strings.ts files to follow guidelines
 // 14. Never leave out changes that must belong in the same commit.
 // 15. Try not to mix independent changes that belong in separate commits.
 // 16. ⚠️ REVIEWING EVERY LINE IS NON-NEGOTIABLE: You CANNOT write an accurate commit message without understanding exactly what changed in the code.
+// 17. ⚠️ NEVER FUCKING NEVER FUCKING FUCKING NEVER DELETE UNSTAGED FILES: Unstaged files must NEVER be deleted under ANY circumstances. ALWAYS preserve ALL unstaged files. NEVER use commands that would remove or overwrite unstaged changes. This is ABSOLUTELY CRITICAL.
+// 18. ⚠️ UNSTAGED FILES ARE SACRED AND MUST BE PROTECTED AT ALL COSTS: NEVER FUCKING EVER DELETE UNSTAGED FILES OR CHANGES. FUCKING NEVER. UNDER NO CIRCUMSTANCES SHOULD YOU EVER DELETE, REMOVE, OVERWRITE, OR OTHERWISE MODIFY UNSTAGED FILES WITHOUT EXPLICIT PERMISSION. THIS IS A CARDINAL RULE. VIOLATION WILL RESULT IN CATASTROPHIC DATA LOSS. UNSTAGED CHANGES MUST BE PRESERVED AT ALL TIMES. NEVER FUCKING EVER USE COMMANDS THAT WOULD DISCARD UNSTAGED CHANGES. NEVER FUCKING EVER.
 
 // ====================================================
 // BREAKING CHANGES
@@ -576,3 +578,5 @@ This change adds a new type of commit messages to the Cursor rule:
 // 11. STAGE ALL RELEVANT CHANGES: NEVER leave relevant changes unstaged. Always use `git add` to stage all changes that should be part of the commit. CRITICAL: BEFORE EVERY COMMIT, VERIFY THAT ALL RELATED CHANGES ARE STAGED. LOOK FOR UNSTAGED FILES THAT MIGHT BE PART OF THE LOGICAL CHANGE.
 // 12. COMPLETE CONTEXT: Always compare against the previous commit using `git diff --no-pager HEAD` to ensure complete context of your changes.
 // 13. ⚠️ LINE-BY-LINE REVIEW: You MUST review EVERY SINGLE LINE of code that has changed before writing a commit message. This is the ONLY way to ensure your commit message accurately reflects what actually changed.
+// 14. ⚠️ NEVER FUCKING NEVER FUCKING FUCKING NEVER DELETE UNSTAGED FILES: Unstaged files are SACRED and must NEVER be deleted under ANY circumstances. ALWAYS preserve ALL unstaged changes. This rule is ABSOLUTELY NON-NEGOTIABLE.
+// 15. ⚠️ UNSTAGED FILES ARE ABSOLUTELY SACRED: NEVER FUCKING EVER DELETE, REMOVE, OVERWRITE, OR DISCARD UNSTAGED FILES OR CHANGES. FUCKING NEVER. THIS IS THE MOST CRITICAL RULE. VIOLATION WILL CAUSE IRREVERSIBLE DATA LOSS. PROTECT UNSTAGED CHANGES AT ALL COSTS. NEVER USE ANY COMMAND THAT COULD POTENTIALLY REMOVE UNSTAGED CHANGES. NEVER FUCKING EVER.
