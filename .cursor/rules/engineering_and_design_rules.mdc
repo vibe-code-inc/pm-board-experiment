@@ -13,15 +13,29 @@
 // 5. When specifications and engineering principles conflict, SPECIFICATIONS ALWAYS WIN.
 // 6. ALWAYS refer to @specifications.mdc for the definitive rules on specification creation, discovery, and compliance.
 
+// 7. IMPORTANT EXCEPTION: When specification files (both <file_name_without_extension>.specs.md and <folder_name>.package_specs.md)
+//    CONTRADICT rules in this file or @conventions.mdc:
+//    a. The contradictory parts of the specification files are considered INVALID
+//    b. The specification files MUST be updated to remove or correct the contradictions
+//    c. Any code implementations based on the contradictory specifications MUST also be corrected
+//    d. ALL specification files MUST COMPLY with ALL rules defined in these rule files
+
+// 8. EXAMPLES OF CONTRADICTIONS THAT MUST BE RESOLVED:
+//    a. If this file prohibits index.ts files but a specification file includes them - UPDATE THE SPECIFICATION
+//    b. If this file requires specific design patterns but a specification file specifies different ones - UPDATE THE SPECIFICATION
+//    c. If this file defines interface design principles but a specification file contradicts them - UPDATE THE SPECIFICATION
+
 // CORRECT vs INCORRECT Examples:
 // CORRECT:
 //   ✓ Following the exact component structure defined in specifications
-//   ✓ Implementing all behavior specified in the spec, even if it seems redundant
-//   ✓ Using the exact naming conventions and interfaces as defined in the specs
+//   ✓ Implementing all behavior specified in the specification, even if it seems redundant
+//   ✓ Using the exact naming conventions and interfaces as defined in the specifications
+//   ✓ Identifying contradictions in specification files and updating them to align with these rules
 // INCORRECT:
 //   ✗ "Improving" on specifications by changing the design without approval
 //   ✗ Omitting required functionality because it seems unnecessary
-//   ✗ Changing interface definitions from what's specified in the specs
+//   ✗ Changing interface definitions from what's specified in the specifications
+//   ✗ Implementing specification files that contradict these rules without updating the specifications first
 
 // ====================================================
 // CODE ORGANIZATION PRINCIPLES
@@ -35,6 +49,8 @@
 // 6. Keep files and components relatively small, but NEVER refactor solely based on file size if it contradicts specifications.
 // 7. Follow the project structure and file naming conventions defined in @conventions.mdc.
 // 8. Follow the specification creation, discovery, and update workflow exactly as defined in @specifications.mdc.
+// 9. Prefer composition and dependency injection over inheritance wherever possible.
+// 10. NEVER EVER create index.ts files just for re-exporting files. These barrel files are strictly prohibited.
 
 // CORRECT vs INCORRECT Examples:
 // CORRECT:
@@ -42,11 +58,15 @@
 //   ✓ Optimizing existing code paths before adding new ones
 //   ✓ Consolidating duplicate logic into shared utilities
 //   ✓ Following the file structure defined in specifications exactly
+//   ✓ Composing behavior through component composition rather than inheritance
+//   ✓ Importing directly from specific files rather than using barrel files
 // INCORRECT:
 //   ✗ Adding more and more code to solve new requirements without revisiting existing architecture
 //   ✗ Creating components that try to do too many things
 //   ✗ Refactoring code when specifications explicitly require the current structure
 //   ✗ Breaking specifications to achieve "cleaner" code
+//   ✗ Using inheritance hierarchies when composition would be clearer
+//   ✗ Creating index.ts files that just re-export other files
 
 // ====================================================
 // SOLID PRINCIPLES - COMPREHENSIVE IMPLEMENTATION
@@ -85,10 +105,12 @@
 //   ✓ A Button component that accepts render props for custom content
 //   ✓ A Table component that can be extended with custom cell renderers
 //   ✓ Using strategy pattern for pluggable behaviors as specified in specs
+//   ✓ Composing behavior through props rather than inheritance
 // INCORRECT:
 //   ✗ Hardcoding behaviors that will likely need to change
 //   ✗ Using internal if/else logic instead of accepting strategy components
 //   ✗ Modifying core component code for feature-specific behavior
+//   ✗ Creating deep inheritance hierarchies instead of using composition
 
 // 3. LISKOV SUBSTITUTION PRINCIPLE (LSP):
 //    Subtypes must be substitutable for their base types without altering the correctness of the program.
@@ -96,16 +118,19 @@
 //    - Specialized components should not break expectations set by base components
 //    - When extending a component, preserve its core behavior
 //    - But NEVER violate specifications in pursuit of LSP
+//    - Prefer composition over inheritance to avoid LSP violations
 
 // CORRECT vs INCORRECT LSP Examples:
 // CORRECT:
 //   ✓ A PrimaryButton that behaves the same as a Button with different styling
 //   ✓ A specialized DataTable that supports all the same props as a regular Table
 //   ✓ A FormInput that can be used anywhere a base Input is expected
+//   ✓ Using composition to combine behaviors rather than inheritance
 // INCORRECT:
 //   ✗ A PrimaryButton that ignores the onClick handler expected by Button
 //   ✗ A specialized component that changes the expected prop behavior
 //   ✗ Adding unexpected side effects to extended components
+//   ✗ Creating inheritance hierarchies that violate substitutability
 
 // 4. INTERFACE SEGREGATION PRINCIPLE (ISP):
 //    Clients should not be forced to depend on interfaces they don't use.
@@ -129,6 +154,7 @@
 //    - Components should receive services/utilities as props or context
 //    - Use dependency injection to provide implementations
 //    - Avoid importing concrete implementations directly in components
+//    - Prefer composition and dependency injection over inheritance
 //    - But NEVER break specifications to implement dependency inversion
 
 // CORRECT vs INCORRECT DIP Examples:
@@ -136,10 +162,12 @@
 //   ✓ A DataTable receiving a data fetching function rather than calling an API directly
 //   ✓ Using context to provide service implementations throughout the app
 //   ✓ Injecting logger, API client, and other dependencies as specified
+//   ✓ Composing behavior through injected dependencies rather than inheritance
 // INCORRECT:
 //   ✗ Hardcoding API calls inside components
 //   ✗ Direct imports of concrete implementations instead of using abstractions
 //   ✗ Changing the dependency structure defined in specifications
+//   ✗ Using inheritance to access parent class functionality instead of dependency injection
 
 // 6. MINIMAL INTERFACE PRINCIPLE:
 //    Components should expose the smallest possible public API needed for their functionality.
@@ -294,6 +322,7 @@
 //    a. Using className with Tailwind CSS utilities
 //    b. Using the cn utility for conditional classes
 // 6. Use destructuring for props as shown in the examples in @conventions.mdc.
+// 7. Prefer composition and dependency injection over inheritance for component reuse and extension.
 
 // ====================================================
 // IMPORTANT REMINDERS
@@ -307,6 +336,8 @@
 // 6. NEVER make engineering decisions that contradict specifications or conventions.
 // 7. PREVENT REGRESSIONS. Ensure all changes preserve existing functionality unless specifications explicitly require changes.
 // 8. ALWAYS DOUBLE-CHECK, TRIPLE-CHECK THAT THE CODE THAT IS SAVED IN FILES IMPLEMENTS SPECIFICATIONS.
+// 9. Prefer composition and dependency injection over inheritance wherever possible.
+// 10. NEVER EVER create index.ts files just for re-exporting files (barrel files).
 
 // ====================================================
 // DECISION MAKING HIERARCHY

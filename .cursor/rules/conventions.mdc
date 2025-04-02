@@ -7,6 +7,26 @@ alwaysApply: true
 // This rule file defines coding conventions for the project
 
 // ====================================================
+// RULE COMPLIANCE AND CONTRADICTION HANDLING
+// ====================================================
+
+// 1. ALL specification files (both <file_name_without_extension>.specs.md and <folder_name>.package_specs.md)
+//    MUST COMPLY with ALL conventions in this file
+// 2. When a specification file CONTRADICTS any convention in this file:
+//    a. The contradictory part of the specification file is considered INVALID
+//    b. The specification file MUST be updated to align with these conventions
+//    c. Any implementation based on the contradictory specification MUST also be corrected
+//
+// 3. EXAMPLES OF CONTRADICTIONS THAT MUST BE RESOLVED:
+//    a. If this file requires snake_case for files but a specification file specifies camelCase
+//    b. If this file requires certain import patterns but a specification file contradicts them
+//    c. If this file defines specific component patterns but a specification file specifies different ones
+//
+// 4. CONVENTION ENFORCEMENT: All conventions in this file are considered MANDATORY
+//    Any specification file or implementation that doesn't follow these conventions is INCORRECT
+//    and MUST be updated immediately to comply with these conventions.
+
+// ====================================================
 // FILE AND DIRECTORY NAMING CONVENTIONS
 // ====================================================
 

@@ -7,6 +7,35 @@ alwaysApply: true
 // This rule enforces development practices centered around specifications to ensure requirements are properly documented and implemented.
 
 // ====================================================
+// RULE HIERARCHY AND CONTRADICTION HANDLING
+// ====================================================
+
+// 1. RULE HIERARCHY: There is a strict hierarchy of rules that must be followed at all times:
+//    a. @conventions.mdc - Defines the fundamental project conventions
+//    b. @engineering_and_design_rules.mdc - Defines engineering principles to be applied
+//    c. @specifications.mdc (this file) - Defines how specification files should be created and managed
+//
+// 2. SPECIFICATION FILES MUST FOLLOW ALL RULES: All specification files (both <file_name_without_extension>.specs.md
+//    and <folder_name>.package_specs.md) MUST comply with ALL rules defined in:
+//    a. @conventions.mdc
+//    b. @engineering_and_design_rules.mdc
+//    c. @specifications.mdc
+//
+// 3. CONTRADICTION RESOLUTION: If any specification file contains ANY statement that contradicts ANY rule:
+//    a. The contradiction MUST be identified and removed from the specification file
+//    b. The specification file MUST be updated to align with the rule files
+//    c. Any code that was implemented based on the contradictory specification MUST be updated
+//    d. The contradictory part of the specification is considered INVALID and should be IGNORED
+//
+// 4. EXAMPLES OF CONTRADICTIONS TO RESOLVE:
+//    a. If @engineering_and_design_rules.mdc prohibits index.ts files but a specification file includes them
+//    b. If @conventions.mdc requires snake_case filenames but a specification file specifies camelCase
+//    c. If @specifications.mdc requires minimalist interfaces but a specification file specifies bloated ones
+//
+// 5. SPECIFICATION UPDATING RESPONSIBILITY: When a contradiction is found, the specification file MUST be corrected immediately.
+//    Any implementation based on the contradictory specification MUST also be corrected.
+
+// ====================================================
 // SPECIFICATION CREATION GUIDELINES
 // ====================================================
 
@@ -57,6 +86,7 @@ Before modifying src/features/task_board/task_list.tsx:
 // 7. Specifications that are not referred to anywhere are likely safe to delete unless they are:
 //    a. Root specifications (entry point specifications)
 //    b. Specifications for implementations that are root files
+// 8. If a specification refers to another specification but that other specification does not exist, and neither does its implementation or even its folder, that reference MUST be removed. NO unsolicited features must EVER be built.
 
 /*
 // Example specification workflow:
@@ -556,3 +586,32 @@ TextInput.displayName = 'TextInput';
    - src/assets/icons.specs.md (for icon assets - assets should not have specs)
    - src/config/app_config.specs.md (for app_config.json - config files should not have specs)
 */
+
+// ====================================================
+// ENFORCING SPECIFICATION COMPLIANCE WITH RULES
+// ====================================================
+
+// 1. CONTRADICTIONS ARE INVALID: Any specification file that contradicts @conventions.mdc or @engineering_and_design_rules.mdc
+//    is INVALID and MUST be corrected immediately.
+//
+// 2. EXAMPLES OF CONTRADICTIONS THAT MAKE SPECIFICATIONS INVALID:
+//    a. BARREL FILES: If a specification file includes the use of index.ts barrel files, but @engineering_and_design_rules.mdc
+//       explicitly prohibits them, the specification is INVALID and must be updated to remove any mention of index.ts files.
+//
+//    b. FILE NAMING: If a specification file specifies camelCase file names, but @conventions.mdc requires snake_case,
+//       the specification is INVALID and must be updated to use snake_case file names.
+//
+//    c. COMPONENT STRUCTURE: If a specification file defines components that violate the component patterns specified
+//       in @conventions.mdc, the specification is INVALID and must be updated to follow the correct patterns.
+//
+// 3. CONTRADICTION RESOLUTION PROCEDURE:
+//    a. IDENTIFY the contradiction between the specification file and rule files
+//    b. UPDATE the specification file to remove or correct the contradiction
+//    c. MODIFY any existing code that was implemented based on the contradictory specification
+//    d. VERIFY that both specification file and implementation now comply with ALL rules
+//
+// 4. CONTINUOUS COMPLIANCE: All specification files must be continuously monitored for compliance with ALL rule files.
+//    When rules are updated, existing specification files might need to be reviewed and updated accordingly.
+//
+// 5. ABSOLUTE RULE: NO specification file MAY EVER contradict @conventions.mdc or @engineering_and_design_rules.mdc.
+//    If such a contradiction exists, the specification file MUST be updated to comply with the rules.
