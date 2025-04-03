@@ -1,7 +1,7 @@
 # Task Card Component Specification
 
 ## Overview
-The Task Card component displays a visual representation of a task within the application. It shows the task's key information in a compact, scannable format and supports interactions such as viewing details, editing, and drag-and-drop for status changes.
+The Task Card component displays a visual representation of a task within the application. It shows the task's key information in a compact, scannable format and supports interactions such as viewing details, editing, and being a draggable element.
 
 ## Product Requirements
 - Display task title prominently
@@ -11,11 +11,12 @@ The Task Card component displays a visual representation of a task within the ap
 - Display assignee information when available
 - Show due date with appropriate formatting and color indicators for approaching/past dates
 - Support clicking to view/edit task details
-- Support drag-and-drop for task status changes
+- Support being dragged between columns and within columns
 - Provide visual feedback for interactive states (hover, drag)
 - Show appropriate truncation for overly long content
 - Support touch-based drag and drop on mobile devices
 - Provide a vertical grip handle for dragging on mobile
+- Indicate itself when being dragged with semi-transparency
 
 ## Technical Requirements
 - Build with React and TypeScript
@@ -24,7 +25,6 @@ The Task Card component displays a visual representation of a task within the ap
 - Support responsive design for different screen sizes
 - Implement proper keyboard accessibility
 - Support drag-and-drop functionality with appropriate event handlers
-- Implement drag placeholder with visual indicators
 - Optimize rendering performance with appropriate React hooks
 - Implement auto-scrolling during drag operations
 - Support touchscreen-based drag and drop with dedicated touch handlers
@@ -32,9 +32,11 @@ The Task Card component displays a visual representation of a task within the ap
 - Create a reusable component that follows single responsibility principle
 - Use refs for DOM manipulation during drag operations
 - Maintain accessibility during all interaction states
+- Properly communicate drag events to parent components
 
 ## Behavioral Expectations
 - Card should be draggable between status columns
+- Card should be draggable within the same column for reordering
 - Clicking the card should open the task detail modal
 - Visual indicators should reflect the task's priority
 - Due date should be formatted appropriately
@@ -42,13 +44,11 @@ The Task Card component displays a visual representation of a task within the ap
 - Due date should be highlighted in red if past due
 - Card should provide visual feedback during drag operations
 - When being dragged, the card should appear semi-transparent
-- When dragging, a placeholder with the same dimensions as the card and a blue border must appear
 - Long text fields should be properly truncated with ellipsis
 - Empty fields (like missing assignee) should be handled gracefully
 - Auto-scrolling should activate when dragging near screen edges
 - Touch-based dragging should only activate when using the grip handle
 - Screen should auto-scroll during dragging operations
-- Dragged cards should maintain their visual style
 
 ## Component Structure
 ```typescript
@@ -56,8 +56,8 @@ type TaskCardProps = {
   task: Task;
   onStatusChange: (status: Task['status']) => void;
   onEdit: (task: Task) => void;
-  columnTasks?: Task[];
-  onReorder?: (draggedTaskId: string, targetTaskId: string) => void;
+  onDragStart?: (taskId: string, status: Task['status']) => void;
+  onDragEnd?: () => void;
 };
 
 // Color maps for visual styling
@@ -77,8 +77,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   onStatusChange,
   onEdit,
-  columnTasks,
-  onReorder,
+  onDragStart,
+  onDragEnd
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -94,15 +94,29 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent) => {
-    // Drag start implementation
+    // Set task ID and status in the drag data
+    e.dataTransfer.setData('taskId', task.id);
+    e.dataTransfer.setData('taskStatus', task.status);
+    setIsDragging(true);
+
+    // Notify parent component if callback exists
+    if (onDragStart) {
+      onDragStart(task.id, task.status);
+    }
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
-    // Drag end implementation
+    // Clean up drag state
+    setIsDragging(false);
+
+    // Notify parent component if callback exists
+    if (onDragEnd) {
+      onDragEnd();
+    }
   };
 
   const handleAutoScroll = (e: React.DragEvent | React.TouchEvent | MouseEvent) => {
-    // Auto-scroll implementation
+    // Auto-scroll implementation when dragging near screen edges
   };
 
   // Touch event handlers for mobile
@@ -129,7 +143,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       draggable="true"
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -137,17 +150,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       data-task-id={task.id}
     >
       {/* Card content */}
-
-      {/* Drag placeholder */}
-      {isDragging && (
-        <div
-          className="absolute pointer-events-none border-2 border-blue-500 rounded-lg bg-blue-50 opacity-50"
-          style={{
-            width: cardRef.current?.offsetWidth || 'auto',
-            height: cardRef.current?.offsetHeight || 'auto',
-          }}
-        />
-      )}
     </div>
   );
 };

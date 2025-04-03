@@ -1,200 +1,89 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Task, Project, TaskStatus } from '@/types';
-import { TaskCard } from '@/ui/features/task_card/task_card';
-import { TaskModal } from '@/ui/features/task_modal/task_modal';
+import React, { useState, useCallback } from 'react';
+import { Task, TaskStatus } from '@/types/task';
+import { useDragAndDropManager } from '@/lib/drag_drop/drag_drop_manager';
+import { TaskColumn } from './task_column';
 
-type ProjectBoardProps = {
-  project: Project;
+interface ProjectBoardProps {
+  project: {
+    tasks: Task[];
+    [key: string]: any;
+  };
   onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
   onTaskEdit: (task: Task) => void;
-};
+}
 
-export const ProjectBoard: React.FC<ProjectBoardProps> = ({
-  project,
-  onTaskUpdate,
-  onTaskEdit
-}) => {
-  // State management for tasks, drag operations, and modals
-  const [tasks, setTasks] = useState<Task[]>(project.tasks);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [draggedOverColumn, setDraggedOverColumn] = useState<TaskStatus | null>(null);
+export function ProjectBoard({ project, onTaskUpdate, onTaskEdit }: ProjectBoardProps) {
+  // Group tasks by status - ensure we have a valid array
+  const tasks = project?.tasks || [];
 
-  // Refs for drop targets (columns)
-  const todoColumnRef = useRef<HTMLDivElement>(null);
-  const inProgressColumnRef = useRef<HTMLDivElement>(null);
-  const doneColumnRef = useRef<HTMLDivElement>(null);
-
-  // Task filtering by status
-  const todoTasks = tasks.filter(task => task.status === 'todo');
-  const inProgressTasks = tasks.filter(task => task.status === 'in-progress');
-  const doneTasks = tasks.filter(task => task.status === 'done');
-
-  // Filter out any 'deleted' tasks (these shouldn't be rendered)
-  useEffect(() => {
-    // Remove any tasks with 'deleted' status from the local state
-    setTasks(prev => prev.filter(task => task.status !== 'deleted'));
-  }, [project.tasks]);
-
-  // Handle status change (drag-and-drop)
-  const handleStatusChange = (taskId: string, status: Task['status']) => {
-    onTaskUpdate(taskId, { status });
-    setTasks(prev =>
-      prev.map(task =>
-        task.id === taskId
-          ? { ...task, status, updatedAt: new Date().toISOString().split('T')[0] }
-          : task
-      )
-    );
-  };
-
-  // Handle task editing
-  const handleEditTask = (task: Task) => {
-    setSelectedTask(task);
-    setIsModalOpen(true);
-  };
-
-  // Handle task delete
-  const handleDeleteTask = (taskId: string) => {
-    setTasks(prev => prev.filter(task => task.id !== taskId));
-
-    // Pass the deletion to the parent component
-    onTaskUpdate(taskId, { status: 'deleted' as TaskStatus });
-  };
-
-  // Handle task save
-  const handleSaveTask = (updatedTask: Task) => {
-    onTaskEdit(updatedTask);
-    setTasks(prev =>
-      prev.map(task =>
-        task.id === updatedTask.id
-          ? { ...updatedTask, updatedAt: new Date().toISOString().split('T')[0] }
-          : task
-      )
-    );
-    setIsModalOpen(false);
-  };
-
-  // Drag and drop handlers
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, status: TaskStatus) => {
-    e.preventDefault();
-    setDraggedOverColumn(status);
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetStatus: TaskStatus) => {
-    e.preventDefault();
-    setDraggedOverColumn(null);
-
-    const taskId = e.dataTransfer.getData('taskId');
-    const sourceStatus = e.dataTransfer.getData('taskStatus') as TaskStatus;
-
-    // Only update if the status actually changed
-    if (sourceStatus !== targetStatus) {
-      handleStatusChange(taskId, targetStatus);
+  const tasksByStatus = tasks.reduce<Record<TaskStatus, Task[]>>((acc, task) => {
+    if (!acc[task.status]) {
+      acc[task.status] = [];
     }
-  };
+    acc[task.status].push(task);
+    return acc;
+  }, {} as Record<TaskStatus, Task[]>);
 
-  const handleDragLeave = () => {
-    setDraggedOverColumn(null);
-  };
+  // Ensure all statuses have an array, even if empty
+  const allStatuses: TaskStatus[] = ['todo', 'in_progress', 'done'];
+  allStatuses.forEach(status => {
+    if (!tasksByStatus[status]) {
+      tasksByStatus[status] = [];
+    }
+  });
 
-  // Helper to get column class based on drag state
-  const getColumnClass = (status: TaskStatus) => {
-    return `bg-white rounded-lg shadow p-4 flex flex-col ${
-      draggedOverColumn === status
-        ? 'ring-2 ring-blue-500 ring-opacity-70'
-        : ''
-    }`;
+  // Use our drag and drop manager hook to handle drag and drop operations
+  const dragDropManager = useDragAndDropManager();
+
+  // Handler for tasks being dropped into a column
+  const handleTaskDrop = useCallback(
+    (
+      taskId: string,
+      sourceStatus: TaskStatus,
+      targetStatus: TaskStatus,
+      targetTaskId: string | null,
+      position: 'before' | 'after'
+    ) => {
+      // Don't do anything if nothing changed (dropped in same position)
+      if (sourceStatus === targetStatus && !targetTaskId) {
+        return;
+      }
+
+      // Update the task status if it changed
+      if (sourceStatus !== targetStatus) {
+        onTaskUpdate(taskId, { status: targetStatus });
+      }
+
+      // For now, we're not implementing actual reordering
+      // In a real app, this would update task positions
+    },
+    [onTaskUpdate]
+  );
+
+  // Mapping statuses to their display names
+  const statusDisplayNames: Record<TaskStatus, string> = {
+    todo: 'To Do',
+    in_progress: 'In Progress',
+    done: 'Done',
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
-      {/* Todo Column */}
-      <div
-        ref={todoColumnRef}
-        className={getColumnClass('todo')}
-        onDragOver={(e) => handleDragOver(e, 'todo')}
-        onDrop={(e) => handleDrop(e, 'todo')}
-        onDragLeave={handleDragLeave}
-        data-column="todo"
-      >
-        <h2 className="text-lg font-semibold mb-4">Todo ({todoTasks.length})</h2>
-        <div className="flex-1 overflow-y-auto">
-          {todoTasks.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onStatusChange={(status) => handleStatusChange(task.id, status)}
-              onEdit={() => handleEditTask(task)}
-            />
-          ))}
-          {todoTasks.length === 0 && (
-            <div className="text-gray-400 text-center p-4">No tasks</div>
-          )}
-        </div>
+    <div className="flex flex-col h-full">
+      <div className="flex-1 min-h-0 flex overflow-x-auto p-4 gap-4">
+        {allStatuses.map(status => (
+          <TaskColumn
+            key={status}
+            status={status}
+            title={statusDisplayNames[status]}
+            tasks={tasksByStatus[status]}
+            dragDropManager={dragDropManager}
+            onTaskDrop={(taskId, sourceStatus, targetTaskId, position) =>
+              handleTaskDrop(taskId, sourceStatus, status, targetTaskId, position)
+            }
+            onTaskEdit={onTaskEdit}
+          />
+        ))}
       </div>
-
-      {/* In Progress Column */}
-      <div
-        ref={inProgressColumnRef}
-        className={getColumnClass('in-progress')}
-        onDragOver={(e) => handleDragOver(e, 'in-progress')}
-        onDrop={(e) => handleDrop(e, 'in-progress')}
-        onDragLeave={handleDragLeave}
-        data-column="in-progress"
-      >
-        <h2 className="text-lg font-semibold mb-4">In Progress ({inProgressTasks.length})</h2>
-        <div className="flex-1 overflow-y-auto">
-          {inProgressTasks.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onStatusChange={(status) => handleStatusChange(task.id, status)}
-              onEdit={() => handleEditTask(task)}
-            />
-          ))}
-          {inProgressTasks.length === 0 && (
-            <div className="text-gray-400 text-center p-4">No tasks</div>
-          )}
-        </div>
-      </div>
-
-      {/* Done Column */}
-      <div
-        ref={doneColumnRef}
-        className={getColumnClass('done')}
-        onDragOver={(e) => handleDragOver(e, 'done')}
-        onDrop={(e) => handleDrop(e, 'done')}
-        onDragLeave={handleDragLeave}
-        data-column="done"
-      >
-        <h2 className="text-lg font-semibold mb-4">Done ({doneTasks.length})</h2>
-        <div className="flex-1 overflow-y-auto">
-          {doneTasks.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onStatusChange={(status) => handleStatusChange(task.id, status)}
-              onEdit={() => handleEditTask(task)}
-            />
-          ))}
-          {doneTasks.length === 0 && (
-            <div className="text-gray-400 text-center p-4">No tasks</div>
-          )}
-        </div>
-      </div>
-
-      {/* Task Modal */}
-      {selectedTask && (
-        <TaskModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          task={selectedTask}
-          onSave={handleSaveTask}
-          onDelete={handleDeleteTask}
-        />
-      )}
     </div>
   );
-};
+}
