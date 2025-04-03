@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Task } from '@/types';
 import { TaskList } from './task_list';
 import { TaskFilter } from './task_filter';
@@ -29,8 +29,12 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+
+  // Reference for create button (to return focus after modal closes)
+  const createButtonRef = useRef<HTMLButtonElement>(null);
 
   // Get unique assignees for filter dropdown
   const availableAssignees = useMemo(() => {
@@ -58,6 +62,12 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       return true;
     });
   }, [tasks, filters]);
+
+  // Show status message temporarily
+  const showStatusMessage = useCallback((message: string) => {
+    setStatusMessage(message);
+    setTimeout(() => setStatusMessage(null), 3000);
+  }, []);
 
   // Task operation handlers
   const handleCreateTask = useCallback(() => {
@@ -105,10 +115,11 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       setIsConfirmDeleteOpen(false);
       setTaskToDelete(null);
       setErrorMessage(null);
+      showStatusMessage('Task deleted successfully');
     } catch (error) {
       setErrorMessage('Failed to delete task. Please try again.');
     }
-  }, [taskToDelete, tasks, onTasksChange]);
+  }, [taskToDelete, tasks, onTasksChange, showStatusMessage]);
 
   const handleCancelDelete = useCallback(() => {
     setIsConfirmDeleteOpen(false);
@@ -131,22 +142,26 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
 
       if (isNewTask) {
         updatedTasks = [...tasks, updatedTask];
+        showStatusMessage('Task created successfully');
       } else {
         updatedTasks = tasks.map(task =>
           task.id === updatedTask.id
             ? { ...updatedTask, updatedAt: new Date().toISOString().split('T')[0] }
             : task
         );
+        showStatusMessage('Task updated successfully');
       }
 
       setTasks(updatedTasks);
       onTasksChange(updatedTasks);
       setIsModalOpen(false);
-      setErrorMessage(null);
+
+      // Return focus to create button after modal closes
+      setTimeout(() => createButtonRef.current?.focus(), 0);
     } catch (error) {
       setErrorMessage('Failed to save task. Please try again.');
     }
-  }, [tasks, onTasksChange]);
+  }, [tasks, onTasksChange, showStatusMessage]);
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -160,6 +175,12 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       }
     }
   }, [isModalOpen, isConfirmDeleteOpen]);
+
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false);
+    // Return focus to create button after modal closes
+    setTimeout(() => createButtonRef.current?.focus(), 0);
+  }, []);
 
   return (
     <div
@@ -184,6 +205,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">Task Management</h2>
         <button
+          ref={createButtonRef}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
           onClick={handleCreateTask}
           aria-label="Create new task"
@@ -222,12 +244,23 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
         />
       )}
 
+      {statusMessage && (
+        <div
+          className="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md"
+          role="status"
+          aria-live="polite"
+        >
+          {statusMessage}
+        </div>
+      )}
+
       {selectedTask && (
         <TaskModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={handleModalClose}
           task={selectedTask}
           onSave={handleSaveTask}
+          onDelete={handleDeleteRequest}
         />
       )}
 

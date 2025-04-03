@@ -46,14 +46,25 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({
                           filters.priority !== undefined ||
                           filters.assignee !== undefined;
 
+  // Count active filters for accessibility announcements
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow">
+    <div
+      className="bg-white p-4 rounded-lg shadow"
+      role="region"
+      aria-label="Task filters"
+    >
       <div className="flex flex-wrap gap-4">
         <div className="flex-1 min-w-[200px]">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="status-filter"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Status
           </label>
           <select
+            id="status-filter"
             className={`w-full rounded-md border-gray-300 ${filters.status ? 'bg-blue-50 border-blue-300' : ''}`}
             value={filters.status || 'all'}
             onChange={handleStatusChange}
@@ -67,10 +78,14 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({
         </div>
 
         <div className="flex-1 min-w-[200px]">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="priority-filter"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Priority
           </label>
           <select
+            id="priority-filter"
             className={`w-full rounded-md border-gray-300 ${filters.priority ? 'bg-blue-50 border-blue-300' : ''}`}
             value={filters.priority || 'all'}
             onChange={handlePriorityChange}
@@ -84,10 +99,14 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({
         </div>
 
         <div className="flex-1 min-w-[200px]">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="assignee-filter"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Assignee
           </label>
           <select
+            id="assignee-filter"
             className={`w-full rounded-md border-gray-300 ${filters.assignee ? 'bg-blue-50 border-blue-300' : ''}`}
             value={filters.assignee || 'all'}
             onChange={handleAssigneeChange}
@@ -104,15 +123,24 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({
 
         <div className="flex items-end">
           <button
-            className={`px-4 py-2 rounded ${hasActiveFilters ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'}`}
+            className={`px-4 py-2 rounded ${hasActiveFilters ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
             onClick={clearFilters}
-            aria-label="Clear all filters"
+            aria-label={activeFilterCount > 0 ? `Clear ${activeFilterCount} active filters` : "Clear filters"}
             disabled={!hasActiveFilters}
           >
             Clear Filters
           </button>
         </div>
       </div>
+
+      {activeFilterCount > 0 && (
+        <div
+          className="mt-2 text-sm text-gray-500"
+          aria-live="polite"
+        >
+          {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} applied
+        </div>
+      )}
     </div>
   );
 };

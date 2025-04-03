@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Task, Project, TaskStatus } from '@/types';
 import { TaskCard } from '@/ui/features/task_card/task_card';
 import { TaskModal } from '@/ui/features/task_modal/task_modal';
@@ -30,6 +30,12 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   const inProgressTasks = tasks.filter(task => task.status === 'in-progress');
   const doneTasks = tasks.filter(task => task.status === 'done');
 
+  // Filter out any 'deleted' tasks (these shouldn't be rendered)
+  useEffect(() => {
+    // Remove any tasks with 'deleted' status from the local state
+    setTasks(prev => prev.filter(task => task.status !== 'deleted'));
+  }, [project.tasks]);
+
   // Handle status change (drag-and-drop)
   const handleStatusChange = (taskId: string, status: Task['status']) => {
     onTaskUpdate(taskId, { status });
@@ -46,6 +52,14 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   const handleEditTask = (task: Task) => {
     setSelectedTask(task);
     setIsModalOpen(true);
+  };
+
+  // Handle task delete
+  const handleDeleteTask = (taskId: string) => {
+    setTasks(prev => prev.filter(task => task.id !== taskId));
+
+    // Pass the deletion to the parent component
+    onTaskUpdate(taskId, { status: 'deleted' as TaskStatus });
   };
 
   // Handle task save
@@ -178,6 +192,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
           onClose={() => setIsModalOpen(false)}
           task={selectedTask}
           onSave={handleSaveTask}
+          onDelete={handleDeleteTask}
         />
       )}
     </div>

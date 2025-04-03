@@ -187,6 +187,14 @@ export const App: React.FC = () => {
   const [project, setProject] = useState<Project>(initialProject);
 
   const handleTaskUpdate = (taskId: string, updates: Partial<Task>) => {
+    if (updates.status === 'deleted') {
+      setProject((prev) => ({
+        ...prev,
+        tasks: prev.tasks.filter((task) => task.id !== taskId),
+      }));
+      return;
+    }
+
     setProject((prev) => ({
       ...prev,
       tasks: prev.tasks.map((task) =>
