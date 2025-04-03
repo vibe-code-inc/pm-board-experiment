@@ -9,6 +9,7 @@ The ProjectBoard component implements a kanban-style board for visualizing and m
 - Allow dragging tasks between columns to update status
 - Allow reordering tasks within the same column by dragging
 - Support clicking on tasks to view/edit details
+- Support clicking edit button/icon to quickly log task details to console
 - Implement responsive design for various screen sizes
 - Support keyboard navigation for accessibility
 - Provide comprehensive visual feedback during drag operations
@@ -26,6 +27,7 @@ The ProjectBoard component implements a kanban-style board for visualizing and m
 - Implement accessible UI elements with proper ARIA attributes
 - Coordinate communication between delegated components
 - Maintain type safety throughout implementation
+- Support touch interactions for mobile devices
 
 ## Behavioral Expectations
 - Coordinate the overall task management interface
@@ -36,6 +38,7 @@ The ProjectBoard component implements a kanban-style board for visualizing and m
 - Update task status when moved between columns
 - Update task order when reordered within the same column
 - Open task detail modal when a task is clicked
+- Log task details to console when edit button/icon is clicked
 - Propagate task updates to parent components
 - Maintain consistent task state across the board
 
@@ -64,6 +67,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
     draggedItemId,
     draggedOverContainerId,
     dropPlaceholderPosition,
+    draggedElement,
     handleDragStart,
     handleDragEnd,
     handleContainerDragOver,
@@ -151,7 +155,12 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   };
 
   // Create the drop placeholder element
-  const placeholderElement = <DropPlaceholder isActive={!!dropPlaceholderPosition} />;
+  const placeholderElement = (
+    <DropPlaceholder
+      isActive={!!dropPlaceholderPosition}
+      draggedElement={draggedElement}
+    />
+  );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
@@ -172,7 +181,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
         onDragLeave={handleContainerDragLeave}
         onTaskStatusChange={handleStatusChange}
         onTaskEdit={handleEditTask}
-        onTaskDragStart={handleDragStart}
+        onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'todo', element)}
         onTaskDragEnd={handleDragEnd}
       />
 
@@ -193,7 +202,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
         onDragLeave={handleContainerDragLeave}
         onTaskStatusChange={handleStatusChange}
         onTaskEdit={handleEditTask}
-        onTaskDragStart={handleDragStart}
+        onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'in-progress', element)}
         onTaskDragEnd={handleDragEnd}
       />
 
@@ -214,7 +223,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
         onDragLeave={handleContainerDragLeave}
         onTaskStatusChange={handleStatusChange}
         onTaskEdit={handleEditTask}
-        onTaskDragStart={handleDragStart}
+        onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'done', element)}
         onTaskDragEnd={handleDragEnd}
       />
 

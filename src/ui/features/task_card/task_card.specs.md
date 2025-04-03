@@ -11,6 +11,7 @@ The Task Card component displays a visual representation of a task within the ap
 - Display assignee information when available
 - Show due date with appropriate formatting and color indicators for approaching/past dates
 - Support clicking to view/edit task details
+- Provide a dedicated edit button/icon for quick edit access
 - Support being dragged between columns and within columns
 - Provide visual feedback for interactive states (hover, drag)
 - Show appropriate truncation for overly long content
@@ -38,6 +39,7 @@ The Task Card component displays a visual representation of a task within the ap
 - Card should be draggable between status columns
 - Card should be draggable within the same column for reordering
 - Clicking the card should open the task detail modal
+- Clicking the edit button/icon should log "Edit {taskId} {taskTitle}" to the console
 - Visual indicators should reflect the task's priority
 - Due date should be formatted appropriately
 - Due date should be highlighted in yellow if approaching (within 3 days)
@@ -132,6 +134,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     // Touch end implementation
   };
 
+  // Handle edit button click
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening the modal
+    console.log(`Edit ${task.id} ${task.title}`);
+  };
+
   return (
     <div
       ref={cardRef}
@@ -149,6 +157,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       onClick={() => onEdit(task)}
       data-task-id={task.id}
     >
+      <div className="flex justify-between items-start">
+        <h3 className="font-medium text-gray-900 truncate">{task.title}</h3>
+        <button
+          onClick={handleEditClick}
+          className="text-gray-500 hover:text-gray-700 p-1"
+          aria-label="Edit task"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </button>
+      </div>
       {/* Card content */}
     </div>
   );

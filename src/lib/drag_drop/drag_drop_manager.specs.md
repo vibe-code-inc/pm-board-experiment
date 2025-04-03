@@ -7,6 +7,7 @@ The DragAndDropManager provides functionality for handling complex drag-and-drop
 - Support drag-and-drop operations between different containers (e.g., columns)
 - Support reordering items within the same container
 - Calculate precise drop positions between items
+- Ensure dropped items are placed between the closest items where the cursor/touch is positioned
 - Track the currently dragged item
 - Track which container is being dragged over
 - Determine the exact insertion position within containers
@@ -23,15 +24,19 @@ The DragAndDropManager provides functionality for handling complex drag-and-drop
 - Handle edge cases like empty containers
 - Support accessibility requirements
 - Maintain stateless design where possible
+- Implement precise position calculation algorithms for determining drop positions
 
 ## Behavioral Expectations
 - Accurately track which item is being dragged
 - Determine the closest items to a drag point
-- Calculate whether an item should be placed before or after a target item
+- Calculate whether an item should be placed before or after a target item based on the cursor/touch position
+- Handle all cases for positioning - not just beginning/end of lists but precise middle positions
+- Provide exact positional information to ensure items are placed exactly where they are dropped
 - Track which container is currently being hovered
 - Handle the transition of items between containers
 - Support item reordering within the same container
-- Provide position data for rendering placeholders
+- Provide position data for rendering placeholders with the same dimensions as the dragged item
+- Work seamlessly on mobile devices with touch support
 
 ## Interface
 ```typescript
@@ -59,9 +64,11 @@ type DragAndDropManager = {
   draggedItemId: string | null;
   draggedOverContainerId: string | null;
   dropPlaceholderPosition: DropPlaceholderPosition | null;
+  // Reference to the dragged element (for dimension matching)
+  draggedElement: HTMLElement | null;
 
   // Handlers for drag events
-  handleDragStart: (itemId: string, containerId: string) => void;
+  handleDragStart: (itemId: string, containerId: string, element: HTMLElement) => void;
   handleDragEnd: () => void;
   handleContainerDragOver: (
     e: React.DragEvent<HTMLElement>,
@@ -101,21 +108,44 @@ export function useDragAndDropManager({
 ## Implementation Details
 
 ### Core Functions
-1. **handleDragStart**: Sets the currently dragged item and its source container
+1. **handleDragStart**:
+   - Sets the currently dragged item and its source container
+   - Stores reference to the dragged DOM element for dimension matching
+   - Captures initial dimensions of the dragged element
+
 2. **handleDragEnd**: Resets all drag state
+
 3. **handleContainerDragOver**:
    - Updates the currently dragged-over container
    - Calculates drop position based on cursor location
    - Determines if item should be placed before or after a target
+   - Identifies the exact two items between which the dragged item should be placed
+
 4. **handleContainerDragLeave**: Clears the dragged-over container state
+
 5. **handleContainerDrop**:
    - Extracts the dragged item ID from event data
-   - Returns data needed for the actual move/reorder operation
+   - Provides precise position information for the drop target
+   - Returns data needed for the actual move/reorder operation with exact position information
    - Resets drag state
+
 6. **findClosestItem**:
    - Calculates distances to each item's boundaries
-   - Determines the closest item and whether to place before or after it
+   - Determines the closest item based on cursor Y position
+   - Computes the exact position (before or after) for precise placement
    - Returns null for empty containers
+
+### Precise Positioning Algorithm
+The manager implements a precise positioning algorithm that:
+1. Calculates the Y-position of the cursor/touch point
+2. Maps all droppable items in the container with their positions and dimensions
+3. Calculates the distance from the cursor to each item
+4. Finds the item(s) closest to the cursor position
+5. Determines if the dragged item should go before or after the closest item
+6. Handles special cases like:
+   - Empty containers
+   - Dropping at the beginning or end of a list
+   - Dropping between two specific items in the middle of a list
 
 ### Usage Example
 ```typescript
@@ -125,6 +155,7 @@ function BoardComponent() {
     draggedItemId,
     draggedOverContainerId,
     dropPlaceholderPosition,
+    draggedElement,
     handleDragStart,
     handleDragEnd,
     handleContainerDragOver,
@@ -145,7 +176,35 @@ function BoardComponent() {
     targetId: string | null,
     position: 'before' | 'after' | null
   ) => {
-    // Update state to move the item in the appropriate position
+    // Implementation that ensures the item is placed at the exact position specified
+    // This means inserting it precisely between the two items closest to where it was dropped
+    setItems(prevItems => {
+      const newItems = {...prevItems};
+
+      // Remove item from source container
+      const item = prevItems[sourceContainerId].find(item => item.id === itemId);
+      newItems[sourceContainerId] = prevItems[sourceContainerId].filter(item => item.id !== itemId);
+
+      if (!item) return prevItems;
+
+      // Insert item at the correct position in target container
+      if (targetId === null) {
+        // Add to end of container if no target
+        newItems[targetContainerId] = [...newItems[targetContainerId], item];
+      } else {
+        // Insert before or after the target, at the exact position
+        const targetIndex = newItems[targetContainerId].findIndex(item => item.id === targetId);
+        const insertIndex = position === 'after' ? targetIndex + 1 : targetIndex;
+
+        newItems[targetContainerId] = [
+          ...newItems[targetContainerId].slice(0, insertIndex),
+          item,
+          ...newItems[targetContainerId].slice(insertIndex)
+        ];
+      }
+
+      return newItems;
+    });
   };
 
   const onContainerDrop = (e: React.DragEvent<HTMLElement>, containerId: string) => {
@@ -165,6 +224,7 @@ function BoardComponent() {
           items={containerItems}
           isDraggedOver={draggedOverContainerId === containerId}
           dropPlaceholderPosition={dropPlaceholderPosition}
+          draggedElement={draggedElement}
           onDragOver={(e) => {
             const containerElement = e.currentTarget;
             const itemElements = Array.from(
@@ -174,7 +234,7 @@ function BoardComponent() {
           }}
           onDragLeave={handleContainerDragLeave}
           onDrop={(e) => onContainerDrop(e, containerId)}
-          onItemDragStart={(itemId) => handleDragStart(itemId, containerId)}
+          onItemDragStart={(itemId, element) => handleDragStart(itemId, containerId, element)}
           onItemDragEnd={handleDragEnd}
         />
       ))}

@@ -9,9 +9,10 @@ The TaskColumn component represents a single status column in the ProjectBoard. 
 - Provide empty state messaging when there are no tasks
 - Support receiving dropped tasks from other columns
 - Support receiving dropped tasks for reordering within the column
-- Provide visual feedback when a task is being dragged over the column
-- Display drop placeholders in the appropriate position between tasks
+- Provide visual feedback when a task is being dragged over the column (vivid blue border)
+- Display drop placeholders in the appropriate position between tasks with dimensions matching the dragged card
 - Support scrolling independently when containing many tasks
+- Handle touch events for mobile device support
 
 ## Technical Requirements
 - Implement component using React and TypeScript
@@ -25,9 +26,10 @@ The TaskColumn component represents a single status column in the ProjectBoard. 
 - Receive drop placeholder positioning data from parent component
 - Display tasks with proper ordering
 - Support keyboard accessibility
+- Implement precise positioning of cards based on drag location
 
 ## Behavioral Expectations
-- Column should highlight with a blue border when a card is dragged over it
+- Column should highlight with a vivid blue border when a card is dragged over it
 - Column should display tasks in the specified order
 - Column should show a drop placeholder at the calculated position when a task is dragged over
 - Column should display a message when empty
@@ -35,6 +37,9 @@ The TaskColumn component represents a single status column in the ProjectBoard. 
 - Column should support keyboard navigation
 - Column should render TaskCard components for each task in the column
 - Column should not manage global drag-and-drop state (delegated to parent ProjectBoard)
+- Column should present task cards with appropriate edit button functionality
+- Column should ensure placeholders match the dimensions of dragged cards
+- Column should support exact positioning of cards between other cards
 
 ## Component Structure
 ```typescript
@@ -49,8 +54,8 @@ type TaskColumnProps = {
   isDraggedOver: boolean;
   // Information about where to render the drop placeholder, if any
   dropPlaceholderPosition: {
-    columnId: string;
-    targetTaskId: string | null;
+    containerId: string;
+    targetId: string | null;
     position: 'before' | 'after';
   } | null;
   // Placeholder component to render between tasks
@@ -61,7 +66,7 @@ type TaskColumnProps = {
   onDragLeave: () => void;
   onTaskStatusChange: (taskId: string, status: TaskStatus) => void;
   onTaskEdit: (task: Task) => void;
-  onTaskDragStart: (taskId: string, status: TaskStatus) => void;
+  onTaskDragStart: (taskId: string, element: HTMLElement) => void;
   onTaskDragEnd: () => void;
 };
 
@@ -86,7 +91,7 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
   // Helper to render tasks with placeholders
   const renderTasksWithPlaceholder = () => {
     if (tasks.length === 0) {
-      if (dropPlaceholderPosition?.columnId === status) {
+      if (dropPlaceholderPosition?.containerId === status) {
         return placeholderComponent;
       }
       return <div className="text-gray-400 text-center p-4">No tasks</div>;
@@ -97,14 +102,14 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
         {tasks.map(task => {
           // Check if placeholder should be rendered before this task
           const renderPlaceholderBefore =
-            dropPlaceholderPosition?.columnId === status &&
-            dropPlaceholderPosition.targetTaskId === task.id &&
+            dropPlaceholderPosition?.containerId === status &&
+            dropPlaceholderPosition.targetId === task.id &&
             dropPlaceholderPosition.position === 'before';
 
           // Check if placeholder should be rendered after this task
           const renderPlaceholderAfter =
-            dropPlaceholderPosition?.columnId === status &&
-            dropPlaceholderPosition.targetTaskId === task.id &&
+            dropPlaceholderPosition?.containerId === status &&
+            dropPlaceholderPosition.targetId === task.id &&
             dropPlaceholderPosition.position === 'after';
 
           return (
@@ -114,7 +119,12 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
                 task={task}
                 onStatusChange={(newStatus) => onTaskStatusChange(task.id, newStatus)}
                 onEdit={() => onTaskEdit(task)}
-                onDragStart={onTaskDragStart}
+                onDragStart={(taskId) => {
+                  const element = document.querySelector(`[data-task-id="${taskId}"]`) as HTMLElement;
+                  if (element) {
+                    onTaskDragStart(taskId, element);
+                  }
+                }}
                 onDragEnd={onTaskDragEnd}
               />
               {renderPlaceholderAfter && placeholderComponent}
@@ -123,8 +133,8 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
         })}
 
         {/* If placeholder should be at the bottom with no target task */}
-        {dropPlaceholderPosition?.columnId === status &&
-         dropPlaceholderPosition.targetTaskId === null &&
+        {dropPlaceholderPosition?.containerId === status &&
+         dropPlaceholderPosition.targetId === null &&
           placeholderComponent}
       </>
     );
