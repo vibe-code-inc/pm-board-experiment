@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 type DragItem = {
   id: string;
@@ -24,9 +24,10 @@ type DragAndDropManager = {
   draggedItemId: string | null;
   draggedOverContainerId: string | null;
   dropPlaceholderPosition: DropPlaceholderPosition | null;
+  draggedElement: HTMLElement | null;
 
   // Handlers for drag events
-  handleDragStart: (itemId: string, containerId: string) => void;
+  handleDragStart: (itemId: string, containerId: string, element?: HTMLElement) => void;
   handleDragEnd: () => void;
   handleContainerDragOver: (
     e: React.DragEvent<HTMLElement>,
@@ -83,13 +84,25 @@ export function useDragAndDropManager({
   const [dropPlaceholderPosition, setDropPlaceholderPosition] = useState<DropPlaceholderPosition | null>(
     initialDropPosition
   );
+  const [draggedElement, setDraggedElement] = useState<HTMLElement | null>(null);
 
   /**
    * Start dragging an item
    */
-  const handleDragStart = (itemId: string, containerId: string) => {
+  const handleDragStart = (itemId: string, containerId: string, element?: HTMLElement) => {
     setDraggedItemId(itemId);
     setSourceContainerId(containerId);
+
+    // Find and store the dragged element
+    if (element) {
+      setDraggedElement(element);
+    } else {
+      // Fallback to finding the element if not provided
+      const foundElement = document.querySelector(`[data-task-id="${itemId}"]`) as HTMLElement;
+      if (foundElement) {
+        setDraggedElement(foundElement);
+      }
+    }
   };
 
   /**
@@ -107,6 +120,7 @@ export function useDragAndDropManager({
     setSourceContainerId(null);
     setDraggedOverContainerId(null);
     setDropPlaceholderPosition(null);
+    setDraggedElement(null);
   };
 
   /**
@@ -144,10 +158,12 @@ export function useDragAndDropManager({
     if (!closestItem) return null;
 
     // Return a clean result without the distance property
-    return {
+    const result: ClosestItemResult = {
       itemId: closestItem.itemId,
       position: closestItem.position
     };
+
+    return result;
   };
 
   /**
@@ -229,6 +245,7 @@ export function useDragAndDropManager({
     draggedItemId,
     draggedOverContainerId,
     dropPlaceholderPosition,
+    draggedElement,
     handleDragStart,
     handleDragEnd,
     handleContainerDragOver,

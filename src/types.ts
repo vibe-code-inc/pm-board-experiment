@@ -1,7 +1,7 @@
 /**
  * Task status options
  */
-export type TaskStatus = 'todo' | 'in-progress' | 'done' | 'deleted';
+export type TaskStatus = 'todo' | 'in-progress' | 'done';
 
 /**
  * Task priority levels

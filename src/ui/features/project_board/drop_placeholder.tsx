@@ -1,62 +1,55 @@
 import React from 'react';
 
-export interface DropPlaceholderProps {
-  /**
-   * Whether the placeholder is active/visible
-   */
-  isActive?: boolean;
-
-  /**
-   * Height of the placeholder in pixels, defaults to 40
-   */
-  height?: number;
-
-  /**
-   * Additional CSS classes to apply to the placeholder
-   */
+type DropPlaceholderProps = {
+  // The width of the placeholder (should match the dragged item)
+  width?: string | number;
+  // The height of the placeholder (should match the dragged item)
+  height?: string | number;
+  // Optional custom styling classes (extends default styling)
   className?: string;
-
-  /**
-   * Accessible label for screen readers
-   */
+  // Optional accessible label (for screen readers)
   label?: string;
-
-  /**
-   * Whether to animate the placeholder appearance
-   */
+  // Whether the placeholder is currently active/visible
+  isActive?: boolean;
+  // Optional animation properties
   animate?: boolean;
-}
+  // Optional reference to the dragged element to match dimensions
+  draggedElement?: HTMLElement | null;
+};
 
-/**
- * Visual placeholder to show where a dragged item will be placed
- */
-export function DropPlaceholder({
-  isActive = false,
-  height = 40,
+export const DropPlaceholder: React.FC<DropPlaceholderProps> = ({
+  width = 'auto',
+  height = '4rem',
   className = '',
-  label = 'Drop here to place item',
-  animate = true
-}: DropPlaceholderProps) {
-  // Early return if not active
+  label = 'Drop here',
+  isActive = true,
+  animate = true,
+  draggedElement = null
+}) => {
+  // Get dimensions from dragged element if provided
+  const finalWidth = draggedElement ? `${draggedElement.offsetWidth}px` : width;
+  const finalHeight = draggedElement ? `${draggedElement.offsetHeight}px` : height;
+
+  // Additional class based on animation state
+  const animationClass = animate ? 'animate-pulse' : '';
+
+  // Base styling classes for the placeholder
+  const baseClasses = 'task-card-placeholder rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 my-2';
+
+  // Combined classes with any custom classes
+  const combinedClasses = `${baseClasses} ${animationClass} ${className}`;
+
+  // Don't render if not active
   if (!isActive) return null;
-
-  // Base classes for styling
-  const baseClasses = 'w-full border-2 border-dashed rounded-md flex items-center justify-center';
-
-  // Combine animation classes if enabled
-  const animationClasses = animate ? 'transition-all duration-200 ease-in-out' : '';
-
-  // Combine all classes including any custom ones
-  const classes = `${baseClasses} ${animationClasses} border-blue-400 bg-blue-50 ${className}`;
 
   return (
     <div
-      className={classes}
-      style={{ height: `${height}px` }}
-      role="region"
+      className={combinedClasses}
+      style={{ width: finalWidth, height: finalHeight }}
+      role="status"
       aria-label={label}
     >
       <span className="sr-only">{label}</span>
     </div>
   );
-}
+};

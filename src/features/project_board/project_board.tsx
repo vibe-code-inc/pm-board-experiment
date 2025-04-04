@@ -1,89 +1,203 @@
-import React, { useState, useCallback } from 'react';
-import { Task, TaskStatus } from '@/types/task';
-import { useDragAndDropManager } from '@/lib/drag_drop/drag_drop_manager';
+import React, { useState } from 'react';
+import { Project, Task, TaskStatus } from '@/types';
 import { TaskColumn } from './task_column';
+import { useDragAndDropManager } from '@/lib/drag_drop/drag_drop_manager';
+import { DropPlaceholder } from '@/ui/features/project_board/drop_placeholder';
+import { TaskModal } from '@/ui/features/task_modal/task_modal';
 
-interface ProjectBoardProps {
-  project: {
-    tasks: Task[];
-    [key: string]: any;
-  };
+type ProjectBoardProps = {
+  project: Project;
   onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
   onTaskEdit: (task: Task) => void;
-}
+  onTaskReorder?: (taskId: string, columnId: string, targetTaskId: string, position: 'before' | 'after') => void;
+};
 
-export function ProjectBoard({ project, onTaskUpdate, onTaskEdit }: ProjectBoardProps) {
-  // Group tasks by status - ensure we have a valid array
-  const tasks = project?.tasks || [];
+export const ProjectBoard: React.FC<ProjectBoardProps> = ({
+  project,
+  onTaskUpdate,
+  onTaskEdit,
+  onTaskReorder
+}) => {
+  // Task state management
+  const [tasks, setTasks] = useState<Task[]>(project.tasks);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const tasksByStatus = tasks.reduce<Record<TaskStatus, Task[]>>((acc, task) => {
-    if (!acc[task.status]) {
-      acc[task.status] = [];
-    }
-    acc[task.status].push(task);
-    return acc;
-  }, {} as Record<TaskStatus, Task[]>);
+  // Use the drag and drop manager
+  const {
+    draggedItemId,
+    draggedOverContainerId,
+    dropPlaceholderPosition,
+    draggedElement,
+    handleDragStart,
+    handleDragEnd,
+    handleContainerDragOver,
+    handleContainerDragLeave,
+    handleContainerDrop
+  } = useDragAndDropManager();
 
-  // Ensure all statuses have an array, even if empty
-  const allStatuses: TaskStatus[] = ['todo', 'in_progress', 'done'];
-  allStatuses.forEach(status => {
-    if (!tasksByStatus[status]) {
-      tasksByStatus[status] = [];
-    }
-  });
+  // Task filtering by status
+  const todoTasks = tasks.filter(task => task.status === 'todo');
+  const inProgressTasks = tasks.filter(task => task.status === 'in-progress');
+  const doneTasks = tasks.filter(task => task.status === 'done');
 
-  // Use our drag and drop manager hook to handle drag and drop operations
-  const dragDropManager = useDragAndDropManager();
-
-  // Handler for tasks being dropped into a column
-  const handleTaskDrop = useCallback(
-    (
-      taskId: string,
-      sourceStatus: TaskStatus,
-      targetStatus: TaskStatus,
-      targetTaskId: string | null,
-      position: 'before' | 'after'
-    ) => {
-      // Don't do anything if nothing changed (dropped in same position)
-      if (sourceStatus === targetStatus && !targetTaskId) {
-        return;
-      }
-
-      // Update the task status if it changed
-      if (sourceStatus !== targetStatus) {
-        onTaskUpdate(taskId, { status: targetStatus });
-      }
-
-      // For now, we're not implementing actual reordering
-      // In a real app, this would update task positions
-    },
-    [onTaskUpdate]
-  );
-
-  // Mapping statuses to their display names
-  const statusDisplayNames: Record<TaskStatus, string> = {
-    todo: 'To Do',
-    in_progress: 'In Progress',
-    done: 'Done',
+  // Task status change handler
+  const handleStatusChange = (taskId: string, status: Task['status']) => {
+    onTaskUpdate(taskId, { status });
+    setTasks(prev =>
+      prev.map(task =>
+        task.id === taskId
+          ? { ...task, status, updatedAt: new Date().toISOString().split('T')[0] }
+          : task
+      )
+    );
   };
 
+  // Task reordering handler
+  const handleTaskReorder = (draggedTaskId: string, targetTaskId: string, position: 'before' | 'after') => {
+    const updatedTasks = [...tasks];
+    const draggedTaskIndex = updatedTasks.findIndex(t => t.id === draggedTaskId);
+    const targetTaskIndex = updatedTasks.findIndex(t => t.id === targetTaskId);
+
+    if (draggedTaskIndex === -1 || targetTaskIndex === -1) return;
+
+    // Remove the dragged task
+    const [draggedTask] = updatedTasks.splice(draggedTaskIndex, 1);
+
+    // Calculate new position
+    const insertIndex = position === 'before'
+      ? targetTaskIndex > draggedTaskIndex ? targetTaskIndex - 1 : targetTaskIndex
+      : targetTaskIndex > draggedTaskIndex ? targetTaskIndex : targetTaskIndex + 1;
+
+    // Insert the task at the new position
+    updatedTasks.splice(insertIndex, 0, draggedTask);
+
+    setTasks(updatedTasks);
+
+    // Propagate to parent if callback exists
+    if (onTaskReorder) {
+      onTaskReorder(draggedTaskId, draggedTask.status, targetTaskId, position);
+    }
+  };
+
+  // Task editing handler
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+    // For now, just log to console per specification
+    console.log(`Edit ${task.id} ${task.title}`);
+    onTaskEdit(task);
+  };
+
+  // Handle saving the task after editing in modal
+  const handleSaveTask = (updatedTask: Task) => {
+    onTaskEdit(updatedTask);
+    setTasks(prev =>
+      prev.map(task =>
+        task.id === updatedTask.id ? { ...updatedTask } : task
+      )
+    );
+    setIsModalOpen(false);
+  };
+
+  // Container drop handler
+  const onContainerDrop = (e: React.DragEvent<HTMLDivElement>, columnId: TaskStatus) => {
+    const result = handleContainerDrop(e, columnId);
+    if (result) {
+      const { itemId, sourceContainerId, targetId, position } = result;
+
+      if (sourceContainerId !== columnId) {
+        // Moving between columns - update status
+        handleStatusChange(itemId, columnId);
+      } else if (targetId) {
+        // Reordering within same column
+        handleTaskReorder(itemId, targetId, position as 'before' | 'after');
+      }
+    }
+  };
+
+  // Create the drop placeholder element
+  const placeholderElement = (
+    <DropPlaceholder
+      isActive={!!dropPlaceholderPosition}
+      draggedElement={draggedElement}
+    />
+  );
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 min-h-0 flex overflow-x-auto p-4 gap-4">
-        {allStatuses.map(status => (
-          <TaskColumn
-            key={status}
-            status={status}
-            title={statusDisplayNames[status]}
-            tasks={tasksByStatus[status]}
-            dragDropManager={dragDropManager}
-            onTaskDrop={(taskId, sourceStatus, targetTaskId, position) =>
-              handleTaskDrop(taskId, sourceStatus, status, targetTaskId, position)
-            }
-            onTaskEdit={onTaskEdit}
-          />
-        ))}
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+      {/* Todo Column */}
+      <TaskColumn
+        status="todo"
+        title="Todo"
+        tasks={todoTasks}
+        isDraggedOver={draggedOverContainerId === 'todo'}
+        dropPlaceholderPosition={dropPlaceholderPosition}
+        placeholderComponent={placeholderElement}
+        onDragOver={(e) => {
+          const columnElement = e.currentTarget;
+          const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
+          handleContainerDragOver(e, 'todo', taskElements);
+        }}
+        onDrop={(e) => onContainerDrop(e, 'todo')}
+        onDragLeave={handleContainerDragLeave}
+        onTaskStatusChange={handleStatusChange}
+        onTaskEdit={handleEditTask}
+        onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'todo', element)}
+        onTaskDragEnd={handleDragEnd}
+      />
+
+      {/* In Progress Column */}
+      <TaskColumn
+        status="in-progress"
+        title="In Progress"
+        tasks={inProgressTasks}
+        isDraggedOver={draggedOverContainerId === 'in-progress'}
+        dropPlaceholderPosition={dropPlaceholderPosition}
+        placeholderComponent={placeholderElement}
+        onDragOver={(e) => {
+          const columnElement = e.currentTarget;
+          const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
+          handleContainerDragOver(e, 'in-progress', taskElements);
+        }}
+        onDrop={(e) => onContainerDrop(e, 'in-progress')}
+        onDragLeave={handleContainerDragLeave}
+        onTaskStatusChange={handleStatusChange}
+        onTaskEdit={handleEditTask}
+        onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'in-progress', element)}
+        onTaskDragEnd={handleDragEnd}
+      />
+
+      {/* Done Column */}
+      <TaskColumn
+        status="done"
+        title="Done"
+        tasks={doneTasks}
+        isDraggedOver={draggedOverContainerId === 'done'}
+        dropPlaceholderPosition={dropPlaceholderPosition}
+        placeholderComponent={placeholderElement}
+        onDragOver={(e) => {
+          const columnElement = e.currentTarget;
+          const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
+          handleContainerDragOver(e, 'done', taskElements);
+        }}
+        onDrop={(e) => onContainerDrop(e, 'done')}
+        onDragLeave={handleContainerDragLeave}
+        onTaskStatusChange={handleStatusChange}
+        onTaskEdit={handleEditTask}
+        onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'done', element)}
+        onTaskDragEnd={handleDragEnd}
+      />
+
+      {/* Task Modal */}
+      {selectedTask && (
+        <TaskModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          task={selectedTask}
+          onSave={handleSaveTask}
+        />
+      )}
     </div>
   );
-}
+};

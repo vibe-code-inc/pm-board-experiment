@@ -13,6 +13,12 @@ The ProjectBoard component implements a kanban-style board for visualizing and m
 - Implement responsive design for various screen sizes
 - Support keyboard navigation for accessibility
 - Provide comprehensive visual feedback during drag operations
+- Remove dragged task from source list during drag operations
+- Create and manage drag preview that follows cursor/touch during dragging
+- Provide placeholder at the precise position where the task would be dropped
+- Support exact positioning between cards when dragging
+- Support touch-based drag and drop on mobile devices using pointer events
+- Ensure drag preview maintains exact dimensions of original card
 
 ## Technical Requirements
 - Implement component using React and TypeScript
@@ -20,6 +26,7 @@ The ProjectBoard component implements a kanban-style board for visualizing and m
   - Column rendering to TaskColumn component
   - Drag and drop logic to DragAndDropManager
   - Placeholder visualization to DropPlaceholder component
+  - Drag preview rendering to DragAndDropManager
 - Create responsive layout using Tailwind CSS
 - Optimize rendering performance for large task lists
 - Implement proper keyboard event handling
@@ -27,7 +34,12 @@ The ProjectBoard component implements a kanban-style board for visualizing and m
 - Implement accessible UI elements with proper ARIA attributes
 - Coordinate communication between delegated components
 - Maintain type safety throughout implementation
-- Support touch interactions for mobile devices
+- Support touch interactions for mobile devices with pointer events
+- Implement drag preview mechanism that follows cursor/touch
+- Handle temporary removal of dragged tasks from source list
+- Implement exact positioning of placeholders between task cards
+- Ensure placeholders have exact dimensions matching dragged cards
+- Clean up drag preview and restore state when drag operation ends
 
 ## Behavioral Expectations
 - Coordinate the overall task management interface
@@ -41,6 +53,14 @@ The ProjectBoard component implements a kanban-style board for visualizing and m
 - Log task details to console when edit button/icon is clicked
 - Propagate task updates to parent components
 - Maintain consistent task state across the board
+- Remove task card from source list when it's being dragged
+- Create drag preview that follows cursor/touch and has same dimensions as original card
+- Position drop placeholder precisely between cards based on cursor/touch position
+- Support pointer events for cross-device compatibility
+- Clean up drag preview when drag operation completes
+- Add tasks to exact position where dropped between other cards
+- Ensure placeholders accurately represent where cards will be placed
+- Handle pointer event-based interactions for mobile devices
 
 ## Component Structure
 ```typescript
@@ -68,11 +88,15 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
     draggedOverContainerId,
     dropPlaceholderPosition,
     draggedElement,
+    dragPreviewElement,
     handleDragStart,
     handleDragEnd,
     handleContainerDragOver,
     handleContainerDragLeave,
-    handleContainerDrop
+    handleContainerDrop,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp
   } = useDragAndDropManager();
 
   // Task filtering by status
@@ -154,11 +178,60 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
     }
   };
 
+  // Handle pointer event interactions for mobile
+  const onContainerPointerDown = (e: React.PointerEvent<HTMLDivElement>, columnId: TaskStatus) => {
+    // This is delegated to the task card's pointer handlers
+  };
+
+  const onContainerPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggedItemId) return;
+
+    handlePointerMove(e);
+
+    // Find the column element
+    const columnElement = e.currentTarget.closest('[data-column]');
+    if (!columnElement) return;
+
+    // Get the column ID
+    const columnId = columnElement.getAttribute('data-column') as TaskStatus;
+    if (!columnId) return;
+
+    // Get all task elements in this column
+    const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
+
+    // Use the same logic as dragOver to calculate placeholder position
+    const point = { clientY: e.clientY };
+    // Process pointer move similar to dragOver (implementation details in DragAndDropManager)
+  };
+
+  const onContainerPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggedItemId) return;
+
+    handlePointerUp(e);
+
+    // Find the column element
+    const columnElement = e.currentTarget.closest('[data-column]');
+    if (!columnElement) return;
+
+    // Get the column ID
+    const columnId = columnElement.getAttribute('data-column') as TaskStatus;
+    if (!columnId) return;
+
+    // Similar logic to onContainerDrop but for pointer events
+    // Process pointer up similar to drop (implementation details in DragAndDropManager)
+  };
+
   // Create the drop placeholder element
   const placeholderElement = (
     <DropPlaceholder
       isActive={!!dropPlaceholderPosition}
       draggedElement={draggedElement}
+      position={dropPlaceholderPosition?.position || null}
+      targetElement={
+        dropPlaceholderPosition?.targetId
+          ? document.querySelector(`[data-task-id="${dropPlaceholderPosition.targetId}"]`) as HTMLElement
+          : null
+      }
     />
   );
 
@@ -172,6 +245,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
         isDraggedOver={draggedOverContainerId === 'todo'}
         dropPlaceholderPosition={dropPlaceholderPosition}
         placeholderComponent={placeholderElement}
+        draggedTaskId={draggedItemId}
         onDragOver={(e) => {
           const columnElement = e.currentTarget;
           const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
@@ -183,6 +257,9 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
         onTaskEdit={handleEditTask}
         onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'todo', element)}
         onTaskDragEnd={handleDragEnd}
+        onPointerDown={(e) => onContainerPointerDown(e, 'todo')}
+        onPointerMove={onContainerPointerMove}
+        onPointerUp={onContainerPointerUp}
       />
 
       {/* In Progress Column */}
@@ -193,6 +270,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
         isDraggedOver={draggedOverContainerId === 'in-progress'}
         dropPlaceholderPosition={dropPlaceholderPosition}
         placeholderComponent={placeholderElement}
+        draggedTaskId={draggedItemId}
         onDragOver={(e) => {
           const columnElement = e.currentTarget;
           const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
@@ -204,6 +282,9 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
         onTaskEdit={handleEditTask}
         onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'in-progress', element)}
         onTaskDragEnd={handleDragEnd}
+        onPointerDown={(e) => onContainerPointerDown(e, 'in-progress')}
+        onPointerMove={onContainerPointerMove}
+        onPointerUp={onContainerPointerUp}
       />
 
       {/* Done Column */}
@@ -214,6 +295,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
         isDraggedOver={draggedOverContainerId === 'done'}
         dropPlaceholderPosition={dropPlaceholderPosition}
         placeholderComponent={placeholderElement}
+        draggedTaskId={draggedItemId}
         onDragOver={(e) => {
           const columnElement = e.currentTarget;
           const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
@@ -225,6 +307,9 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
         onTaskEdit={handleEditTask}
         onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'done', element)}
         onTaskDragEnd={handleDragEnd}
+        onPointerDown={(e) => onContainerPointerDown(e, 'done')}
+        onPointerMove={onContainerPointerMove}
+        onPointerUp={onContainerPointerUp}
       />
 
       {/* Task Modal */}

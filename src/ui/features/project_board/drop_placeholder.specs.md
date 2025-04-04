@@ -10,6 +10,9 @@ The DropPlaceholder component provides a visual indicator for where a dragged it
 - Ensure sufficient visual contrast to be easily noticed during drag operations
 - Support accessibility by providing screen reader context
 - Display with exactly the same width and height as the dragged item
+- Show the placeholder between cards, moving them apart to create enough space
+- Match the exact dimensions of the dragged card including all padding and margins
+- Provide visual indication of the exact insertion point between existing cards
 
 ## Technical Requirements
 - Implement using React and TypeScript
@@ -20,6 +23,10 @@ The DropPlaceholder component provides a visual indicator for where a dragged it
 - Follow single responsibility principle by focusing only on placeholder visualization
 - Support accessibility with appropriate ARIA attributes and screen reader text
 - Keep the component lightweight and focused
+- Calculate and apply exact dimensions of the dragged element including margins
+- Support dynamic positioning between existing cards
+- Use identical spacing to ensure consistent layout when item is dropped
+- Ensure proper display in both horizontal and vertical layouts
 
 ## Behavioral Expectations
 - Display a visual placeholder with dimensions matching the dragged card
@@ -30,6 +37,12 @@ The DropPlaceholder component provides a visual indicator for where a dragged it
 - Match width of the dragged element
 - Match height of the dragged element
 - Appear exactly at the position where the card would be inserted
+- Move existing cards apart to create space for placeholder
+- Maintain exact spacing that would occur when item is actually dropped
+- Be positioned precisely between the closest items to the drag position
+- Update position dynamically as dragged item moves over different drop targets
+- Maintain exact visual representation of what will happen on drop
+- Have identical dimensions to the dragged card including all spacing
 
 ## Component Structure
 ```typescript
@@ -48,6 +61,10 @@ type DropPlaceholderProps = {
   animate?: boolean;
   // Optional reference to the dragged element to match dimensions
   draggedElement?: HTMLElement | null;
+  // The exact position where the placeholder should be displayed
+  position?: 'before' | 'after' | null;
+  // The reference to the target element to position relative to
+  targetElement?: HTMLElement | null;
 };
 
 export const DropPlaceholder: React.FC<DropPlaceholderProps> = ({
@@ -57,11 +74,52 @@ export const DropPlaceholder: React.FC<DropPlaceholderProps> = ({
   label = 'Drop here',
   isActive = true,
   animate = true,
-  draggedElement = null
+  draggedElement = null,
+  position = null,
+  targetElement = null
 }) => {
-  // Get dimensions from dragged element if provided
-  const finalWidth = draggedElement ? `${draggedElement.offsetWidth}px` : width;
-  const finalHeight = draggedElement ? `${draggedElement.offsetHeight}px` : height;
+  // Calculate exact dimensions from dragged element
+  const getExactDimensions = () => {
+    if (!draggedElement) return { width, height };
+
+    // Get computed style to include padding, borders and margins
+    const style = window.getComputedStyle(draggedElement);
+    const margins = {
+      top: parseFloat(style.marginTop),
+      bottom: parseFloat(style.marginBottom),
+      left: parseFloat(style.marginLeft),
+      right: parseFloat(style.marginRight)
+    };
+
+    // Include margins in dimensions for exact matching
+    return {
+      width: `${draggedElement.offsetWidth}px`,
+      height: `${draggedElement.offsetHeight}px`,
+      marginTop: `${margins.top}px`,
+      marginBottom: `${margins.bottom}px`,
+      marginLeft: `${margins.left}px`,
+      marginRight: `${margins.right}px`
+    };
+  };
+
+  // Get dimensions for the placeholder
+  const dimensions = getExactDimensions();
+
+  // Calculate position relative to target element
+  const calculatePosition = () => {
+    if (!targetElement || !position) return {};
+
+    if (position === 'before') {
+      return { order: targetElement.style.order - 0.5 };
+    } else if (position === 'after') {
+      return { order: targetElement.style.order + 0.5 };
+    }
+
+    return {};
+  };
+
+  // Additional positioning styles
+  const positionStyles = calculatePosition();
 
   // Additional class based on animation state
   const animationClass = animate ? 'animate-pulse' : '';
@@ -78,9 +136,10 @@ export const DropPlaceholder: React.FC<DropPlaceholderProps> = ({
   return (
     <div
       className={combinedClasses}
-      style={{ width: finalWidth, height: finalHeight }}
+      style={{ ...dimensions, ...positionStyles }}
       role="status"
       aria-label={label}
+      data-testid="drop-placeholder"
     >
       <span className="sr-only">{label}</span>
     </div>
@@ -98,6 +157,13 @@ export const DropPlaceholder: React.FC<DropPlaceholderProps> = ({
 
 // Using dragged element reference
 <DropPlaceholder draggedElement={draggedTaskCardRef.current} />
+
+// With position relative to target
+<DropPlaceholder
+  draggedElement={draggedTaskCardRef.current}
+  position="before"
+  targetElement={document.querySelector('[data-task-id="task-2"]')}
+/>
 
 // Custom styling
 <DropPlaceholder className="border-green-300 bg-green-50" />

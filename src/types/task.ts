@@ -1,4 +1,4 @@
-export type TaskStatus = 'todo' | 'in_progress' | 'done';
+export type TaskStatus = 'todo' | 'in-progress' | 'done' | 'deleted';
 
 export type TaskPriority = 'low' | 'medium' | 'high';
 
@@ -11,5 +11,5 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   dueDate?: string;
-  assigneeId?: string;
+  assignee?: string;
 }

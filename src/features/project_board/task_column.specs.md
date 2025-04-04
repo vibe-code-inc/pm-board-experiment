@@ -12,12 +12,16 @@ The TaskColumn component represents a single status column in the ProjectBoard. 
 - Provide visual feedback when a task is being dragged over the column (vivid blue border)
 - Display drop placeholders in the appropriate position between tasks with dimensions matching the dragged card
 - Support scrolling independently when containing many tasks
-- Handle touch events for mobile device support
+- Handle touch events for mobile device support with pointer events
+- Hide task cards that are currently being dragged (as they appear in the drag preview)
+- Provide space between remaining cards for the drop placeholder at precise positions
+- Support exact positioning of drop placeholders based on cursor/touch proximity
 
 ## Technical Requirements
 - Implement component using React and TypeScript
 - Use Tailwind CSS for styling
 - Support drag-and-drop event handling (dragOver, drop, dragLeave)
+- Support pointer events for mobile touch interaction
 - Maintain column-specific state
 - Follow single responsibility principle by handling only column concerns
 - Implement type safety with TaskStatus type
@@ -27,6 +31,9 @@ The TaskColumn component represents a single status column in the ProjectBoard. 
 - Display tasks with proper ordering
 - Support keyboard accessibility
 - Implement precise positioning of cards based on drag location
+- Handle the temporary removal of task cards during drag operations
+- Coordinate with DragAndDropManager for proper placeholder positioning
+- Ensure accurate spacing between items during drag operations
 
 ## Behavioral Expectations
 - Column should highlight with a vivid blue border when a card is dragged over it
@@ -40,6 +47,12 @@ The TaskColumn component represents a single status column in the ProjectBoard. 
 - Column should present task cards with appropriate edit button functionality
 - Column should ensure placeholders match the dimensions of dragged cards
 - Column should support exact positioning of cards between other cards
+- Column should hide task cards that are currently being dragged
+- Column should create space between cards where the placeholder will be displayed
+- Column should support both mouse and touch/pointer interactions
+- Column should ensure placeholder appears exactly between the appropriate cards
+- Column should adjust spacing dynamically based on drag position
+- Column should integrate with the drag preview system to avoid visual duplication
 
 ## Component Structure
 ```typescript
@@ -60,6 +73,8 @@ type TaskColumnProps = {
   } | null;
   // Placeholder component to render between tasks
   placeholderComponent: React.ReactNode;
+  // ID of the task currently being dragged, if any
+  draggedTaskId: string | null;
   // Callbacks
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
@@ -68,6 +83,10 @@ type TaskColumnProps = {
   onTaskEdit: (task: Task) => void;
   onTaskDragStart: (taskId: string, element: HTMLElement) => void;
   onTaskDragEnd: () => void;
+  // Pointer event handlers for mobile support
+  onPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerMove?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onPointerUp?: (e: React.PointerEvent<HTMLDivElement>) => void;
 };
 
 export const TaskColumn: React.FC<TaskColumnProps> = ({
@@ -77,13 +96,17 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
   isDraggedOver,
   dropPlaceholderPosition,
   placeholderComponent,
+  draggedTaskId,
   onDragOver,
   onDrop,
   onDragLeave,
   onTaskStatusChange,
   onTaskEdit,
   onTaskDragStart,
-  onTaskDragEnd
+  onTaskDragEnd,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp
 }) => {
   // Column ref for DOM manipulation if needed
   const columnRef = useRef<HTMLDivElement>(null);
@@ -100,6 +123,12 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
     return (
       <>
         {tasks.map(task => {
+          // Don't render task if it's currently being dragged
+          // It will be shown as part of the drag preview instead
+          if (task.id === draggedTaskId) {
+            return null;
+          }
+
           // Check if placeholder should be rendered before this task
           const renderPlaceholderBefore =
             dropPlaceholderPosition?.containerId === status &&
@@ -119,13 +148,11 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
                 task={task}
                 onStatusChange={(newStatus) => onTaskStatusChange(task.id, newStatus)}
                 onEdit={() => onTaskEdit(task)}
-                onDragStart={(taskId) => {
-                  const element = document.querySelector(`[data-task-id="${taskId}"]`) as HTMLElement;
-                  if (element) {
-                    onTaskDragStart(taskId, element);
-                  }
+                onDragStart={(taskId, status, element) => {
+                  onTaskDragStart(taskId, element);
                 }}
                 onDragEnd={onTaskDragEnd}
+                isDragging={task.id === draggedTaskId}
               />
               {renderPlaceholderAfter && placeholderComponent}
             </React.Fragment>
@@ -152,6 +179,9 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragLeave={onDragLeave}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
       data-column={status}
     >
       <h2 className="text-lg font-semibold mb-4">{title} ({tasks.length})</h2>
@@ -167,3 +197,5 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
 - [Project Board Feature](./project_board.package_specs.md)
 - [Project Board Component](./project_board.specs.md)
 - [Task Card Component](../../ui/features/task_card/task_card.specs.md)
+- [Drag and Drop Manager](../../lib/drag_drop/drag_drop_manager.specs.md)
+- [Drop Placeholder Component](../../ui/features/project_board/drop_placeholder.specs.md)

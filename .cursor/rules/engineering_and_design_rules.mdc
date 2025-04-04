@@ -72,6 +72,36 @@
 //   ✗ Keeping unused code with no specifications "just in case"
 
 // ====================================================
+// CODE QUALITY REQUIREMENTS
+// ====================================================
+
+// For code to be considered ready for review or commit, it MUST meet ALL of the following criteria:
+// 1. The code MUST compile successfully without any build errors
+// 2. ALL type errors MUST be resolved completely
+// 3. Type casting using 'as' MUST be avoided:
+//    a. Use type guards (e.g., typeof, instanceof) instead
+//    b. Use type assertions with proper narrowing (e.g., if-statements)
+//    c. Use generics to maintain type safety
+//    d. Use the 'satisfies' operator when appropriate
+// 4. ALL lint errors MUST be resolved without exception
+// 5. These requirements apply to ALL code, including temporary or experimental code
+
+// CORRECT vs INCORRECT Examples:
+// CORRECT:
+//   ✓ function isUser(obj: unknown): obj is User { return obj !== null && typeof obj === 'object' && 'id' in obj; }
+//   ✓ const user = data as unknown; if (isUser(user)) { /* user is now typed as User */ }
+//   ✓ function getItem<T>(items: T[], id: string): T | undefined { return items.find(item => item.id === id); }
+//   ✓ const config = { theme: 'dark', timeout: 1000 } satisfies AppConfig;
+//   ✓ Fixing all lint errors before committing code
+//   ✓ Ensuring code compiles without errors before considering it complete
+// INCORRECT:
+//   ✗ const user = data as User; // Using 'as' type casting without proper checks
+//   ✗ Ignoring type errors with // @ts-ignore or // @ts-expect-error without justification
+//   ✗ Committing code with lint errors
+//   ✗ Considering code "done" when it has type errors
+//   ✗ Using any to bypass type checking instead of proper typing
+
+// ====================================================
 // SOLID PRINCIPLES - COMPREHENSIVE IMPLEMENTATION
 // ====================================================
 
