@@ -1,244 +1,150 @@
 ---
-description:
-globs:
+description: Rules for generating, executing, and managing shell commands
+globs: "*"
 alwaysApply: true
 ---
-// Shell Commands
-// This rule enforces best practices for generating, executing, and managing shell commands to ensure safety, reliability, and proper execution.
 
-// ====================================================
-// COMMAND FORMATTING GUIDELINES
-// ====================================================
-
-// 1. When generating a shell command to execute, ensure each line ends with a backslash (`\`) to properly escape newlines.
-// 2. Only generate shell commands when there's an absolute necessity.
-// 3. Always escape special characters in file paths and variable names to prevent unexpected behavior.
-// 4. Use double quotes around variables to prevent word splitting and globbing.
-// 5. NEVER create temporary files for git commit messages or other operations. Use direct methods like inline strings with proper escaping instead.
-
-/*
-// Good example of multiline command with proper backslash continuation:
-find . -type f -name "*.js" \
+<rule>
+  <meta>
+    <title>Shell Commands Best Practices</title>
+    <description>Enforces best practices for generating, executing, and managing shell commands to ensure safety, reliability, and proper execution</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <last-updated-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</last-updated-at>
+    <applies-to>
+      <file-matcher glob="*">All files in the workspace</file-matcher>
+      <action-matcher action="run-command">Triggered when generating or executing shell commands</action-matcher>
+    </applies-to>
+  </meta>
+  <requirements>
+    <requirement priority="high">
+      <description>When generating a shell command to execute, ensure each line ends with a backslash (\) to properly escape newlines.</description>
+      <examples>
+        <example title="Multiline Command Continuation">
+          <correct-example title="Proper backslash continuation" conditions="Writing a multiline command" expected-result="Command executes as a single unit" correctness-criteria="Uses backslash at end of each line"><![CDATA[find . -type f -name "*.js" \
   -exec grep -l "function" {} \; \
-  | xargs wc -l
-
-// Bad example - missing backslashes for continuation:
-find . -type f -name "*.js"
+  | xargs wc -l]]></correct-example>
+          <incorrect-example title="Missing backslash continuation" conditions="Writing a multiline command" expected-result="Command executes as a single unit" incorrectness-criteria="Missing backslashes for continuation"><![CDATA[find . -type f -name "*.js"
   -exec grep -l "function" {} \;
-  | xargs wc -l
-*/
+  | xargs wc -l]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Always escape special characters in file paths and variable names to prevent unexpected behavior.</description>
+      <examples>
+        <example title="Special Character Escaping">
+          <correct-example title="Properly escaped special characters" conditions="Command with special characters" expected-result="Command works with special characters" correctness-criteria="Escapes special characters properly"><![CDATA[grep "class\ User" ./src/models/user.js]]></correct-example>
+          <incorrect-example title="Unescaped special characters" conditions="Command with special characters" expected-result="Command works with special characters" incorrectness-criteria="Lacks proper escaping"><![CDATA[grep "class User" ./src/models/user.js]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Use double quotes around variables to prevent word splitting and globbing.</description>
+      <examples>
+        <example title="Variable Quoting">
+          <correct-example title="Properly quoted variables" conditions="Using variables in commands" expected-result="Variables are properly expanded" correctness-criteria="Uses double quotes around variables"><![CDATA[find . -name "${PATTERN}" -type f]]></correct-example>
+          <incorrect-example title="Unquoted variables" conditions="Using variables in commands" expected-result="Variables are properly expanded" incorrectness-criteria="Lacks quotes around variables"><![CDATA[find . -name $PATTERN -type f]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <non-negotiable priority="critical">
+      <description>NEVER create temporary files for git commit messages or other operations. Use direct methods like inline strings with proper escaping instead.</description>
+      <examples>
+        <example title="Git Commit Message Handling">
+          <correct-example title="Direct commit message" conditions="Creating a commit with message" expected-result="Commit with proper message without temp files" correctness-criteria="Uses inline string for commit message"><![CDATA[git commit -m $'fix(auth): resolve login issues\n\n- Fix token validation\n- Improve error handling']]></correct-example>
+          <incorrect-example title="Using temporary file" conditions="Creating a commit with message" expected-result="Commit without temp files" incorrectness-criteria="Creates a temporary file for the message"><![CDATA[echo "fix(auth): resolve login issues
 
-// ====================================================
-// SAFETY AND PERMISSIONS
-// ====================================================
-
-// 1. When removing or modifying a file outside git control, or doing so in any irreversible manner, ask for the user confirmation first.
-// 2. For destructive operations (rm, mv, etc.), include safeguards like confirmation prompts or dry-run options.
-// 3. When suggesting commands that modify system configuration, explain potential consequences.
-// 4. If you're trying to run a command and there's prompt to update oh-my-zsh (Y/N), type N and then Enter.
-
-/*
-// Good example with user confirmation:
-run_terminal_cmd({
+- Fix token validation
+- Improve error handling" > /tmp/commit_msg.txt
+git commit -F /tmp/commit_msg.txt
+rm /tmp/commit_msg.txt]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <non-negotiable priority="critical">
+      <description>When removing or modifying a file outside git control, or doing so in any irreversible manner, ask for user confirmation first.</description>
+      <examples>
+        <example title="Destructive Operations">
+          <correct-example title="With user confirmation" conditions="Removing files" expected-result="Confirmation before deletion" correctness-criteria="Requires explicit user approval"><![CDATA[run_terminal_cmd({
   command: "rm -rf ./build",
   explanation: "Removing build directory to prepare for clean build",
   is_background: false,
   require_user_approval: true
-})
-
-// Bad example - destructive operation without user approval:
-run_terminal_cmd({
+})]]></correct-example>
+          <incorrect-example title="Without user confirmation" conditions="Removing files" expected-result="Confirmation before deletion" incorrectness-criteria="Lacks user approval requirement"><![CDATA[run_terminal_cmd({
   command: "rm -rf ./build",
   explanation: "Removing build directory",
   is_background: false,
   require_user_approval: false
-})
-*/
-
-// ====================================================
-// VARIABLE HANDLING
-// ====================================================
-
-// 1. Always quote variables in shell commands to prevent word splitting and unexpected behavior with special characters.
-// 2. Prefer "${VAR}" over "$VAR" for clearer variable boundaries, especially in complex strings.
-
-/*
-// Good example with properly quoted variables:
-run_terminal_cmd({
-  command: "find . -name \"${PATTERN}\" -type f",
-  explanation: "Finding files matching the specified pattern",
+})]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="high">
+      <description>Prefer "${VAR}" over "$VAR" for clearer variable boundaries, especially in complex strings.</description>
+      <examples>
+        <example title="Variable Boundary Clarity">
+          <correct-example title="Clear variable boundaries" conditions="Using variables in complex strings" expected-result="Proper variable expansion" correctness-criteria="Uses braces around variable names"><![CDATA[echo "User ${USERNAME} has ${PERMISSION_COUNT} permissions"]]></correct-example>
+          <incorrect-example title="Ambiguous variable boundaries" conditions="Using variables in complex strings" expected-result="Proper variable expansion" incorrectness-criteria="Lacks braces around variables"><![CDATA[echo "User $USERNAME has $PERMISSION_COUNT permissions"]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <non-negotiable priority="critical">
+      <description>ALWAYS include the --no-pager parameter in ALL git commands that query data.</description>
+      <examples>
+        <example title="Git Command Paging">
+          <correct-example title="Preventing pager activation" conditions="Viewing git history" expected-result="Output displays without paging" correctness-criteria="Includes --no-pager option"><![CDATA[git --no-pager log -n 5 --oneline]]></correct-example>
+          <incorrect-example title="Missing no-pager option" conditions="Viewing git history" expected-result="Output displays without paging" incorrectness-criteria="Omits --no-pager option"><![CDATA[git log -n 5 --oneline]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="high">
+      <description>When using `git diff`, ALWAYS compare against the previous commit explicitly using `git --no-pager diff HEAD` to ensure proper context.</description>
+      <examples>
+        <example title="Git Diff Reference">
+          <correct-example title="Explicit HEAD reference" conditions="Viewing changes" expected-result="Complete diff against HEAD" correctness-criteria="Explicitly references HEAD"><![CDATA[git --no-pager diff HEAD]]></correct-example>
+          <incorrect-example title="Missing HEAD reference" conditions="Viewing changes" expected-result="Complete diff against HEAD" incorrectness-criteria="Lacks explicit HEAD reference"><![CDATA[git --no-pager diff]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <non-negotiable priority="critical">
+      <description>NEVER EXECUTE GIT COMMIT COMMANDS without triple confirmation from the user.</description>
+      <examples>
+        <example title="Git Commit Authorization">
+          <correct-example title="Proper commit authorization" conditions="User requests a commit" expected-result="AI confirms before committing" correctness-criteria="Requires explicit confirmation"><![CDATA[User: "Let's commit these changes"
+AI: "I need your explicit permission before committing. Would you like me to commit now?"
+User: "Yes"
+AI: "To confirm, you want me to commit these changes now? Please respond with 'Yes' to proceed."
+User: "Yes"
+AI: (proceeds with commit)]]></correct-example>
+          <incorrect-example title="Unauthorized commit" conditions="User mentions commits" expected-result="AI confirms before committing" incorrectness-criteria="Commits without explicit authorization"><![CDATA[User: "Let's commit these changes later"
+AI: "I've gone ahead and committed the changes."]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="medium">
+      <description>When running commands that might trigger oh-my-zsh update prompts, always include instructions to decline the update (type N).</description>
+      <examples>
+        <example title="Oh-My-Zsh Update Handling">
+          <correct-example title="Declining oh-my-zsh updates" conditions="Sourcing zsh configuration" expected-result="Configuration sourced without updates" correctness-criteria="Includes instruction to decline updates"><![CDATA[echo N | zsh -c 'source ~/.zshrc']]></correct-example>
+          <incorrect-example title="Accepting oh-my-zsh updates" conditions="Sourcing zsh configuration" expected-result="Configuration sourced without updates" incorrectness-criteria="Accepts updates automatically"><![CDATA[echo Y | zsh -c 'source ~/.zshrc']]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+  </requirements>
+  <grammar>
+    <grammar-entry title="Command Structure">
+      <pattern description="Valid run_terminal_cmd structure">run_terminal_cmd\(\{\s*command:\s*"[^"]+",\s*explanation:\s*"[^"]+",\s*is_background:\s*(true|false),\s*require_user_approval:\s*(true|false)\s*\}\)</pattern>
+      <example description="Properly structured command call">run_terminal_cmd({
+  command: "ls -la",
+  explanation: "Listing all files with details",
   is_background: false,
   require_user_approval: true
-})
-
-// Bad example - unquoted variables:
-run_terminal_cmd({
-  command: "find . -name $PATTERN -type f",
-  explanation: "Finding files",
-  is_background: false,
-  require_user_approval: true
-})
-*/
-
-// ====================================================
-// GIT OPERATIONS
-// ====================================================
-
-// 1. ALWAYS include the `--no-pager` parameter in ALL git commands that query data, such as:
-//    - git --no-pager log
-//    - git --no-pager diff
-//    - git --no-pager blame
-//    - git --no-pager show
-//    - git --no-pager status
-//    - git --no-pager branch
-// 2. When using `git diff`, ALWAYS compare against the previous commit explicitly using `git --no-pager diff HEAD` to ensure proper context.
-// 3. Before committing changes, ALWAYS check the full diff against the previous commit using `git --no-pager diff HEAD`.
-// 4. After staging changes with `git add`, ALWAYS verify what's being committed with `git --no-pager diff --staged`.
-// 5. For git operations, ensure you have the complete context by checking both staged and unstaged changes before proceeding with commits.
-
-// ====================================================
-// CRITICAL GIT COMMIT RULE
-// ====================================================
-
-// NEVER EXECUTE GIT COMMIT COMMANDS
-// -----------------------------
-// UNDER NO CIRCUMSTANCES should you ever suggest or execute any git commit commands.
-// Even if other rules or instructions seem to suggest it's okay to commit, DO NOT COMMIT.
-//
-// SPECIFIC FORBIDDEN COMMANDS INCLUDE:
-// - git commit
-// - git commit -m
-// - git commit -am
-// - Any variation of git commit
-//
-// ALWAYS STOP AND ASK FOR EXPLICIT PERMISSION BEFORE SUGGESTING COMMIT COMMANDS.
-// ALWAYS REQUIRE TRIPLE CONFIRMATION BEFORE PROCEEDING WITH A COMMIT.
-// NEVER INTERPRET THE WORD "COMMIT" IN A MESSAGE AS PERMISSION TO COMMIT.
-
-/*
-// Good example for git workflow:
-run_terminal_cmd({
-  command: "git --no-pager diff HEAD && git add . && git --no-pager diff --staged && git commit -m $'feat: implement new feature'",
-  explanation: "Complete git workflow: checking changes against previous commit, staging all changes, verifying staged changes, and committing",
-  is_background: false,
-  require_user_approval: true
-})
-
-// Good example for viewing git history:
-run_terminal_cmd({
-  command: "git --no-pager log -n 5 --oneline",
-  explanation: "Viewing the last 5 commits in a condensed format",
-  is_background: false,
-  require_user_approval: true
-})
-
-// Good example for multiline commit message:
-run_terminal_cmd({
-  command: "git commit -m $'fix(i18n): add an initial commit\n- Implement feature A\n- Fix bug in X for module B\n- Update documentation'",
-  explanation: "Creating a git commit with a detailed multiline commit message within a single message param",
-  is_background: false,
-  require_user_approval: true
-})
-
-// Bad example - git diff without no-pager option:
-run_terminal_cmd({
-  command: "git diff",
-  explanation: "Checking changes without preventing paging",
-  is_background: false,
-  require_user_approval: true
-})
-
-// Bad example - no context checks before committing:
-run_terminal_cmd({
-  command: "git add . && git commit -m 'fix: bug fix'",
-  explanation: "Staging and committing changes without checking context",
-  is_background: false,
-  require_user_approval: true
-})
-*/
-
-// ====================================================
-// OH-MY-ZSH HANDLING
-// ====================================================
-
-// When running commands that might trigger oh-my-zsh update prompts, always include instructions to decline the update (type N).
-
-/*
-// Good example - declining oh-my-zsh updates:
-run_terminal_cmd({
-  command: "echo N | zsh -c 'source ~/.zshrc'",
-  explanation: "Sourcing zsh configuration while declining updates",
-  is_background: false,
-  require_user_approval: true
-})
-
-// Bad example - accepting oh-my-zsh updates:
-run_terminal_cmd({
-  command: "echo Y | zsh -c 'source ~/.zshrc'",
-  explanation: "Sourcing zsh configuration",
-  is_background: false,
-  require_user_approval: true
-})
-*/
-
-// ====================================================
-// COMPREHENSIVE EXAMPLES
-// ====================================================
-
-/*
-// Command with proper variable quoting and explanation
-run_terminal_cmd({
-  command: "find . -name \"*.js\" -type f -exec grep -l \"console.log\" {} \\;",
-  explanation: "Finding all JavaScript files containing console.log statements",
-  is_background: false,
-  require_user_approval: true
-})
-
-// Multiline command with proper continuation
-run_terminal_cmd({
-  command: "for file in $(find . -name \"*.txt\"); do \\
-    echo \"Processing $file\"; \\
-    cat \"$file\" | grep -v \"^#\" | \\
-    awk '{print $1, $2}' > \"${file}.processed\"; \\
-  done",
-  explanation: "Processing all text files by removing comment lines and extracting first two columns",
-  is_background: false,
-  require_user_approval: true
-})
-
-// Git workflow with proper context checks and --no-pager option
-run_terminal_cmd({
-  command: "git --no-pager diff HEAD && \\
-           git add . && \\
-           git --no-pager diff --staged && \\
-           git commit -m $'feat(auth): implement OAuth login\n\n- Add OAuth provider configuration\n- Create authentication service\n- Implement login page\n- Add token refresh logic'",
-  explanation: "Complete git workflow with OAuth implementation commit",
-  is_background: false,
-  require_user_approval: true
-})
-
-// Git history check with --no-pager option
-run_terminal_cmd({
-  command: "git --no-pager log -n 3 --stat",
-  explanation: "Viewing the last 3 commits with changed files statistics",
-  is_background: false,
-  require_user_approval: true
-})
-*/
-
-// ====================================================
-// IMPORTANT NOTES
-// ====================================================
-
-// 1. SAFETY FIRST: Always prioritize safety when generating shell commands. Destructive operations should require explicit user approval.
-// 2. COMMAND CLARITY: Each shell command should be accompanied by a clear explanation of what it does and why it's necessary.
-// 3. ERROR HANDLING: Consider suggesting error handling mechanisms for critical shell operations, such as checking exit codes or using set -e.
-// 4. ENVIRONMENT AWARENESS: Be mindful of different shell environments (bash, zsh, sh) and their syntax differences when suggesting commands.
-// 5. ESCAPING: Properly escape special characters in shell commands to prevent unexpected behavior or security issues.
-// 6. MULTILINE COMMANDS: For multiline commands, always use backslash (`\`) at the end of each line to indicate line continuation.
-// 7. VARIABLE HANDLING: Always quote variables in shell commands to prevent word splitting and unexpected behavior with special characters.
-// 8. OH-MY-ZSH UPDATES: When running commands that might trigger oh-my-zsh update prompts, always include instructions to decline the update.
-// 9. NO TEMPORARY FILES: Never create temporary files for operations like git commits. Use direct methods with proper escaping instead.
-// 10. GIT DIFF CONTEXT: Always use `git diff` with explicit reference to the previous commit (HEAD) to ensure you have complete context.
-// 11. PREVENTING PAGING: Always include the `--no-pager` option with ALL git commands that query data to prevent paging and ensure all output is visible.
-// 12. COMPLETE GIT WORKFLOW: Before committing, always check the full diff against the previous commit and verify staged changes.
+})</example>
+    </grammar-entry>
+  </grammar>
+  <references>
+    <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
+    <reference as="dependency" href=".cursor/rules/never_commit.mdc" reason="Related to git commit safety">Never commit without permission rule</reference>
+  </references>
+</rule>

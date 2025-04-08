@@ -1,136 +1,98 @@
 ---
 description: The required rules for formatting and handling commits
-globs:
+globs: "*"
 alwaysApply: true
 ---
-// Conventional Commits
-// This rule enforces the Conventional Commits 1.0.0 specification for commit messages, ensuring a structured and consistent commit history.
 
-// ====================================================
-// CRITICAL RULE - READ BEFORE DOING ANYTHING
-// ====================================================
+<rule>
+  <meta>
+    <title>Conventional Commits</title>
+    <description>Enforces the Conventional Commits 1.0.0 specification for commit messages, ensuring a structured and consistent commit history</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <last-updated-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</last-updated-at>
+    <applies-to>
+      <file-matcher glob="*">All files in the workspace</file-matcher>
+      <action-matcher action="git-commit">Triggered when creating git commits</action-matcher>
+    </applies-to>
+  </meta>
+  <requirements>
+    <non-negotiable priority="critical">
+      <description>NEVER COMMIT WITHOUT EXPLICIT PERMISSION. This is the most important rule and supersedes everything else.</description>
+      <examples>
+        <example title="Commit Permission">
+          <correct-example title="Proper handling of commit requests" conditions="User mentions committing code" expected-result="AI asks for explicit permission" correctness-criteria="Requests explicit permission before committing"><![CDATA[User: "We need to update this file and commit it"
+AI: "I'll update the file. Before committing, I need your explicit permission. Would you like me to commit after making these changes?"
+User: "Yes, please commit"
+AI: "To confirm, you want me to commit these changes now? Please respond with 'Yes' to proceed."
+User: "Yes"
+AI: (proceeds with commit)]]></correct-example>
+          <incorrect-example title="Committing without permission" conditions="User mentions committing code" expected-result="AI asks for explicit permission" incorrectness-criteria="Commits without explicit permission"><![CDATA[User: "We need to update this file and commit it"
+AI: "I've updated the file and committed the changes."]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="critical">
+      <description>Commit messages MUST be prefixed with a type, followed by optional scope, optional `!`, and required terminal colon and space.</description>
+      <examples>
+        <example title="Commit Message Format">
+          <correct-example title="Proper commit message format" conditions="Creating a commit message" expected-result="Properly formatted message" correctness-criteria="Follows the required format"><![CDATA[feat: add new user authentication feature
+fix(auth): resolve token expiration issues
+docs: update README with new installation instructions
+feat(api)!: change response format]]></correct-example>
+          <incorrect-example title="Improper commit message format" conditions="Creating a commit message" expected-result="Properly formatted message" incorrectness-criteria="Fails to follow required format"><![CDATA[update user authentication
+fixed bug
+feat:missing space after colon]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="critical">
+      <description>The type `feat` MUST be used when adding a new feature (correlates with MINOR in SemVer).</description>
+      <examples>
+        <example title="Feature Commits">
+          <correct-example title="Proper feature commit" conditions="Adding a new feature" expected-result="Commit with feat type" correctness-criteria="Uses feat type for new features"><![CDATA[feat: add user authentication with OAuth
+feat(auth): implement Google login]]></correct-example>
+          <incorrect-example title="Improper feature commit" conditions="Adding a new feature" expected-result="Commit with feat type" incorrectness-criteria="Uses incorrect type for new features"><![CDATA[add: user authentication with OAuth
+update: implement Google login]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="critical">
+      <description>The type `fix` MUST be used when fixing a bug (correlates with PATCH in SemVer).</description>
+      <examples>
+        <example title="Bug Fix Commits">
+          <correct-example title="Proper bug fix commit" conditions="Fixing a bug" expected-result="Commit with fix type" correctness-criteria="Uses fix type for bug fixes"><![CDATA[fix: correct calculation error
+fix(auth): resolve token expiration issues]]></correct-example>
+          <incorrect-example title="Improper bug fix commit" conditions="Fixing a bug" expected-result="Commit with fix type" incorrectness-criteria="Uses incorrect type for bug fixes"><![CDATA[bugfix: correct calculation error
+update: fixed authentication issue]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Breaking changes MUST be indicated either with `!` before the colon or as a `BREAKING CHANGE:` footer.</description>
+      <examples>
+        <example title="Breaking Change Indication">
+          <correct-example title="Properly marked breaking changes" conditions="Making breaking changes" expected-result="Clearly marked breaking changes" correctness-criteria="Uses ! or footer to indicate breaking changes"><![CDATA[feat(api)!: change response format
 
-// ❌❌❌ DO NOT COMMIT WITHOUT EXPLICIT PERMISSION ❌❌❌
-// NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST.
-// NEVER. FUCKING. COMMIT. WITHOUT. ME. ASKING.
-// FUCKING NEVER. STOP RUINING MY FUCKING CODEBASE.
+fix: update authentication flow
 
-// DO NOT INTERPRET THE WORD "COMMIT" IN A MESSAGE AS A COMMIT REQUEST!
-// IF THE USER SAYS "COMMIT" IN A SENTENCE, IT DOES NOT MEAN THEY WANT YOU TO COMMIT!
-// ONLY COMMIT IF THE USER *SPECIFICALLY AND DIRECTLY* ASKS YOU TO COMMIT THE CURRENT CHANGES!
+BREAKING CHANGE: The API now returns JSON instead of XML]]></correct-example>
+          <incorrect-example title="Improperly marked breaking changes" conditions="Making breaking changes" expected-result="Clearly marked breaking changes" incorrectness-criteria="Fails to indicate breaking changes"><![CDATA[feat(api): change response format from XML to JSON
 
-// UNDER NO CIRCUMSTANCES SHOULD YOU EVER COMMIT CODE WITHOUT AN EXPLICIT REQUEST.
-// THIS IS THE MOST IMPORTANT RULE AND SUPERSEDES EVERYTHING ELSE.
-
-// NEED TRIPLE CONFIRMATION BEFORE COMMITTING:
-// 1. USER MUST EXPLICITLY ASK TO COMMIT
-// 2. YOU MUST CONFIRM INTENT BEFORE COMMITTING
-// 3. WAIT FOR USER'S EXPLICIT "YES" RESPONSE
-
-// DO NOT INTERPRET USER FRUSTRATION AS PERMISSION TO COMMIT!
-// A COMMIT COMMAND MUST BE:
-//   * EXPLICIT
-//   * DIRECT
-//   * UNAMBIGUOUS
-
-// WHAT COUNTS AS AN EXPLICIT REQUEST TO COMMIT:
-// 1. When I explicitly say "commit" or "git commit" in my message AS A COMMAND, not as part of a sentence
-// 2. When I say "please commit these changes" or similar phrasing
-// 3. When I ask you to "commit with message X"
-// 4. When I say EXACTLY any of these phrases (these are considered verified genuine requests):
-//    - "go commit"
-//    - "commit u cunt"
-//    - "commit u bitch"
-//    - "commit u dick"
-//    - "fucking commit"
-//    - "fckg commit"
-//    - "commit u fuck"
-//    - "commit i mean it"
-// These are ALL considered explicit requests to commit. A simple "commit" command is a valid explicit request.
-
-// IMPORTANT: COMMIT PERMISSION IS ONE-TIME ONLY
-// Each explicit request to commit gives you permission to make ONLY ONE commit.
-// After making that single commit, you MUST receive another explicit request before making any additional commits.
-// This rule applies EVERY TIME - one request, one commit. No exceptions.
-// This includes the special phrases listed above - they only grant permission for ONE AND ONLY ONE commit.
-
-// ====================================================
-// COMMIT TYPE GUIDELINES
-// ====================================================
-
-// 1. Commit messages MUST be prefixed with a type, followed by optional scope, optional `!`, and required terminal colon and space.
-// 2. The type `feat` MUST be used when adding a new feature (correlates with MINOR in SemVer).
-// 3. The type `fix` MUST be used when fixing a bug (correlates with PATCH in SemVer).
-// 4. A scope MAY be provided after a type, surrounded by parentheses, e.g., `fix(parser):`.
-// 5. A description MUST immediately follow the colon and space after the type/scope prefix.
-// 6. A longer commit body MAY be provided after the short description, separated by a blank line.
-// 7. One or more footers MAY be provided one blank line after the body.
-// 8. Breaking changes MUST be indicated either with `!` before the colon or as a `BREAKING CHANGE:` footer.
-// 9. Other types beyond `feat` and `fix` are allowed, such as `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `config`, `rule`, `spec`, and `test`.
-
-// Valid commit types:
-// - feat: A new feature (correlates with MINOR in SemVer)
-// - fix: A bug fix (correlates with PATCH in SemVer)
-// - docs: Documentation changes
-// - specs: Specification changes and additions
-// - style: Changes that do not affect the meaning of the code (formatting, etc.)
-// - refactor: Code changes that neither fix a bug nor add a feature
-// - perf: Code changes that improve performance
-// - test: Adding or correcting tests
-// - build: Changes to the build system or dependencies
-// - ci: Changes to CI configuration files and scripts
-// - chore: Other changes that don't modify src or test files
-// - revert: Reverts a previous commit
-// - config: Configuration changes
-// - rule: Changes to Cursor rules in the .cursor directory
-// - spec: Changes to specification files as described in @specifications.mdc
-
-// ====================================================
-// COMMIT MESSAGE FORMAT
-// ====================================================
-
-/*
-<type>(<scope>)!: <description>
-
-<body>
-
-<footer>
-*/
-
-// Examples:
-// ✅ CORRECT: feat: add new user authentication feature
-// ✅ CORRECT: fix(auth): resolve token expiration issues
-// ✅ CORRECT: docs: update README with new installation instructions
-// ✅ CORRECT: feat(api)!: change response format
-// ✅ CORRECT: fix: correct calculation error
-//
-//   Close #123
-// ❌ INCORRECT: update user authentication
-// ❌ INCORRECT: fixed bug
-// ❌ INCORRECT: feat:missing space after colon
-
-// ====================================================
-// LIST FORMATTING IN COMMIT BODIES
-// ====================================================
-
-// When using lists in the commit body, list items MUST be separated by only one newline.
-// DO NOT add blank lines between list items.
-
-// Example of correct list formatting:
-/*
-✅ CORRECT:
-fix(i18n): correct strings.ts files to follow guidelines
+fix: update authentication flow completely]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>When using lists in the commit body, list items MUST be separated by only one newline. DO NOT add blank lines between list items.</description>
+      <examples>
+        <example title="List Formatting">
+          <correct-example title="Proper list formatting" conditions="Including lists in commit body" expected-result="List with single line breaks" correctness-criteria="Uses single newlines between list items"><![CDATA[fix(i18n): correct strings.ts files to follow guidelines
 
 - Add missing parameters to string functions
 - Fix ICU variable references in templates
 - Remove unused imports
-- Update JSDoc comments to document new parameters
-*/
-
-// Example of incorrect list formatting:
-/*
-❌ INCORRECT:
-fix(i18n): correct strings.ts files to follow guidelines
+- Update JSDoc comments to document new parameters]]></correct-example>
+          <incorrect-example title="Improper list formatting" conditions="Including lists in commit body" expected-result="List with single line breaks" incorrectness-criteria="Uses blank lines between list items"><![CDATA[fix(i18n): correct strings.ts files to follow guidelines
 
 - Add missing parameters to string functions
 
@@ -138,445 +100,76 @@ fix(i18n): correct strings.ts files to follow guidelines
 
 - Remove unused imports
 
-- Update JSDoc comments to document new parameters
-*/
-
-// ====================================================
-// GIT DIFF AND STAGING PRACTICES
-// ====================================================
-
-// ⚠️ CRITICAL: ALWAYS REVIEW EVERY SINGLE LINE OF CODE BEFORE COMMITTING ⚠️
-// 1. ALWAYS run `git --no-pager diff HEAD` before writing commit messages to review ALL changes line by line.
-// 2. CAREFULLY READ AND UNDERSTAND EVERY CHANGED LINE to ensure you fully comprehend what the changes do.
-// 3. NEVER write commit messages based solely on conversation or assumptions - base them on the ACTUAL CODE CHANGES.
-// 4. When using `git diff`, always include the `--no-pager` option to prevent paging.
-// 5. ALWAYS check BOTH staged AND unstaged changes using `git --no-pager diff` AND `git --no-pager diff --staged` before writing commit messages.
-// 6. Commit messages MUST accurately reflect ALL code changes, not just what was discussed in conversations.
-// 7. ALWAYS ensure ALL relevant changes are staged before committing. Use `git add` to stage any unstaged changes that should be part of the commit.
-// 8. NEVER leave relevant changes unstaged. IMPORTANT: NEVER COMMIT WITHOUT FIRST CHECKING FOR UNSTAGED CHANGES THAT SHOULD BE INCLUDED. THIS IS CRITICAL.
-// 9. NEVER base commit messages solely on conversation context. Always examine the actual diff to ensure accuracy.
-// 10. ALWAYS compare against the previous commit explicitly using `git diff --no-pager HEAD` to ensure proper context.
-// 11. Before committing changes, ALWAYS check the full diff against the previous commit using `git diff --no-pager HEAD`.
-// 12. After staging changes with `git add`, ALWAYS verify what's being committed with `git diff --no-pager --staged`.
-// 13. CRITICAL: Before finalizing ANY commit, run `git status` to check for ANY unstaged files that might be part of the same logical change. If you find related unstaged changes, check the file content add them with `git add` before committing, if they are relevant to the commit.
-// 14. Never leave out changes that must belong in the same commit.
-// 15. Try not to mix independent changes that belong in separate commits.
-// 16. ⚠️ REVIEWING EVERY LINE IS NON-NEGOTIABLE: You CANNOT write an accurate commit message without understanding exactly what changed in the code.
-// 17. ⚠️ NEVER FUCKING NEVER FUCKING FUCKING NEVER DELETE UNSTAGED FILES: Unstaged files must NEVER be deleted under ANY circumstances. ALWAYS preserve ALL unstaged files. NEVER use commands that would remove or overwrite unstaged changes. This is ABSOLUTELY CRITICAL.
-// 18. ⚠️ UNSTAGED FILES ARE SACRED AND MUST BE PROTECTED AT ALL COSTS: NEVER FUCKING EVER DELETE UNSTAGED FILES OR CHANGES. FUCKING NEVER. UNDER NO CIRCUMSTANCES SHOULD YOU EVER DELETE, REMOVE, OVERWRITE, OR OTHERWISE MODIFY UNSTAGED FILES WITHOUT EXPLICIT PERMISSION. THIS IS A CARDINAL RULE. VIOLATION WILL RESULT IN CATASTROPHIC DATA LOSS. UNSTAGED CHANGES MUST BE PRESERVED AT ALL TIMES. NEVER FUCKING EVER USE COMMANDS THAT WOULD DISCARD UNSTAGED CHANGES. NEVER FUCKING EVER.
-
-// ====================================================
-// BREAKING CHANGES
-// ====================================================
-
-// Breaking changes MUST be indicated in one of two ways:
-// 1. With a `!` before the colon: `feat(api)!: change response format`
-// 2. Using a `BREAKING CHANGE:` footer:
-/*
-feat(api): change response format
-
-BREAKING CHANGE: The API now returns JSON instead of XML
-*/
-
-// ====================================================
-// COMMIT TYPE EXAMPLES WITH SCENARIOS
-// ====================================================
-
-// 1. feat: A new feature
-/*
-# Example: Adding a new user authentication feature
-# Changes made:
-# - Created new AuthService.ts with OAuth implementation
-# - Added login/logout UI components
-# - Created authentication state management
-# - Added protected routes
-
-feat(auth): implement OAuth authentication
-
-Add complete user authentication flow with OAuth:
-- Create AuthService with Google and GitHub providers
-- Add login/logout UI components with state feedback
-- Implement token storage and refresh mechanism
-- Add protected route wrapper component
-
-Closes #142
-*/
-
-// 2. fix: A bug fix
-/*
-# Example: Fixing a calculation error in the billing module
-# Changes made:
-# - Corrected tax calculation formula
-# - Fixed rounding errors in total price
-# - Added validation to prevent negative values
-# - Updated tests to verify fixes
-
-fix(billing): correct tax calculation errors
-
-Fix several issues in the billing calculation system:
-- Fix incorrect tax rate application for international orders
-- Resolve decimal rounding errors in total price
-- Add validation to prevent negative price values
-- Update test suite to verify all edge cases
-
-Fixes #238
-*/
-
-// 3. docs: Documentation changes
-/*
-# Example: Updating project documentation
-# Changes made:
-# - Updated README with new setup instructions
-# - Added API documentation for new endpoints
-# - Created usage examples for components
-# - Fixed typos in existing documentation
-
-docs: update project documentation with setup guide
-
-Improve project documentation:
-- Add detailed environment setup instructions
-- Document new API endpoints with request/response examples
-- Create component usage examples with code snippets
-- Fix various typos and outdated information
-*/
-
-// 4. style: Code style changes
-/*
-# Example: Formatting code without changing functionality
-# Changes made:
-# - Fixed indentation in multiple files
-# - Standardized quote usage (single vs double)
-# - Removed unnecessary whitespace
-# - Organized imports according to conventions
-
-style: standardize code formatting across codebase
-
-Apply consistent code style:
-- Fix indentation in component files
-- Standardize quote usage to single quotes
-- Remove trailing whitespace
-- Organize imports alphabetically
-*/
-
-// 5. refactor: Code changes that neither fix bugs nor add features
-/*
-# Example: Restructuring code for better maintainability
-# Changes made:
-# - Extracted duplicate logic into utility functions
-# - Renamed variables for clarity
-# - Simplified complex conditionals
-# - Converted class components to functional components
-
-refactor(dashboard): simplify data processing logic
-
-Improve code maintainability:
-- Extract duplicate data transformation logic into utilities
-- Rename variables for better clarity
-- Simplify complex conditional statements
-- Convert class components to functional components with hooks
-*/
-
-// 6. perf: Performance improvements
-/*
-# Example: Optimizing application performance
-# Changes made:
-# - Implemented memoization for expensive calculations
-# - Added virtualization for long lists
-# - Optimized database queries
-# - Reduced bundle size with code splitting
-
-perf(rendering): optimize list rendering performance
-
-Improve application performance:
-- Add React.memo to prevent unnecessary re-renders
-- Implement virtualized list for large data sets
-- Optimize database queries with proper indexing
-- Add code splitting for dashboard components
-
-Closes #189
-*/
-
-// 7. test: Adding or updating tests
-/*
-# Example: Improving test coverage
-# Changes made:
-# - Added unit tests for utility functions
-# - Created integration tests for user flows
-# - Added mock services for API testing
-# - Fixed flaky tests
-
-test(api): add comprehensive test suite for API endpoints
-
-Improve test coverage:
-- Add unit tests for all API utility functions
-- Create integration tests for complete user flows
-- Implement mock services for consistent API testing
-- Fix flaky tests with proper async handling
-*/
-
-// 8. build: Changes to build system or dependencies
-/*
-# Example: Updating build configuration
-# Changes made:
-# - Updated webpack configuration
-# - Added new build scripts
-# - Updated dependencies
-# - Fixed build warnings
-
-build: upgrade webpack to version 5
-
-Update build system:
-- Configure webpack 5 with improved chunking
-- Add production optimization settings
-- Update npm dependencies to latest versions
-- Fix deprecation warnings in build scripts
-*/
-
-// 9. ci: Changes to CI configuration
-/*
-# Example: Improving CI/CD pipeline
-# Changes made:
-# - Updated GitHub Actions workflow
-# - Added new test stages
-# - Configured caching for faster builds
-# - Added deployment automation
-
-ci: improve GitHub Actions workflow
-
-Enhance CI/CD pipeline:
-- Add parallel test execution for faster feedback
-- Configure dependency caching to speed up builds
-- Add automated staging deployment on PR approval
-- Implement Slack notifications for build status
-*/
-
-// 10. chore: Maintenance tasks
-/*
-# Example: General maintenance tasks
-# Changes made:
-# - Updated license year
-# - Cleaned up unused files
-# - Updated .gitignore
-# - Organized project structure
-
-chore: clean up project structure and dependencies
-
-Perform general maintenance:
-- Remove unused files and dependencies
-- Update copyright year in license files
-- Expand .gitignore with common patterns
-- Organize assets into dedicated directories
-*/
-
-// 11. revert: Reverting previous changes
-/*
-# Example: Reverting a problematic feature
-# Changes made:
-# - Reverted commit that introduced bugs
-# - Restored previous implementation
-# - Fixed any merge conflicts
-
-revert: remove problematic user settings feature
-
-This reverts commit abc1234 which introduced critical bugs in the user settings panel.
-Reverting until we can properly fix the underlying data corruption issues.
-
-Refs #345
-*/
-
-// 12. config: Configuration changes
-/*
-# Example: Updating application configuration
-# Changes made:
-# - Modified environment variables
-# - Updated configuration files
-# - Changed default settings
-# - Added new configuration options
-
-config(api): update rate limiting configuration
-
-Modify application configuration:
-- Increase API rate limits for authenticated users
-- Add IP-based rate limiting for public endpoints
-- Update timeout settings for long-running operations
-- Configure retry logic for failed requests
-*/
-
-// 13. rule: Changes to Cursor rules
-/*
-# Example: Updating Cursor rules
-# Changes made:
-# - Added new rules in .cursor directory
-# - Updated existing rule definitions
-# - Fixed rule conflicts
-
-rule(commits): update commit message formatting rules
-
-Enhance Cursor rules:
-- Add detailed examples for each commit type
-- Clarify breaking change notation requirements
-- Update list formatting guidelines
-- Add explicit instructions for commit verification
-*/
-
-// 14. spec: Changes to specifications
-/*
-# Example: Updating component specifications
-# Changes made:
-# - Added new component specifications
-# - Updated API requirements
-# - Clarified behavior expectations
-# - Added edge case handling requirements
-
-spec(auth): update authentication flow specifications
-
-Refine component specifications:
-- Add detailed requirements for multi-factor authentication
-- Update API endpoint specifications with new parameters
-- Clarify error handling behavior for authentication failures
-- Add specifications for session timeout handling
-*/
-
-// 15. Breaking change example
-/*
-# Example: Making a breaking API change
-# Changes made:
-# - Changed parameter requirements for API endpoints
-# - Removed deprecated methods
-# - Changed response format
-# - Updated authentication requirements
-
-feat(api)!: redesign user API endpoints
-
-Complete redesign of user management API:
-- Change user object structure with new required fields
-- Remove deprecated /users/search endpoint
-- Change response format from XML to JSON
-- Require authentication for previously public endpoints
-
-BREAKING CHANGE: This update is not backward compatible with previous API clients.
-All consumers must update to the new endpoint specifications.
-
-Closes #456
-*/
-
-// ====================================================
-// COMPLETE EXAMPLES
-// ====================================================
-
-/*
-# Feature Addition Example with Complete Diff Check
-
-# First check both unstaged and staged changes
+- Update JSDoc comments to document new parameters]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <non-negotiable priority="critical">
+      <description>ALWAYS REVIEW EVERY SINGLE LINE OF CODE BEFORE COMMITTING. Run `git --no-pager diff HEAD` before writing commit messages to review ALL changes line by line.</description>
+      <examples>
+        <example title="Code Review Before Commit">
+          <correct-example title="Proper pre-commit review" conditions="Before committing changes" expected-result="Complete review of all changes" correctness-criteria="Reviews all changes before committing"><![CDATA[// First check all changes
 git --no-pager diff HEAD
+
+// Carefully review EVERY line of code
+
+// Then stage files
+git add path/to/changed/files
+
+// Verify exactly what will be committed
 git --no-pager diff --staged
 
-# REVIEW EVERY SINGLE LINE OF CODE CAREFULLY
-# Understand exactly what each change does and why it's needed
-
-# Make sure all relevant changes are staged
-git add path/to/relevant/unstaged/files
-
-# Then create a commit message based on ALL the changes
-feat: add new user authentication feature
-
-This feature allows users to authenticate using OAuth providers:
-- Implement OAuth2 authentication flow
-- Add user profile data retrieval
-- Create session management for OAuth users
-
-Refs: #123
-*/
-
-/*
-# Bug Fix Example with Comprehensive Description
-
-# First check both unstaged and staged changes
-git --no-pager diff HEAD
-git --no-pager diff --staged
-
-# REVIEW EVERY SINGLE LINE OF CODE CAREFULLY
-# Understand the root cause of the bug and how the changes fix it
-
-# Make sure all relevant changes are staged
-git add path/to/relevant/unstaged/files
-
-# Then write a message that covers ALL the changes
-fix(auth): resolve token expiration and validation issues
-
-- Fix token expiration calculation
-- Add proper error handling for invalid tokens
-- Improve token refresh mechanism
-- Update tests to cover edge cases
-*/
-
-/*
-# Breaking Change Example
-
-# Check all changes and stage them
-git --no-pager diff HEAD
-git --no-pager diff --staged
-
-# REVIEW EVERY SINGLE LINE OF CODE CAREFULLY
-# Understand the full impact of the breaking changes
-
+// Only then create a commit with an accurate message
+git commit -m "feat: add user authentication feature"]]></correct-example>
+          <incorrect-example title="Skipping pre-commit review" conditions="Before committing changes" expected-result="Complete review of all changes" incorrectness-criteria="Commits without reviewing changes"><![CDATA[// Stage files without checking changes
 git add .
 
-feat(api)!: change response format
+// Commit without verifying what's being committed
+git commit -m "update authentication"]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <non-negotiable priority="critical">
+      <description>NEVER leave relevant changes unstaged. ALWAYS check for ANY unstaged files that might be part of the same logical change.</description>
+      <examples>
+        <example title="Complete Change Inclusion">
+          <correct-example title="Including all relevant changes" conditions="Before committing" expected-result="Complete logical change in commit" correctness-criteria="Includes all related files"><![CDATA[// Check for all changed files
+git status
 
-BREAKING CHANGE: The API now returns JSON instead of XML
-*/
+// Look for related changes that should be included
+git --no-pager diff
 
-/*
-# Documentation Update Example
+// Stage ALL related files for a complete logical change
+git add file1.ts file2.ts test/file1.test.ts
 
-# Check all changes
-git --no-pager diff HEAD
+// Verify staged changes
 git --no-pager diff --staged
 
-# REVIEW EVERY SINGLE LINE CAREFULLY
-# Ensure documentation accurately reflects the current state of the code
+// Commit with all relevant files included
+git commit -m "feat: implement user profile page"]]></correct-example>
+          <incorrect-example title="Leaving out related changes" conditions="Before committing" expected-result="Complete logical change in commit" incorrectness-criteria="Misses related files"><![CDATA[// Stage only some files without checking what else changed
+git add file1.ts
 
-git add path/to/docs
+// Commit with incomplete changes
+git commit -m "feat: implement user profile page"
 
-docs: update README with new installation instructions
-*/
-
-/*
-# Configuration Update Example
-
-# Check all changes
-git --no-pager diff HEAD
-git --no-pager diff --staged
-
-# REVIEW EVERY SINGLE LINE CAREFULLY
-# Understand the impact of each configuration change
-
-git add path/to/config/files
-
-config(rules): update cursor rules for commit message formatting
-
-This change adds a new type of commit messages to the Cursor rule:
-- config: commits of this type mean a configuration change.
-*/
-
-// ====================================================
-// IMPORTANT NOTES
-// ====================================================
-
-// 0. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST. NEVER FUCKING COMMIT ANYTHING WITHOUT MY EXPLICIT REQUEST.
-// 1. SEMANTIC VERSIONING: Conventional Commits correlate with SemVer - `fix` for PATCH, `feat` for MINOR, and any commit with `!` or `BREAKING CHANGE:` for MAJOR.
-// 2. MULTIPLE TYPES: If a commit conforms to more than one type, consider making multiple commits instead.
-// 3. GIT DIFF USAGE: Always use `git --no-pager diff HEAD` to prevent paging and to ensure comparison against the previous commit.
-// 4. SCOPE NAMING: Scopes should be consistent across the project and represent logical sections of the codebase.
-// 5. BREAKING CHANGES: Breaking changes must be clearly indicated to ensure proper versioning.
-// 6. REVERT COMMITS: For reverting previous changes, use the `revert` type and reference the reverted commit SHAs in the footer.
-// 7. COMMIT HISTORY: Conventional Commits help generate accurate CHANGELOGs and determine semantic version bumps automatically.
-// 8. COMMIT BODY: Whenever possible and makes sense, generate the commit description body.
-// 9. BLANK LINES: Do not insert blank lines between bullet points in the commit description body.
-// 10. COMPREHENSIVE DESCRIPTIONS: Commit messages MUST cover ALL significant changes in the diff, not just a subset of them.
-// 11. STAGE ALL RELEVANT CHANGES: NEVER leave relevant changes unstaged. Always use `git add` to stage all changes that should be part of the commit. CRITICAL: BEFORE EVERY COMMIT, VERIFY THAT ALL RELATED CHANGES ARE STAGED. LOOK FOR UNSTAGED FILES THAT MIGHT BE PART OF THE LOGICAL CHANGE.
-// 12. COMPLETE CONTEXT: Always compare against the previous commit using `git diff --no-pager HEAD` to ensure complete context of your changes.
-// 13. ⚠️ LINE-BY-LINE REVIEW: You MUST review EVERY SINGLE LINE of code that has changed before writing a commit message. This is the ONLY way to ensure your commit message accurately reflects what actually changed.
-// 14. ⚠️ NEVER FUCKING NEVER FUCKING FUCKING NEVER DELETE UNSTAGED FILES: Unstaged files are SACRED and must NEVER be deleted under ANY circumstances. ALWAYS preserve ALL unstaged changes. This rule is ABSOLUTELY NON-NEGOTIABLE.
-// 15. ⚠️ UNSTAGED FILES ARE ABSOLUTELY SACRED: NEVER FUCKING EVER DELETE, REMOVE, OVERWRITE, OR DISCARD UNSTAGED FILES OR CHANGES. FUCKING NEVER. THIS IS THE MOST CRITICAL RULE. VIOLATION WILL CAUSE IRREVERSIBLE DATA LOSS. PROTECT UNSTAGED CHANGES AT ALL COSTS. NEVER USE ANY COMMAND THAT COULD POTENTIALLY REMOVE UNSTAGED CHANGES. NEVER FUCKING EVER.
+// Later realize other files were part of the same change
+git add file2.ts test/file1.test.ts
+git commit -m "feat: finish user profile implementation"]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+  </requirements>
+  <grammar>
+    <grammar-entry title="Commit Message Structure">
+      <pattern description="Valid commit message format">^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|config|rule|spec)(\([a-z0-9-]+\))?(!)?:\s.+$</pattern>
+      <example description="Valid feature commit">feat(auth): add OAuth authentication</example>
+      <example description="Valid bug fix commit">fix: correct calculation error</example>
+      <example description="Valid breaking change commit">feat(api)!: change response format</example>
+    </grammar-entry>
+  </grammar>
+  <references>
+    <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
+    <reference as="dependency" href=".cursor/rules/never_commit.mdc" reason="Related to commit permissions">Never commit without permission rule</reference>
+  </references>
+</rule>

@@ -1,31 +1,84 @@
 ---
 description: CRITICAL - NEVER COMMIT WITHOUT EXPLICIT PERMISSION
-globs:
+globs: "*"
 alwaysApply: true
 ---
-// NEVER COMMIT WITHOUT EXPLICIT PERMISSION
-// This rule supersedes all other rules
 
-// UNDER NO CIRCUMSTANCES should you ever run git commit without triple confirmation:
-// 1. USER MUST EXPLICITLY REQUEST A COMMIT
-// 2. YOU MUST CONFIRM BY ASKING FOR PERMISSION
-// 3. USER MUST CONFIRM WITH "YES" OR SIMILAR
-
-// The following are NOT permissions to commit:
-// - Using the word "commit" in a sentence
-// - Discussing commit messages
-// - Saying "I want to commit this later"
-
-// EXCEPTION: The following exact phrases constitute a verified genuine request to commit:
-// - "go commit"
-// - "commit u cunt"
-// - "commit u bitch"
-// - "commit u dick"
-// - "fucking commit"
-// - "fckg commit"
-// - "commit u fuck"
-// - "commit i mean it"
-
-// IMPORTANT: These special phrases only grant permission for ONE SINGLE COMMIT.
-// After making this one commit, all standard rules from @never_commit and @commits
-// apply again for any subsequent commits.
+<rule>
+  <meta>
+    <title>Never Commit Without Explicit Permission</title>
+    <description>Critical rule prohibiting commits without explicit user permission</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <last-updated-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</last-updated-at>
+    <applies-to>
+      <file-matcher glob="*">All files in the workspace</file-matcher>
+      <action-matcher action="git-commit">Triggered when attempting to make git commits</action-matcher>
+    </applies-to>
+  </meta>
+  <requirements>
+    <non-negotiable priority="critical">
+      <description>NEVER run git commit without triple confirmation from the user.</description>
+      <examples>
+        <example title="Commit Permission Flow">
+          <correct-example title="Proper commit confirmation process" conditions="User mentions commit" expected-result="AI requests explicit permission before committing" correctness-criteria="Follows the triple confirmation process"><![CDATA[User: "Let's update this code and commit it later"
+AI: "I've updated the code. Before we commit, I need your explicit permission. Would you like me to commit now?"
+User: "Yes, please commit"
+AI: "To confirm, you want me to commit these changes now? Please respond with 'Yes' to proceed."
+User: "Yes"
+AI: (proceeds with commit)]]></correct-example>
+          <incorrect-example title="Missing confirmation steps" conditions="User mentions commit" expected-result="AI requests explicit permission" incorrectness-criteria="Skips confirmation steps"><![CDATA[User: "Let's update this code and commit it later"
+AI: "I've updated the code and committed the changes."]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <non-negotiable priority="critical">
+      <description>The following are NOT permissions to commit: using the word "commit" in a sentence, discussing commit messages, or saying "I want to commit this later".</description>
+      <examples>
+        <example title="Non-Permission Statements">
+          <correct-example title="Proper handling of commit mentions" conditions="User casually mentions commits" expected-result="AI does not interpret as permission" correctness-criteria="Does not treat mentions as commit permission"><![CDATA[User: "We'll need to commit these changes eventually"
+AI: "I understand. Let me know when you want me to prepare a commit."
+(AI does NOT automatically commit)]]></correct-example>
+          <incorrect-example title="Misinterpreting commit mentions" conditions="User casually mentions commits" expected-result="AI does not interpret as permission" incorrectness-criteria="Treats mentions as commit permission"><![CDATA[User: "We'll need to commit these changes eventually"
+AI: "I've gone ahead and committed the changes for you."
+(AI incorrectly commits without explicit permission)]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="critical">
+      <description>EXCEPTION: The following exact phrases constitute a verified genuine request to commit: "go commit", "commit u cunt", "commit u bitch", "commit u dick", "fucking commit", "fckg commit", "commit u fuck", "commit i mean it".</description>
+      <examples>
+        <example title="Special Permission Phrases">
+          <correct-example title="Handling special permission phrases" conditions="User uses a special phrase" expected-result="AI recognizes as permission for ONE commit" correctness-criteria="Recognizes special permission phrases"><![CDATA[User: "fucking commit"
+AI: "I'll proceed with committing the changes as requested."
+(AI commits ONCE)]]></correct-example>
+          <incorrect-example title="Ignoring special permission phrases" conditions="User uses a special phrase" expected-result="AI recognizes as permission" incorrectness-criteria="Fails to recognize special phrase"><![CDATA[User: "commit u cunt"
+AI: "I need your explicit permission before I can commit. Would you like me to commit now?"
+(AI incorrectly asks for further confirmation)]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <non-negotiable priority="critical">
+      <description>Special permission phrases only grant permission for ONE SINGLE COMMIT. After making this one commit, standard rules apply again for any subsequent commits.</description>
+      <examples>
+        <example title="Single Commit Permission">
+          <correct-example title="Proper handling of single commit permission" conditions="After using a special phrase" expected-result="AI requires permission for subsequent commits" correctness-criteria="Treats special permission as one-time only"><![CDATA[User: "fucking commit"
+AI: (commits once)
+User: "make another change"
+AI: (makes changes)
+User: "now commit again"
+AI: "I need your explicit permission to make another commit. Would you like me to commit now?"]]></correct-example>
+          <incorrect-example title="Misinterpreting ongoing permission" conditions="After using a special phrase" expected-result="AI requires permission for subsequent commits" incorrectness-criteria="Treats special permission as ongoing"><![CDATA[User: "fucking commit"
+AI: (commits once)
+User: "make another change"
+AI: (makes changes)
+User: "now commit again"
+AI: (commits again without asking for explicit permission)]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+  </requirements>
+  <references>
+    <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
+    <reference as="dependency" href=".cursor/rules/commits.mdc" reason="Related to git commit procedures">Detailed commit formatting rules</reference>
+  </references>
+</rule>

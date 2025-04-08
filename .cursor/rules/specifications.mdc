@@ -1,359 +1,65 @@
 ---
 description: Required rules for building features and creating, updating, and handling any code changes
-globs:
+globs: "*.{ts,tsx,js,jsx,md}"
 alwaysApply: true
 ---
-// Specification Development
-// This rule enforces development practices centered around specifications to ensure requirements are properly documented and implemented.
 
-// ====================================================
-// RULE HIERARCHY AND CONTRADICTION HANDLING
-// ====================================================
+<rule>
+  <meta>
+    <title>Specification Development</title>
+    <description>Enforces development practices centered around specifications to ensure requirements are properly documented and implemented</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <last-updated-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</last-updated-at>
+    <applies-to>
+      <file-matcher glob="*.{ts,tsx}">TypeScript and React files</file-matcher>
+      <file-matcher glob="*.{js,jsx}">JavaScript and React files</file-matcher>
+      <file-matcher glob="*.specs.md">Specification files</file-matcher>
+      <file-matcher glob="*.package_specs.md">Package specification files</file-matcher>
+      <action-matcher action="code-modification">Triggered when modifying code</action-matcher>
+    </applies-to>
+  </meta>
+  <requirements>
+    <non-negotiable priority="critical">
+      <description>RULE HIERARCHY: There is a strict hierarchy of rules that must be followed at all times: @conventions.mdc, @engineering_and_design_rules.mdc, then @specifications.mdc.</description>
+      <examples>
+        <example title="Rule Hierarchy Compliance">
+          <correct-example title="Following rule hierarchy" conditions="When rules contradict" expected-result="Higher priority rule is followed" correctness-criteria="Prioritizes rules in correct order"><![CDATA[// When @conventions.mdc requires snake_case file names
+// and specification mentions camelCase:
 
-// 1. RULE HIERARCHY: There is a strict hierarchy of rules that must be followed at all times:
-//    a. @conventions.mdc - Defines the fundamental project conventions
-//    b. @engineering_and_design_rules.mdc - Defines engineering principles to be applied
-//    c. @specifications.mdc (this file) - Defines how specification files should be created and managed
-//
-// 2. SPECIFICATION FILES MUST FOLLOW ALL RULES: All specification files (both <file_name_without_extension>.specs.md
-//    and <folder_name>.package_specs.md) MUST comply with ALL rules defined in:
-//    a. @conventions.mdc
-//    b. @engineering_and_design_rules.mdc
-//    c. @specifications.mdc
-//
-// 3. CONTRADICTION RESOLUTION: If any specification file contains ANY statement that contradicts ANY rule:
-//    a. The contradiction MUST be identified and removed from the specification file
-//    b. The specification file MUST be updated to align with the rule files
-//    c. Any code that was implemented based on the contradictory specification MUST be updated
-//    d. The contradictory part of the specification is considered INVALID and should be IGNORED
-//
-// 4. EXAMPLES OF CONTRADICTIONS TO RESOLVE:
-//    a. If @engineering_and_design_rules.mdc prohibits index.ts files but a specification file includes them
-//    b. If @conventions.mdc requires snake_case filenames but a specification file specifies camelCase
-//    c. If @specifications.mdc requires minimalist interfaces but a specification file specifies bloated ones
-//
-// 5. SPECIFICATION UPDATING RESPONSIBILITY: When a contradiction is found, the specification file MUST be corrected immediately.
-//    Any implementation based on the contradictory specification MUST also be corrected.
+// CORRECT ACTION:
+// 1. Follow @conventions.mdc (higher priority)
+// 2. Use snake_case for the file name
+// 3. Update specification to align with @conventions.mdc]]></correct-example>
+          <incorrect-example title="Ignoring rule hierarchy" conditions="When rules contradict" expected-result="Higher priority rule is followed" incorrectness-criteria="Follows lower priority rule"><![CDATA[// When @conventions.mdc requires snake_case file names
+// and specification mentions camelCase:
 
-// ====================================================
-// SPECIFICATION CREATION GUIDELINES
-// ====================================================
-
-// 1. When tasked with modifying code, ALWAYS generate and print a specification first.
-// 2. Specifications must include:
-//    - Technical requirements
-//    - Product requirements
-//    - Behavioral expectations
-//    - Interfaces
-//    - Files/modules to be changed
-// 3. ALWAYS refer to @conventions.mdc and @engineering_and_design_rules.mdc when designing specifications and writing implementations.
-
-// ====================================================
-// SPECIFICATION DISCOVERY PROCESS
-// ====================================================
-
-// 1. ALWAYS check for existing specifications before modifying any code.
-// 2. Follow this discovery sequence for every code modification:
-//    a. Check if there's a `<folder_basename>.package_specs.md` file in the target folder - READ IT FIRST
-//    b. Check if there's a `<file_name_without_extension>.specs.md` file in the same folder - READ IT NEXT
-//    c. Only proceed with code modifications after understanding all specifications
-// 3. ONLY create specifications for files in the src/ directory.
-
-/*
-// Example specification discovery process:
-Before modifying src/features/task_board/task_list.tsx:
-1. First check: src/features/task_board/task_board.package_specs.md
-2. Then check: src/features/task_board/task_list.specs.md
-*/
-
-// ====================================================
-// SPECIFICATION CREATION/UPDATE WORKFLOW
-// ====================================================
-
-// 1. ALWAYS create or update specification files BEFORE any code files.
-// 2. Create specification files in one of two formats:
-//    a. Package specifications in <folder_basename>.package_specs.md
-//    b. Individual file specifications as <file_name_without_extension>.specs.md in the same folder as the implementation
-// 3. When package specs co-exist with individual specs in the same folder:
-//    a. Package specs MUST refer to the individual specs
-//    b. Package specs MUST only provide high-level information about individual specs
-//    c. Package specs MUST delegate detailed design to the individual specs
-// 4. When updating existing specifications:
-//    a. Merge task specifications with existing specifications
-//    b. RESPECT existing parts unless explicitly retiring them
-// 5. ONLY create per-file specifications for .ts and .tsx files, not for .css, .d.ts, or other auxiliary files.
-// 6. Specifications MUST refer to each other explicitly, like dependencies, to establish clear relationships.
-// 7. Specifications that are not referred to anywhere are likely safe to delete unless they are:
-//    a. Root specifications (entry point specifications)
-//    b. Specifications for implementations that are root files
-// 8. If a specification refers to another specification but that other specification does not exist, and neither does its implementation or even its folder, that reference MUST be removed. NO unsolicited features must EVER be built.
-
-/*
-// Example specification workflow:
-For implementing a new task board feature:
-1. First create/update src/features/task_board/task_board.package_specs.md
-2. If needed, create src/features/task_board/task_list.specs.md
-3. Reference the task_list.specs.md in the task_board.package_specs.md file
-4. Only then implement code changes in src/features/task_board/task_list.tsx
-*/
-
-// ====================================================
-// SPECIFICATION COMPLIANCE REQUIREMENTS
-// ====================================================
-
-// 1. ALWAYS RESPECT THE SPECIFICATIONS. ALWAYS RESPECT THE SPECIFICATIONS. ALWAYS RESPECT THE SPECIFICATIONS.
-// 2. Implement code based on the specifications. Implement code based on the specifications. Implement code based on the specifications.
-// 3. Follow EXACTLY the requirements from specifications. Follow EXACTLY the requirements from specifications. Follow EXACTLY the requirements from specifications.
-// 4. Implement ALL requirements that specifications require, PRECISELY. Implement ALL requirements that specifications require, PRECISELY.
-// 5. PREVENT REGRESSIONS. PREVENT REGRESSIONS. PREVENT REGRESSIONS. PREVENT REGRESSIONS. PREVENT REGRESSIONS.
-// 6. ALWAYS DOUBLE-CHECK, TRIPLE-CHECK THAT THE CODE THAT IS SAVED IN FILES IMPLEMENTS SPECIFICATIONS. ALWAYS DOUBLE-CHECK, TRIPLE-CHECK THAT THE CODE THAT IS SAVED IN FILES IMPLEMENTS SPECIFICATIONS.
-
-// ====================================================
-// TERMINOLOGY CLARIFICATION
-// ====================================================
-
-// 1. SPECIFICATION (SPEC): A text document that defines requirements, behaviors, and interfaces for a component or feature.
-// 2. IMPLEMENTATION: The actual code written in a programming language (TypeScript/JavaScript) that fulfills the specification.
-// 3. The relationship is: Specifications DEFINE what should be built, Implementations REALIZE those specifications in code.
-
-// ====================================================
-// SOLID PRINCIPLES IN SPECIFICATIONS
-// ====================================================
-
-// 1. SINGLE RESPONSIBILITY: Each specification must define components with a single responsibility.
-//    - A component should do one thing and do it well
-//    - If a component handles multiple concerns, split it
-//    - Example: A UserProfile component should only display user information, not handle authentication logic
-//    - Benefits: Easier maintenance, better testability, clearer code organization
-//
-// 2. OPEN/CLOSED PRINCIPLE: Specifications should design components that are open for extension but closed for modification.
-//    - Components should be designed to allow behavior changes through props or composition, not internal changes
-//    - Use strategy patterns and dependency injection to allow behavior customization
-//    - Example: A Button component that accepts render props for custom content rather than having internal if/else logic
-//    - Benefits: Reduces breaking changes, improves reusability, enables future enhancements
-//
-// 3. LISKOV SUBSTITUTION: Child components should be substitutable for their parent components without breaking the application.
-//    - Specialized components should maintain the same interface as their base components
-//    - Ensure consistent behavior when extending or implementing interfaces
-//    - Example: A PrimaryButton should be usable anywhere a Button is expected
-//    - Benefits: Ensures consistent behavior, enables polymorphism, simplifies testing
-//
-// 4. INTERFACE SEGREGATION: Specifications should define small, focused interfaces rather than large, monolithic ones.
-//    - Components should only depend on props they actually use
-//    - Break large prop interfaces into smaller, more focused ones
-//    - Example: Split a Form component's props into validation, submission, and layout interfaces
-//    - Benefits: Reduces coupling, improves readability, simplifies component usage
-//
-// 5. DEPENDENCY INVERSION: High-level components should not depend on low-level components; both should depend on abstractions.
-//    - Components should receive dependencies through props or context rather than importing them directly
-//    - Use dependency injection to provide services and utilities
-//    - Example: A DataTable component should receive a data fetching function rather than calling an API directly
-//    - Benefits: Improves testability, enables different implementations, reduces coupling
-
-// 6. MINIMAL INTERFACE: Specifications must require the smallest possible public API/interface/props needed for functionality.
-// 7. SPLIT MIXED RESPONSIBILITIES: If a specification suggests mixed responsibilities, it MUST be split into multiple specifications.
-// 8. SPECS BEFORE CODE: There can be more specifications than implementations at some points in time, as specs are created first.
-// 9. BARE MINIMUM IMPLEMENTATION: Both specifications and code must do only the bare minimum needed to fulfill their purpose.
-//    - Specifications should only require what is absolutely necessary for the component to function
-//    - Code should only include what directly fulfills the specification requirements
-//    - Avoid speculative features, "nice-to-haves," or premature optimizations
-//    - Example: A Button specification should only require essential props like "onClick" and "children"
-//    - Benefits: Reduces complexity, improves maintainability, speeds up development, prevents feature creep
-
-// ====================================================
-// SPECIFICATION EXTENSION EXAMPLES - VALID VS INVALID
-// ====================================================
-
-/*
-// VALID EXAMPLE - Adding a feature while respecting SOLID principles:
-
-SCENARIO: A TextInput component exists, and we need to add conditional disabling based on form state.
-
-VALID APPROACH:
-1. Update text_input.specs.md to add support for a simple `disabled` prop:
-   ```
-   // Add to TextInputProps interface:
-   // Whether the input is disabled
-   disabled?: boolean;
-   ```
-
-2. Create a new specification for form_field_controller.specs.md:
-   ```
-   # Form Field Controller Specification
-
-   ## Overview
-   The Form Field Controller determines field states based on form conditions.
-
-   ## Technical Requirements
-   - Evaluate form field states based on business rules
-   - Return disabled states for specific fields based on current form values
-   - Maintain separation of concerns by keeping business logic separate from UI
-
-   ## Interface
-   type FormFieldController = {
-     getFieldStates: (formValues: FormValues) => FieldStates;
-   }
-
-   type FieldStates = {
-     [fieldName: string]: {
-       disabled: boolean;
-       // other states as needed
-     }
-   }
-   ```
-
-3. Update user_form.specs.md to inject the controller:
-   ```
-   # User Form Specification
-
-   ## Dependencies
-   - TextInput component
-   - FormFieldController
-
-   ## Behavior
-   - Inject FormFieldController to determine field states
-   - Pass disabled state to TextInput components based on controller output
-   ```
-
-BENEFITS:
-- TextInput remains simple with a focused responsibility
-- Business logic is properly encapsulated in its own controller
-- Form component handles coordination but doesn't contain business logic
-- Each component has a single responsibility
-- Easy to test each part independently
-*/
-
-/*
-// INVALID EXAMPLE - Violating SOLID principles:
-
-SCENARIO: Same as above - A TextInput component exists, and we need to add conditional disabling based on form state.
-
-INVALID APPROACH:
-1. Modify text_input.specs.md to include form-specific business logic:
-   ```
-   // Add to TextInputProps interface:
-   // Form context to determine disabled state
-   formValues?: FormValues;
-   // Field name to check against business rules
-   fieldName?: string;
-   // Whether this field should be disabled when another field has a specific value
-   disableWhenFieldHasValue?: {
-     otherFieldName: string;
-     value: any;
-   }
-   ```
-
-2. Implement complex business logic directly in TextInput:
-   ```typescript
-   // Inside TextInput component:
-   const isDisabled = () => {
-     if (props.disabled) return true;
-     if (props.formValues && props.fieldName && props.disableWhenFieldHasValue) {
-       const { otherFieldName, value } = props.disableWhenFieldHasValue;
-       return props.formValues[otherFieldName] === value;
-     }
-     return false;
-   };
-   ```
-
-PROBLEMS:
-- TextInput now has multiple responsibilities (rendering input + business logic)
-- The component is tightly coupled to form validation rules
-- Testing becomes more complex as the component has too many concerns
-- Reusability is reduced as the component has form-specific logic
-- Changes to business rules require modifying a UI component
-- Violates Single Responsibility and Dependency Inversion principles
-*/
-
-// ====================================================
-// FILES THAT MUST NOT HAVE SPECIFICATIONS
-// ====================================================
-
-// 1. DO NOT create specifications for non-code files. NEVER create specifications for:
-//    - CSS files (.css, .scss, .less, etc.)
-//    - JSON files (.json)
-//    - Configuration files (.config.js, .rc files, etc.)
-//    - Type declaration files (.d.ts)
-//    - Asset files (images, fonts, etc.)
-//    - Data files (.csv, .xml, etc.)
-//    - Any file that is not a TypeScript or JavaScript code unit with implementations
-// 2. ONLY create specifications for files that contain actual code:
-//    - Components
-//    - Classes
-//    - Presenters
-//    - Services
-//    - Utilities (when smartly grouped)
-//    - Other logical code units
-// 3. Test files do not require their own specification files. Tests will be written based on specifications, along with code.
-
-// ====================================================
-// SPECIFICATION FILE FORMAT
-// ====================================================
-
-// Specification files should follow this general structure:
-/*
-# [Component/Feature Name] Specification
-
-## Overview
-[Brief description of the component/feature]
-
-## Product Requirements
-- [Requirement 1]
-- [Requirement 2]
-...
-
-## Technical Requirements
-- [Requirement 1]
-- [Requirement 2]
-...
-
-## Behavioral Expectations
-- [Expectation 1]
-- [Expectation 2]
-...
-
-## Interfaces
-[Interface definitions, props, etc.]
-
-## Examples
-[Example usage of the component/feature]
-[Code snippets demonstrating implementation]
-[Edge cases and how they should be handled]
-
-## Dependencies
-[List of other specifications this depends on]
-*/
-
-// ====================================================
-// VALID VS INVALID EXAMPLES
-// ====================================================
-
-/*
-// VALID EXAMPLE - Proper Specification Workflow:
-1. Task: Implement drag-and-drop for task cards
-2. First action: Create/update src/features/task_board/task_board.package_specs.md
-   - Include high-level requirements for drag-and-drop
-   - Reference task_card.specs.md for detailed implementation
-3. Next action: Create/update src/features/task_board/task_card.specs.md
-   - Detail the drag-and-drop interface
-   - Specify exact behavior and technical requirements
-4. Final action: Implement the code in src/features/task_board/task_card.tsx
-   - Follow specifications exactly
-   - Implement all requirements
-*/
-
-/*
-// INVALID EXAMPLE - Incorrect Workflow:
-1. Task: Implement drag-and-drop for task cards
-2. WRONG: Immediately start coding in task_card.tsx without specifications
-3. WRONG: Create specifications after code is complete
-4. WRONG: Create specifications that don't match the code
-5. WRONG: Implement only part of the requirements in the specifications
-*/
-
-/*
-// VALID EXAMPLE - Proper Specification Format:
-# Task Card Component Specification
+// INCORRECT ACTION:
+// 1. Follow the specification (lower priority)
+// 2. Use camelCase for the file name
+// 3. Leave the contradiction unresolved]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <non-negotiable priority="critical">
+      <description>When tasked with modifying code, ALWAYS generate and print a specification first.</description>
+      <examples>
+        <example title="Specification-First Development">
+          <correct-example title="Creating specification before code" conditions="Adding a new feature" expected-result="Specification precedes implementation" correctness-criteria="Creates specification first"><![CDATA[// CORRECT WORKFLOW:
+// 1. Create task_card.specs.md with complete requirements
+// 2. Only after completing the specification, implement code in task_card.tsx
+// 3. Ensure implementation matches the specification requirements]]></correct-example>
+          <incorrect-example title="Coding without specification" conditions="Adding a new feature" expected-result="Specification precedes implementation" incorrectness-criteria="Begins coding without a specification"><![CDATA[// INCORRECT WORKFLOW:
+// 1. Start coding in task_card.tsx without a specification
+// 2. Create specification after code is complete or not at all
+// 3. Implementation may not have clear requirements]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="high">
+      <description>Specifications must include: Technical requirements, Product requirements, Behavioral expectations, Interfaces, and Files/modules to be changed.</description>
+      <examples>
+        <example title="Complete Specification Content">
+          <correct-example title="Comprehensive specification" conditions="Creating a specification" expected-result="Complete specification with all required sections" correctness-criteria="Includes all required content sections"><![CDATA[# Task Card Component Specification
 
 ## Overview
 The Task Card component displays individual task information and supports drag-and-drop functionality.
@@ -374,244 +80,141 @@ The Task Card component displays individual task information and supports drag-a
 - Dragging should start after 150ms of mouse down
 
 ## Interfaces
-*/
-
-// ====================================================
-// EXEMPLARY SPECIFICATION AND CODE PAIR
-// ====================================================
-
-/*
-// EXEMPLARY SPECIFICATION (text_input.specs.md):
-# Text Input Component Specification
-
-## Overview
-The Text Input component provides a standardized, accessible text input field with support for validation, error states, and various input types.
-
-## Product Requirements
-- Support standard text input functionality with clear visual design
-- Provide visual feedback for different states (default, focus, error, disabled)
-- Include optional label and error message display
-- Support placeholder text when empty
-
-## Technical Requirements
-- Implement as a controlled component with React
-- Support all HTML input attributes relevant to text inputs
-- Ensure accessibility with proper ARIA attributes
-- Optimize for reusability across the application
-
-## Behavioral Expectations
-- Show error state when error prop is provided
-- Apply focus styling when the input receives focus
-- Display placeholder when value is empty and placeholder is provided
-- Trigger onChange callback when input value changes
-- Support disabled state that prevents user interaction
-
-## Interfaces
-type TextInputProps = {
-  // The current value of the input
-  value: string;
-  // Callback fired when the value changes
-  onChange: (value: string) => void;
-  // Optional label text to display above the input
-  label?: string;
-  // Optional placeholder text when input is empty
-  placeholder?: string;
-  // Optional error message to display below the input
-  error?: string;
-  // Whether the input is disabled
-  disabled?: boolean;
-  // HTML input type (text, password, email, etc.)
-  type?: string;
-  // Additional CSS class names
-  className?: string;
-  // Optional ID for the input element
-  id?: string;
-  // Optional test ID for testing
-  testId?: string;
+type TaskCardProps = {
+  task: Task;
+  onStatusChange: (taskId: string, status: Task['status']) => void;
 }
 
-## Examples
-// Basic usage
-<TextInput
-  value={email}
-  onChange={setEmail}
-  label="Email Address"
-  placeholder="Enter your email"
-/>
+## Files/Modules to be Changed
+- src/features/task_board/task_card.tsx - Create new component
+- src/features/task_board/task_board.tsx - Import and use TaskCard]]></correct-example>
+          <incorrect-example title="Incomplete specification" conditions="Creating a specification" expected-result="Complete specification with all required sections" incorrectness-criteria="Missing critical sections"><![CDATA[# Task Card Component Specification
 
-// With validation error
-<TextInput
-  value={password}
-  onChange={setPassword}
-  label="Password"
-  type="password"
-  error={passwordError}
-/>
+## Overview
+The Task Card component displays tasks.
 
-// Disabled state
-<TextInput
-  value={username}
-  onChange={setUsername}
-  label="Username"
-  disabled={isSubmitting}
-/>
-*/
+## Technical Requirements
+- Make it draggable
 
-/*
-// EXEMPLARY CODE (text_input.tsx):
-import React, { ChangeEvent, forwardRef } from 'react';
-import classNames from 'classnames';
+## Interfaces
+type TaskCardProps = {
+  task: Task;
+}]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Follow this discovery sequence for every code modification: Check package_specs.md in the target folder first, then file_name.specs.md in the same folder, and only proceed after understanding all specifications.</description>
+      <examples>
+        <example title="Specification Discovery Process">
+          <correct-example title="Proper discovery sequence" conditions="Before modifying code" expected-result="Complete understanding of all applicable specifications" correctness-criteria="Follows correct discovery sequence"><![CDATA[// When modifying src/features/task_board/task_list.tsx:
+// CORRECT PROCESS:
+// 1. First check: src/features/task_board/task_board.package_specs.md
+// 2. Then check: src/features/task_board/task_list.specs.md
+// 3. Only then modify src/features/task_board/task_list.tsx]]></correct-example>
+          <incorrect-example title="Skipping discovery steps" conditions="Before modifying code" expected-result="Complete understanding of all applicable specifications" incorrectness-criteria="Ignores discovery sequence"><![CDATA[// When modifying src/features/task_board/task_list.tsx:
+// INCORRECT PROCESS:
+// 1. Skip checking package specifications
+// 2. Check only task_list.specs.md
+// 3. Modify task_list.tsx immediately]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <non-negotiable priority="critical">
+      <description>ALWAYS RESPECT THE SPECIFICATIONS. Implement code based on the specifications. Follow EXACTLY the requirements from specifications. Implement ALL requirements that specifications require, PRECISELY.</description>
+      <examples>
+        <example title="Specification Compliance">
+          <correct-example title="Precise implementation of specification" conditions="Implementing a feature" expected-result="Code matches specification exactly" correctness-criteria="Implements all requirements precisely"><![CDATA[// Specification Requirement:
+// "Task cards must display a colored border based on priority:
+// - High: red border
+// - Medium: yellow border
+// - Low: green border"
 
-type TextInputProps = {
-  // The current value of the input
-  value: string;
-  // Callback fired when the value changes
-  onChange: (value: string) => void;
-  // Optional label text to display above the input
-  label?: string;
-  // Optional placeholder text when input is empty
-  placeholder?: string;
-  // Optional error message to display below the input
-  error?: string;
-  // Whether the input is disabled
-  disabled?: boolean;
-  // HTML input type (text, password, email, etc.)
-  type?: string;
-  // Additional CSS class names
-  className?: string;
-  // Optional ID for the input element
-  id?: string;
-  // Optional test ID for testing
-  testId?: string;
-};
+// CORRECT IMPLEMENTATION:
+const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
+  const borderColor = {
+    high: 'border-red-500',
+    medium: 'border-yellow-500',
+    low: 'border-green-500'
+  }[task.priority];
 
-export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
-  (
-    {
-      value,
-      onChange,
-      label,
-      placeholder,
-      error,
-      disabled = false,
-      type = 'text',
-      className,
-      id,
-      testId,
-    },
-    ref
-  ) => {
-    // Generate a unique ID if none provided
-    const inputId = id || `text-input-${Math.random().toString(36).substring(2, 9)}`;
+  return (
+    <div className={`border-2 ${borderColor} p-4 rounded`}>
+      <h3>{task.title}</h3>
+      {/* Rest of implementation */}
+    </div>
+  );
+};]]></correct-example>
+          <incorrect-example title="Implementation deviating from specification" conditions="Implementing a feature" expected-result="Code matches specification exactly" incorrectness-criteria="Deviates from specification requirements"><![CDATA[// Specification Requirement:
+// "Task cards must display a colored border based on priority:
+// - High: red border
+// - Medium: yellow border
+// - Low: green border"
 
-    // Handle input change
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-      onChange(e.target.value);
-    };
+// INCORRECT IMPLEMENTATION:
+const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
+  const backgroundColor = {
+    high: 'bg-red-100',
+    medium: 'bg-yellow-100',
+    low: 'bg-green-100'
+  }[task.priority];
 
-    // Determine CSS classes based on component state
-    const inputClasses = classNames(
-      'text-input',
-      {
-        'text-input--error': !!error,
-        'text-input--disabled': disabled,
-      },
-      className
-    );
+  return (
+    <div className={`${backgroundColor} p-4 rounded`}>
+      <h3>{task.title}</h3>
+      {/* Rest of implementation */}
+    </div>
+  );
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="high">
+      <description>Each specification must define components with a single responsibility (SOLID Principle: Single Responsibility).</description>
+      <examples>
+        <example title="Single Responsibility Principle">
+          <correct-example title="Component with single responsibility" conditions="Designing a component" expected-result="Focused component with clear responsibility" correctness-criteria="Adheres to Single Responsibility Principle"><![CDATA[// CORRECT SPECIFICATION:
+# UserProfile Specification
 
-    return (
-      <div className="text-input-container">
-        {label && (
-          <label htmlFor={inputId} className="text-input__label">
-            {label}
-          </label>
-        )}
+## Overview
+The UserProfile component is responsible for displaying user information.
 
-        <input
-          ref={ref}
-          id={inputId}
-          type={type}
-          value={value}
-          onChange={handleChange}
-          placeholder={placeholder}
-          disabled={disabled}
-          className={inputClasses}
-          aria-invalid={!!error}
-          data-testid={testId}
-        />
+## Technical Requirements
+- Display user name, avatar, and profile details
+- Support different display formats (compact/full)
+- Handle loading states
 
-        {error && <div className="text-input__error">{error}</div>}
-      </div>
-    );
-  }
-);
+## Interfaces
+type UserProfileProps = {
+  userId: string;
+  displayFormat?: 'compact' | 'full';
+}
 
-// Display name for debugging
-TextInput.displayName = 'TextInput';
-*/
+// Note: Authentication logic is handled separately in AuthService]]></correct-example>
+          <incorrect-example title="Component with mixed responsibilities" conditions="Designing a component" expected-result="Focused component with clear responsibility" incorrectness-criteria="Violates Single Responsibility Principle"><![CDATA[// INCORRECT SPECIFICATION:
+# UserProfile Specification
 
-// ====================================================
-// VALID VS INVALID SPECIFICATION FILE NAMING EXAMPLES
-// ====================================================
+## Overview
+The UserProfile component displays user information and handles authentication.
 
-/*
-// VALID SPECIFICATION FILE NAMES:
-1. Package specifications:
-   - src/features/auth/auth.package_specs.md
-   - src/components/forms/forms.package_specs.md
-   - src/services/api/api.package_specs.md
+## Technical Requirements
+- Display user name, avatar, and profile details
+- Handle user login and authentication
+- Manage authentication tokens and session
+- Display login form when user is not authenticated
 
-2. Individual file specifications:
-   - src/features/auth/login.specs.md (for login.tsx)
-   - src/components/forms/text_input.specs.md (for text_input.tsx)
-   - src/services/api/user_service.specs.md (for user_service.ts)
-   - src/utils/date_formatter.specs.md (for date_formatter.ts)
-*/
-
-/*
-// INVALID SPECIFICATION FILE NAMES:
-1. Wrong format:
-   - src/features/auth/auth-specs.md (incorrect separator, should use underscore)
-   - src/components/forms/textInput.specs.md (camelCase not allowed, use snake_case)
-   - src/features/auth/login.spec.md (singular "spec" instead of plural "specs")
-   - src/features/auth/login_specification.md (wrong suffix, use "specs.md")
-
-2. Wrong location:
-   - specs/auth/login.specs.md (should be in same directory as implementation)
-   - src/features/auth/specs/login.specs.md (should be in same directory as implementation)
-
-3. For invalid file types:
-   - src/styles/theme.specs.md (for theme.css - CSS files should not have specs)
-   - src/types/models.specs.md (for models.d.ts - type declaration files should not have specs)
-   - src/assets/icons.specs.md (for icon assets - assets should not have specs)
-   - src/config/app_config.specs.md (for app_config.json - config files should not have specs)
-*/
-
-// ====================================================
-// ENFORCING SPECIFICATION COMPLIANCE WITH RULES
-// ====================================================
-
-// 1. CONTRADICTIONS ARE INVALID: Any specification file that contradicts @conventions.mdc or @engineering_and_design_rules.mdc
-//    is INVALID and MUST be corrected immediately.
-//
-// 2. EXAMPLES OF CONTRADICTIONS THAT MAKE SPECIFICATIONS INVALID:
-//    a. BARREL FILES: If a specification file includes the use of index.ts barrel files, but @engineering_and_design_rules.mdc
-//       explicitly prohibits them, the specification is INVALID and must be updated to remove any mention of index.ts files.
-//
-//    b. FILE NAMING: If a specification file specifies camelCase file names, but @conventions.mdc requires snake_case,
-//       the specification is INVALID and must be updated to use snake_case file names.
-//
-//    c. COMPONENT STRUCTURE: If a specification file defines components that violate the component patterns specified
-//       in @conventions.mdc, the specification is INVALID and must be updated to follow the correct patterns.
-//
-// 3. CONTRADICTION RESOLUTION PROCEDURE:
-//    a. IDENTIFY the contradiction between the specification file and rule files
-//    b. UPDATE the specification file to remove or correct the contradiction
-//    c. MODIFY any existing code that was implemented based on the contradictory specification
-//    d. VERIFY that both specification file and implementation now comply with ALL rules
-//
-// 4. CONTINUOUS COMPLIANCE: All specification files must be continuously monitored for compliance with ALL rule files.
-//    When rules are updated, existing specification files might need to be reviewed and updated accordingly.
-//
-// 5. ABSOLUTE RULE: NO specification file MAY EVER contradict @conventions.mdc or @engineering_and_design_rules.mdc.
-//    If such a contradiction exists, the specification file MUST be updated to comply with the rules.
+## Interfaces
+type UserProfileProps = {
+  userId?: string;
+  onLogin: (username: string, password: string) => void;
+  onLogout: () => void;
+}]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+  </requirements>
+  <references>
+    <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
+    <reference as="dependency" href=".cursor/rules/conventions.mdc" reason="Follows project conventions">Defines fundamental project conventions</reference>
+  </references>
+</rule>

@@ -1,189 +1,155 @@
 ---
 description: Required project conventions
-globs:
+globs: "*.{ts,tsx,js,jsx}"
 alwaysApply: true
 ---
-// Project Conventions
-// This rule file defines coding conventions for the project
 
-// ====================================================
-// RULE COMPLIANCE AND CONTRADICTION HANDLING
-// ====================================================
+<rule>
+  <meta>
+    <title>Project Conventions</title>
+    <description>Defines coding conventions for the project that must be followed by all code and specifications</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <last-updated-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</last-updated-at>
+    <applies-to>
+      <file-matcher glob="*.{ts,tsx}">TypeScript and React files</file-matcher>
+      <file-matcher glob="*.{js,jsx}">JavaScript and React files</file-matcher>
+      <file-matcher glob="*.specs.md">Specification files</file-matcher>
+      <file-matcher glob="*.package_specs.md">Package specification files</file-matcher>
+    </applies-to>
+  </meta>
+  <requirements>
+    <non-negotiable priority="critical">
+      <description>ALL specification files MUST COMPLY with ALL conventions in this file. When a specification file CONTRADICTS any convention, the contradictory part is considered INVALID and must be updated.</description>
+      <examples>
+        <example title="Specification Compliance">
+          <correct-example title="Compliant specification" conditions="Creating a specification" expected-result="Specification follows conventions" correctness-criteria="Aligns with all project conventions"><![CDATA[# TaskList Component Specification
 
-// 1. ALL specification files (both <file_name_without_extension>.specs.md and <folder_name>.package_specs.md)
-//    MUST COMPLY with ALL conventions in this file
-// 2. When a specification file CONTRADICTS any convention in this file:
-//    a. The contradictory part of the specification file is considered INVALID
-//    b. The specification file MUST be updated to align with these conventions
-//    c. Any implementation based on the contradictory specification MUST also be corrected
-//
-// 3. EXAMPLES OF CONTRADICTIONS THAT MUST BE RESOLVED:
-//    a. If this file requires snake_case for files but a specification file specifies camelCase
-//    b. If this file requires certain import patterns but a specification file contradicts them
-//    c. If this file defines specific component patterns but a specification file specifies different ones
-//
-// 4. CONVENTION ENFORCEMENT: All conventions in this file are considered MANDATORY
-//    Any specification file or implementation that doesn't follow these conventions is INCORRECT
-//    and MUST be updated immediately to comply with these conventions.
+## Overview
+The TaskList component displays a list of tasks.
 
-// ====================================================
-// FILE AND DIRECTORY NAMING CONVENTIONS
-// ====================================================
+## Technical Requirements
+- File should be named task_list.tsx (snake_case)
+- Component should use absolute imports with @/ prefix
+- Component should use React.FC with explicit props type]]></correct-example>
+          <incorrect-example title="Non-compliant specification" conditions="Creating a specification" expected-result="Specification follows conventions" incorrectness-criteria="Contradicts project conventions"><![CDATA[# TaskList Component Specification
 
-// Use snake_case for all file and directory names
-// Examples:
-// CORRECT:
-//   ✓ project_board.tsx
-//   ✓ task_list.tsx
-//   ✓ utils.ts
-//   ✓ task_card/
-//   ✓ design_kit/
-// INCORRECT:
-//   ✗ ProjectBoard.tsx
-//   ✗ taskList.tsx
-//   ✗ TaskList.tsx
-//   ✗ task-card/
-//   ✗ DesignKit/
+## Overview
+The TaskList component displays a list of tasks.
 
-// ====================================================
-// IMPORT CONVENTIONS
-// ====================================================
+## Technical Requirements
+- File should be named TaskList.tsx (PascalCase)
+- Component should use relative imports
+- Component should use function syntax without React.FC]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="high">
+      <description>Use snake_case for all file and directory names.</description>
+      <examples>
+        <example title="File and Directory Naming">
+          <correct-example title="Proper snake_case naming" conditions="Creating files and directories" expected-result="Names follow snake_case convention" correctness-criteria="Uses snake_case correctly"><![CDATA[project_board.tsx
+task_list.tsx
+utils.ts
+task_card/
+design_kit/]]></correct-example>
+          <incorrect-example title="Improper naming conventions" conditions="Creating files and directories" expected-result="Names follow snake_case convention" incorrectness-criteria="Uses other conventions instead of snake_case"><![CDATA[ProjectBoard.tsx
+taskList.tsx
+TaskList.tsx
+task-card/
+DesignKit/]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Use absolute imports with @/ prefix.</description>
+      <examples>
+        <example title="Import Statements">
+          <correct-example title="Proper absolute imports" conditions="Importing modules" expected-result="Imports use absolute paths with @/ prefix" correctness-criteria="Uses absolute imports with @/ prefix"><![CDATA[import { Button } from '@/ui/base/design_kit/button/button';
+import { Task } from '@/types';
+import { cn } from '@/lib/utils';]]></correct-example>
+          <incorrect-example title="Improper relative imports" conditions="Importing modules" expected-result="Imports use absolute paths" incorrectness-criteria="Uses relative paths"><![CDATA[import { Button } from '../../ui/base/design_kit/button/button';
+import { Task } from '../types';
+import { cn } from './utils';]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="medium">
+      <description>Extract hardcoded values into constants files.</description>
+      <examples>
+        <example title="Constants Usage">
+          <correct-example title="Properly extracted constants" conditions="Using constant values" expected-result="Values are in constant files" correctness-criteria="Uses imported constants"><![CDATA[import { PROJECT_ID, TASK_IDS } from '@/constants/ids';
+import { COLORS } from '@/ui/theme/colors';
 
-// Use absolute imports with @/ prefix
-// Examples:
-// CORRECT:
-//   ✓ import { Button } from '@/ui/base/design_kit/button/button';
-//   ✓ import { Task } from '@/types';
-//   ✓ import { cn } from '@/lib/utils';
-// INCORRECT:
-//   ✗ import { Button } from '../../ui/base/design_kit/button/button';
-//   ✗ import { Task } from '../types';
-//   ✗ import { cn } from './utils';
+const TaskCard = () => {
+  return (
+    <div id={PROJECT_ID.WEBSITE_REDESIGN}>
+      <span className={COLORS.priority.high}>High Priority</span>
+    </div>
+  );
+};]]></correct-example>
+          <incorrect-example title="Hardcoded values" conditions="Using constant values" expected-result="Values are in constant files" incorrectness-criteria="Uses inline hardcoded values"><![CDATA[const TaskCard = () => {
+  return (
+    <div id="website-redesign">
+      <span className="bg-red-500 text-white">High Priority</span>
+    </div>
+  );
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Use types instead of interfaces for most cases, except when defining a contract for class implementation, needing declaration merging, or working with multiple implementations of the same contract.</description>
+      <examples>
+        <example title="Type Definitions">
+          <correct-example title="Proper type usage" conditions="Defining data structures" expected-result="Uses types for data models" correctness-criteria="Uses types for data structures"><![CDATA[type Task = {
+  id: string;
+  title: string;
+  status: 'todo' | 'in-progress' | 'done';
+};
 
-// ====================================================
-// PROJECT STRUCTURE CONVENTIONS
-// ====================================================
-
-/*
-Project Structure:
-
-/src
-  /features - Feature-specific modules that wire components together
-    /project_board
-    /task_management
-  /ui - UI components
-    /base - Primitive UI components
-      /design_kit - Basic design system components
-        /button
-        /input
-        /select
-        /textarea
-    /features - Complex reusable UI components
-      /task_card
-      /task_modal
-  /lib - Utility functions and helpers
-  /types.ts - Type definitions
-  /app.tsx - Main application
-  /main.tsx - Entry point
-*/
-
-// ====================================================
-// CONSTANTS AND THEME CONVENTIONS
-// ====================================================
-
-// Extract hardcoded values into constants files
-// Examples:
-
-// 1. IDs should be in a constants file:
-// CORRECT:
-//   ✓ import { PROJECT_ID, TASK_IDS } from '@/constants/ids';
-//   ✓ id: PROJECT_ID.WEBSITE_REDESIGN
-// INCORRECT:
-//   ✗ id: '1'
-//   ✗ id: 'website-redesign'
-
-// 2. Colors should use a theme configuration:
-// CORRECT:
-//   ✓ import { COLORS } from '@/ui/theme/colors';
-//   ✓ const priorityColors = COLORS.priority;
-// INCORRECT:
-//   ✗ low: 'bg-blue-100 text-blue-800',
-//   ✗ const highPriorityColor = '#FF0000';
-
-// 3. Component styles should be extracted:
-// CORRECT:
-//   ✓ import { BUTTON_STYLES } from '@/ui/base/design_kit/button/button_styles';
-//   ✓ const { base, variants, sizes } = BUTTON_STYLES;
-// INCORRECT:
-//   ✗ const baseStyles = 'rounded-md font-medium...';
-//   ✗ <button className="px-4 py-2 bg-blue-500 text-white rounded">Click me</button>
-
-// ====================================================
-// TYPE CONVENTIONS
-// ====================================================
-
-// Use types instead of interfaces for most cases
-// Only use interfaces when:
-// 1. You're defining a contract that will be implemented by a class
-// 2. You need declaration merging
-// 3. You're working with multiple implementations of the same contract
-
-// Examples:
-// CORRECT:
-//   ✓ type Task = {
-//       id: string;
-//       title: string;
-//       status: 'todo' | 'in-progress' | 'done';
-//     };
-//
-//   ✓ type ButtonProps = {
-//       variant?: 'primary' | 'secondary' | 'ghost';
-//       size?: 'sm' | 'md' | 'lg';
-//     } & React.ButtonHTMLAttributes<HTMLButtonElement>;
-//
-//   ✓ // Interface for a service contract that will have implementations
-//     interface TaskService {
-//       getTasks(): Promise<Task[]>;
-//       createTask(task: Omit<Task, 'id'>): Promise<Task>;
-//     }
-//
-// INCORRECT:
-//   ✗ interface Task {
-//       id: string;
-//       title: string;
-//       status: 'todo' | 'in-progress' | 'done';
-//     }
-//
-//   ✗ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-//       variant?: 'primary' | 'secondary' | 'ghost';
-//       size?: 'sm' | 'md' | 'lg';
-//     }
-
-// Use explicit type annotations
-// Examples:
-// CORRECT:
-//   ✓ const [project, setProject] = useState<Project>(initialProject);
-//   ✓ const handleTaskUpdate = (taskId: string, newStatus: Task['status']) => {...}
-// INCORRECT:
-//   ✗ const [project, setProject] = useState(initialProject);
-//   ✗ const handleTaskUpdate = (taskId, newStatus) => {...}
-
-// Use union types with string literals over enums
-// Examples:
-// CORRECT:
-//   ✓ type TaskStatus = 'todo' | 'in-progress' | 'done';
-// INCORRECT:
-//   ✗ enum TaskStatus { TODO, IN_PROGRESS, DONE }
-
-// ====================================================
-// COMPONENT CONVENTIONS
-// ====================================================
-
-// 1. Use function component syntax with React.FC and explicit props type
-// Example:
-/*
-CORRECT:
 type ButtonProps = {
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+
+// Interface for a service contract that will have implementations
+interface TaskService {
+  getTasks(): Promise<Task[]>;
+  createTask(task: Omit<Task, 'id'>): Promise<Task>;
+}]]></correct-example>
+          <incorrect-example title="Improper interface usage" conditions="Defining data structures" expected-result="Uses types for data models" incorrectness-criteria="Uses interfaces for simple data structures"><![CDATA[interface Task {
+  id: string;
+  title: string;
+  status: 'todo' | 'in-progress' | 'done';
+}
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+}]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="medium">
+      <description>Use explicit type annotations when defining state and function parameters.</description>
+      <examples>
+        <example title="Type Annotations">
+          <correct-example title="Proper type annotations" conditions="Defining state and functions" expected-result="Explicit type annotations" correctness-criteria="Includes explicit type annotations"><![CDATA[const [project, setProject] = useState<Project>(initialProject);
+const handleTaskUpdate = (taskId: string, newStatus: Task['status']) => {
+  // implementation
+};]]></correct-example>
+          <incorrect-example title="Missing type annotations" conditions="Defining state and functions" expected-result="Explicit type annotations" incorrectness-criteria="Relies on type inference"><![CDATA[const [project, setProject] = useState(initialProject);
+const handleTaskUpdate = (taskId, newStatus) => {
+  // implementation
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Use function component syntax with React.FC and explicit props type.</description>
+      <examples>
+        <example title="Component Definition">
+          <correct-example title="Proper component syntax" conditions="Defining React components" expected-result="Uses React.FC with explicit props" correctness-criteria="Uses recommended component syntax"><![CDATA[type ButtonProps = {
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
@@ -196,10 +162,8 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   // Component implementation
-};
-
-INCORRECT:
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+};]]></correct-example>
+          <incorrect-example title="Improper component syntax" conditions="Defining React components" expected-result="Uses React.FC with explicit props" incorrectness-criteria="Uses function declaration without React.FC"><![CDATA[interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
 }
@@ -207,228 +171,51 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = (props) => {
   const { children, className, variant = 'primary', size = 'md', ...rest } = props;
   // Component implementation
-};
-*/
-
-// 2. Keep components focused and extract complex logic
-// Example:
-/*
-CORRECT:
-// Separate hooks for complex logic
-type UseTaskManagementReturn = {
-  tasks: Task[];
-  updateTaskStatus: (taskId: string, status: Task['status']) => void;
-};
-
-const useTaskManagement = (initialTasks: Task[]): UseTaskManagementReturn => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-
-  const updateTaskStatus = (taskId: string, status: Task['status']) => {
-    setTasks(prev =>
-      prev.map(task => task.id === taskId ? {...task, status} : task)
-    );
-  };
-
-  return { tasks, updateTaskStatus };
-};
-
-// Use in component
-type TaskBoardProps = {
-  initialTasks: Task[];
-};
-
-export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
-  const { tasks, updateTaskStatus } = useTaskManagement(initialTasks);
-
-  // Component rendering logic
-};
-
-INCORRECT:
-interface TaskBoardProps {
-  initialTasks: Task[];
-}
-
-export const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks }) => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-
-  // Complex logic mixed with component
-  const updateTaskStatus = (taskId: string, status: Task['status']) => {
-    setTasks(prev =>
-      prev.map(task => task.id === taskId ? {...task, status} : task)
-    );
-  };
-
-  // More complex functions...
-
-  // Component rendering logic
-};
-*/
-
-// 3. Implement the bare minimum needed to fulfill specifications
-// Example:
-/*
-CORRECT:
-// Only implementing what's required in specifications
-type TaskCardProps = {
-  task: Task;
-  onStatusChange: (taskId: string, status: Task['status']) => void;
-};
-
-export const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange }) => {
-  const handleStatusChange = (status: Task['status']) => {
-    onStatusChange(task.id, status);
-  };
-
-  return (
-    <div className="p-4 bg-white rounded shadow">
-      <h3 className="font-medium">{task.title}</h3>
-      <StatusSelector
-        currentStatus={task.status}
-        onChange={handleStatusChange}
-      />
-    </div>
-  );
-};
-
-INCORRECT:
-// Adding extra features not specified in requirements
-type TaskCardProps = {
-  task: Task;
-  onStatusChange: (taskId: string, status: Task['status']) => void;
-};
-
-export const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Extra unspecified functionality
-  const handleStatusChange = (status: Task['status']) => {
-    onStatusChange(task.id, status);
-  };
-
-  return (
-    <div
-      className={`p-4 bg-white rounded shadow ${isHovered ? 'shadow-lg' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={() => setIsExpanded(!isExpanded)}
-    >
-      <h3 className="font-medium">{task.title}</h3>
-      {isExpanded && <p>{task.description}</p>}
-      <StatusSelector
-        currentStatus={task.status}
-        onChange={handleStatusChange}
-      />
-      {/* Unspecified extra features */}
-      <button onClick={(e) => { e.stopPropagation(); console.log('Extra action'); }}>
-        Extra Action
-      </button>
-    </div>
-  );
-};
-*/
-
-// ====================================================
-// STATE MANAGEMENT CONVENTIONS
-// ====================================================
-
-// 1. Use useState for component-level state
-// Example:
-/*
-CORRECT:
-const [isEditing, setIsEditing] = useState(false);
-const [task, setTask] = useState<Task>(initialTask);
-
-INCORRECT:
-let isEditing = false;
-let task = initialTask;
-const toggleEditing = () => { isEditing = !isEditing; };
-*/
-
-// 2. Use callbacks for state updates
-// Example:
-/*
-CORRECT:
-const handleTaskUpdate = (updatedTask: Task) => {
-  setTask(updatedTask);
-};
-
-const handleStatusChange = (status: Task['status']) => {
-  onStatusChange(status);
-};
-
-INCORRECT:
-const handleTaskUpdate = () => {
-  task.status = 'completed'; // Mutating state directly
-  setTask(task);
-};
-*/
-
-// ====================================================
-// EVENT HANDLER CONVENTIONS
-// ====================================================
-
-// 1. Prefix event handlers with 'handle'
-// Example:
-/*
-CORRECT:
-const handleSubmit = (e: React.FormEvent) => {
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="medium">
+      <description>Prefix event handlers with 'handle'.</description>
+      <examples>
+        <example title="Event Handler Naming">
+          <correct-example title="Proper handler naming" conditions="Creating event handlers" expected-result="Handlers are prefixed with 'handle'" correctness-criteria="Uses 'handle' prefix"><![CDATA[const handleSubmit = (e: React.FormEvent) => {
   e.preventDefault();
   onSave(task);
 };
 
 const handleDragStart = (e: React.DragEvent) => {
   e.dataTransfer.setData('taskId', task.id);
-};
-
-INCORRECT:
-const submitForm = (e: React.FormEvent) => {
+};]]></correct-example>
+          <incorrect-example title="Improper handler naming" conditions="Creating event handlers" expected-result="Handlers are prefixed with 'handle'" incorrectness-criteria="Lacks 'handle' prefix"><![CDATA[const submitForm = (e: React.FormEvent) => {
   e.preventDefault();
   onSave(task);
 };
 
 const dragStart = (e: React.DragEvent) => {
   e.dataTransfer.setData('taskId', task.id);
-};
-*/
-
-// 2. Use explicit event types
-// Example:
-/*
-CORRECT:
-const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  onChange({ ...task, title: e.target.value });
-};
-
-INCORRECT:
-const handleChange = (e) => {
-  onChange({ ...task, title: e.target.value });
-};
-*/
-
-// ====================================================
-// CSS & STYLING CONVENTIONS
-// ====================================================
-
-// 1. Use className with Tailwind CSS utilities
-// Example:
-/*
-CORRECT:
-<div className="p-4 rounded-lg shadow-sm bg-gray-100 transition-all hover:shadow-md">
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="medium">
+      <description>Use className with Tailwind CSS utilities for styling components.</description>
+      <examples>
+        <example title="Component Styling">
+          <correct-example title="Proper Tailwind usage" conditions="Styling components" expected-result="Uses Tailwind CSS classes" correctness-criteria="Uses className with Tailwind utilities"><![CDATA[<div className="p-4 rounded-lg shadow-sm bg-gray-100 transition-all hover:shadow-md">
   <h3 className="font-semibold text-gray-800">{task.title}</h3>
-</div>
-
-INCORRECT:
-<div style={{ padding: '1rem', borderRadius: '0.5rem', backgroundColor: '#f3f4f6' }}>
+</div>]]></correct-example>
+          <incorrect-example title="Inline styles" conditions="Styling components" expected-result="Uses Tailwind CSS classes" incorrectness-criteria="Uses inline styles"><![CDATA[<div style={{ padding: '1rem', borderRadius: '0.5rem', backgroundColor: '#f3f4f6' }}>
   <h3 style={{ fontWeight: 600, color: '#1f2937' }}>{task.title}</h3>
-</div>
-*/
-
-// 2. Use cn utility for conditional classes
-// Example:
-/*
-CORRECT:
-import { cn } from '@/lib/utils';
+</div>]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="medium">
+      <description>Use cn utility for conditional classes.</description>
+      <examples>
+        <example title="Conditional Class Names">
+          <correct-example title="Using cn utility" conditions="Combining class names" expected-result="Uses cn utility" correctness-criteria="Properly uses cn for class composition"><![CDATA[import { cn } from '@/lib/utils';
 
 <button
   className={cn(
@@ -440,85 +227,18 @@ import { cn } from '@/lib/utils';
   {...props}
 >
   {children}
-</button>
-
-INCORRECT:
-<button
+</button>]]></correct-example>
+          <incorrect-example title="String concatenation" conditions="Combining class names" expected-result="Uses cn utility" incorrectness-criteria="Uses string template literals"><![CDATA[<button
   className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
   {...props}
 >
   {children}
-</button>
-*/
-
-// ====================================================
-// DESTRUCTURING CONVENTIONS
-// ====================================================
-
-// Use destructuring for props
-// Example:
-/*
-CORRECT:
-type TaskCardProps = {
-  task: Task;
-  onStatusChange: (status: Task['status']) => void;
-  onEdit: (task: Task) => void;
-};
-
-export const TaskCard: React.FC<TaskCardProps> = ({
-  task: initialTask,
-  onStatusChange,
-  onEdit,
-}) => {
-  // Component implementation
-};
-
-INCORRECT:
-interface TaskCardProps {
-  task: Task;
-  onStatusChange: (status: Task['status']) => void;
-  onEdit: (task: Task) => void;
-}
-
-export const TaskCard: React.FC<TaskCardProps> = (props) => {
-  const initialTask = props.task;
-  const onStatusChange = props.onStatusChange;
-  const onEdit = props.onEdit;
-  // Component implementation
-};
-*/
-
-// ====================================================
-// SPECIFICATION REFERENCE CONVENTIONS
-// ====================================================
-
-// 1. Always reference specifications in your code when implementing requirements
-// Example:
-/*
-CORRECT:
-// Implements task drag-and-drop as specified in task_card.specs.md
-export const TaskDragLayer: React.FC = () => {
-  // Implementation that fulfills specifications
-};
-
-INCORRECT:
-export const TaskDragLayer: React.FC = () => {
-  // Implementation without reference to specifications
-};
-*/
-
-// 2. When making assumptions or design decisions, document them in specifications first
-// Example:
-/*
-CORRECT:
-// Assuming tasks are sorted by priority from API (see task_service.specs.md)
-const renderTasksByPriority = () => {
-  // Implementation based on documented assumption
-};
-
-INCORRECT:
-// Making undocumented assumptions
-const renderTasksByPriority = () => {
-  // Implementation relies on undocumented assumption about task ordering
-};
-*/
+</button>]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+  </requirements>
+  <references>
+    <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
+  </references>
+</rule>

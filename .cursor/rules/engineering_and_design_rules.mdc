@@ -1,418 +1,602 @@
-// Engineering and Design Rules
-// This rule file defines engineering and design principles for sustainable, maintainable, and high-quality code.
-// CRITICAL NOTE: These principles are ALWAYS subordinate to specifications (@specifications.mdc) and conventions (@conventions.mdc).
+---
+description: Engineering and design principles for sustainable, maintainable, and high-quality code
+globs: "*.{ts,tsx,js,jsx}"
+alwaysApply: true
+---
 
-// ====================================================
-// SPECIFICATION PRIMACY - MOST IMPORTANT RULE
-// ====================================================
+<rule>
+  <meta>
+    <title>Engineering and Design Principles</title>
+    <description>Defines engineering and design principles for sustainable, maintainable, and high-quality code</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <last-updated-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</last-updated-at>
+    <applies-to>
+      <file-matcher glob="*.{ts,tsx}">TypeScript and React files</file-matcher>
+      <file-matcher glob="*.{js,jsx}">JavaScript and React files</file-matcher>
+      <file-matcher glob="*.specs.md">Specification files</file-matcher>
+      <file-matcher glob="*.package_specs.md">Package specification files</file-matcher>
+    </applies-to>
+  </meta>
+  <requirements>
+    <non-negotiable priority="critical">
+      <description>ALWAYS RESPECT THE SPECIFICATIONS. When specifications and engineering principles conflict, SPECIFICATIONS ALWAYS WIN.</description>
+      <examples>
+        <example title="Specification Primacy">
+          <correct-example title="Following specifications exactly" conditions="When implementing features" expected-result="Code implements specification exactly" correctness-criteria="Follows specifications precisely"><![CDATA[// Specification states:
+// "Use a class component with lifecycle methods for the UserProfile component"
 
-// 1. ALWAYS RESPECT THE SPECIFICATIONS. This rule supersedes all other engineering principles.
-// 2. Implement code based on the specifications EXACTLY as they are defined.
-// 3. Follow ALL requirements from specifications PRECISELY and COMPLETELY.
-// 4. NEVER deviate from specifications, even when engineering principles suggest otherwise.
-// 5. When specifications and engineering principles conflict, SPECIFICATIONS ALWAYS WIN.
-// 6. ALWAYS refer to @specifications.mdc for the definitive rules on specification creation, discovery, and compliance.
+// CORRECT IMPLEMENTATION:
+class UserProfile extends React.Component<UserProfileProps, UserProfileState> {
+  componentDidMount() {
+    // Fetch user data
+  }
 
-// 7. IMPORTANT EXCEPTION: When specification files (both <file_name_without_extension>.specs.md and <folder_name>.package_specs.md)
-//    CONTRADICT rules in this file or @conventions.mdc:
-//    a. The contradictory parts of the specification files are considered INVALID
-//    b. The specification files MUST be updated to remove or correct the contradictions
-//    c. Any code implementations based on the contradictory specifications MUST also be corrected
-//    d. ALL specification files MUST COMPLY with ALL rules defined in these rule files
+  componentDidUpdate(prevProps: UserProfileProps) {
+    // Check if user ID changed and refetch
+  }
 
-// 8. EXAMPLES OF CONTRADICTIONS THAT MUST BE RESOLVED:
-//    a. If this file prohibits index.ts files but a specification file includes them - UPDATE THE SPECIFICATION
-//    b. If this file requires specific design patterns but a specification file specifies different ones - UPDATE THE SPECIFICATION
-//    c. If this file defines interface design principles but a specification file contradicts them - UPDATE THE SPECIFICATION
+  render() {
+    // Render user profile
+  }
+}]]></correct-example>
+          <incorrect-example title="Deviating from specifications" conditions="When implementing features" expected-result="Code implements specification exactly" incorrectness-criteria="Chooses different approach than specification"><![CDATA[// Specification states:
+// "Use a class component with lifecycle methods for the UserProfile component"
 
-// CORRECT vs INCORRECT Examples:
-// CORRECT:
-//   ✓ Following the exact component structure defined in specifications
-//   ✓ Implementing all behavior specified in the specification, even if it seems redundant
-//   ✓ Using the exact naming conventions and interfaces as defined in the specifications
-//   ✓ Identifying contradictions in specification files and updating them to align with these rules
-// INCORRECT:
-//   ✗ "Improving" on specifications by changing the design without approval
-//   ✗ Omitting required functionality because it seems unnecessary
-//   ✗ Changing interface definitions from what's specified in the specifications
-//   ✗ Implementing specification files that contradict these rules without updating the specifications first
+// INCORRECT IMPLEMENTATION:
+// Choosing to use a function component with hooks instead
+const UserProfile: React.FC<UserProfileProps> = (props) => {
+  const [userData, setUserData] = useState<UserData | null>(null);
 
-// ====================================================
-// CODE ORGANIZATION PRINCIPLES
-// ====================================================
+  useEffect(() => {
+    // Fetch user data
+  }, [props.userId]);
 
-// 1. Prefer carefully rewriting existing code rather than solving a problem simply by generating more and more code.
-// 2. If a file gets too big anyway, consider refactoring (BUT ALWAYS RESPECT SPECIFICATIONS as defined in @specifications.mdc).
-// 3. Prefer modularity in general - break down complex functionality into smaller, focused components.
-// 4. ALWAYS follow project conventions defined in @conventions.mdc.
-// 5. Build reasonable abstractions that balance flexibility and simplicity.
-// 6. Keep files and components relatively small, but NEVER refactor solely based on file size if it contradicts specifications.
-// 7. Follow the project structure and file naming conventions defined in @conventions.mdc.
-// 8. Follow the specification creation, discovery, and update workflow exactly as defined in @specifications.mdc.
-// 9. Prefer composition and dependency injection over inheritance wherever possible.
-// 10. NEVER EVER create index.ts files just for re-exporting files. These barrel files are strictly prohibited.
-// 11. If code is not used (transitively or directly) by any entry points and has no specifications, it MUST be deleted.
+  return (
+    // Render user profile
+  );
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="high">
+      <description>When specification files CONTRADICT rules in this file or @conventions.mdc, the contradictory parts of the specification files are considered INVALID and must be updated.</description>
+      <examples>
+        <example title="Handling Specification Contradictions">
+          <correct-example title="Updating contradictory specifications" conditions="When specifications contradict rules" expected-result="Specification is updated to match rules" correctness-criteria="Identifies and fixes contradiction"><![CDATA[// Rule states: "NEVER create index.ts barrel files"
+// Specification incorrectly states: "Create an index.ts file to export all components"
 
-// CORRECT vs INCORRECT Examples:
-// CORRECT:
-//   ✓ Refactoring a 300-line component into smaller sub-components with clear responsibilities
-//   ✓ Optimizing existing code paths before adding new ones
-//   ✓ Consolidating duplicate logic into shared utilities
-//   ✓ Following the file structure defined in specifications exactly
-//   ✓ Composing behavior through component composition rather than inheritance
-//   ✓ Importing directly from specific files rather than using barrel files
-//   ✓ Deleting unused code that has no specifications
-// INCORRECT:
-//   ✗ Adding more and more code to solve new requirements without revisiting existing architecture
-//   ✗ Creating components that try to do too many things
-//   ✗ Refactoring code when specifications explicitly require the current structure
-//   ✗ Breaking specifications to achieve "cleaner" code
-//   ✗ Using inheritance hierarchies when composition would be clearer
-//   ✗ Creating index.ts files that just re-export other files
-//   ✗ Keeping unused code with no specifications "just in case"
+// CORRECT APPROACH:
+// 1. Identify the contradiction
+// 2. Update the specification to remove the contradictory requirement:
+//    "Export components directly from their individual files"
+// 3. Implement according to the updated specification]]></correct-example>
+          <incorrect-example title="Following contradictory specifications" conditions="When specifications contradict rules" expected-result="Specification is updated to match rules" incorrectness-criteria="Implements contradictory specification"><![CDATA[// Rule states: "NEVER create index.ts barrel files"
+// Specification incorrectly states: "Create an index.ts file to export all components"
 
-// ====================================================
-// CODE QUALITY REQUIREMENTS
-// ====================================================
+// INCORRECT APPROACH:
+// 1. Ignore the rule
+// 2. Implement according to the contradictory specification
+// 3. Create index.ts barrel files as specified]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <non-negotiable priority="critical">
+      <description>NEVER EVER create index.ts files just for re-exporting files. These barrel files are strictly prohibited.</description>
+      <examples>
+        <example title="Barrel File Prohibition">
+          <correct-example title="Direct imports" conditions="Importing multiple components" expected-result="Imports directly from source files" correctness-criteria="Avoids barrel files"><![CDATA[// CORRECT APPROACH:
+import { Button } from '@/components/button/button';
+import { Input } from '@/components/input/input';
+import { Select } from '@/components/select/select';]]></correct-example>
+          <incorrect-example title="Using barrel files" conditions="Importing multiple components" expected-result="Imports directly from source files" incorrectness-criteria="Creates or uses barrel files"><![CDATA[// INCORRECT APPROACH:
+// First creating a barrel file (index.ts):
+export { Button } from './button';
+export { Input } from './input';
+export { Select } from './select';
 
-// For code to be considered ready for review or commit, it MUST meet ALL of the following criteria:
-// 1. The code MUST compile successfully without any build errors
-// 2. ALL type errors MUST be resolved completely
-// 3. Type casting using 'as' MUST be avoided:
-//    a. Use type guards (e.g., typeof, instanceof) instead
-//    b. Use type assertions with proper narrowing (e.g., if-statements)
-//    c. Use generics to maintain type safety
-//    d. Use the 'satisfies' operator when appropriate
-// 4. ALL lint errors MUST be resolved without exception
-// 5. These requirements apply to ALL code, including temporary or experimental code
+// Then importing from the barrel:
+import { Button, Input, Select } from '@/components';]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="high">
+      <description>Type casting using 'as' MUST be avoided. Use type guards, proper type assertions with narrowing, generics, or the 'satisfies' operator instead.</description>
+      <examples>
+        <example title="Type Safety">
+          <correct-example title="Proper type handling" conditions="Dealing with unknown types" expected-result="Type-safe code without 'as'" correctness-criteria="Uses proper type safety techniques"><![CDATA[// Using type guards
+function isUser(obj: unknown): obj is User {
+  return obj !== null && typeof obj === 'object' && 'id' in obj;
+}
 
-// CORRECT vs INCORRECT Examples:
-// CORRECT:
-//   ✓ function isUser(obj: unknown): obj is User { return obj !== null && typeof obj === 'object' && 'id' in obj; }
-//   ✓ const user = data as unknown; if (isUser(user)) { /* user is now typed as User */ }
-//   ✓ function getItem<T>(items: T[], id: string): T | undefined { return items.find(item => item.id === id); }
-//   ✓ const config = { theme: 'dark', timeout: 1000 } satisfies AppConfig;
-//   ✓ Fixing all lint errors before committing code
-//   ✓ Ensuring code compiles without errors before considering it complete
-// INCORRECT:
-//   ✗ const user = data as User; // Using 'as' type casting without proper checks
-//   ✗ Ignoring type errors with // @ts-ignore or // @ts-expect-error without justification
-//   ✗ Committing code with lint errors
-//   ✗ Considering code "done" when it has type errors
-//   ✗ Using any to bypass type checking instead of proper typing
+const data = fetchData();
+if (isUser(data)) {
+  // data is now typed as User
+  console.log(data.id);
+}
 
-// ====================================================
-// SOLID PRINCIPLES - COMPREHENSIVE IMPLEMENTATION
-// ====================================================
+// Using generics
+function getItem<T>(items: T[], id: string): T | undefined {
+  return items.find(item => item.id === id);
+}
 
-// These principles MUST be followed when designing and implementing components, BUT ONLY WHEN they align with specifications.
-// For guidance on how to apply SOLID principles to specifications themselves, refer to the "SOLID PRINCIPLES IN SPECIFICATIONS"
-// section in @specifications.mdc.
+// Using satisfies
+const config = { theme: 'dark', timeout: 1000 } satisfies AppConfig;]]></correct-example>
+          <incorrect-example title="Unsafe type casting" conditions="Dealing with unknown types" expected-result="Type-safe code without 'as'" incorrectness-criteria="Uses unsafe type assertions"><![CDATA[// Unsafe type casting with 'as'
+const user = data as User;
+console.log(user.id); // Might fail at runtime
 
-// 1. SINGLE RESPONSIBILITY PRINCIPLE (SRP):
-//    Each component/module/class should have one and only one reason to change.
-//    - Components should have a single, well-defined responsibility
-//    - Avoid mixing unrelated concerns in the same component
-//    - When a component handles multiple responsibilities, extract them into separate components
-//    - However, NEVER violate specifications for the sake of SRP
+// Ignoring type errors
+// @ts-ignore
+const items = getItems();
 
-// CORRECT vs INCORRECT SRP Examples:
-// CORRECT:
-//   ✓ A TaskCard component that only displays task information and handles its UI interactions
-//   ✓ Separating API data fetching into a dedicated service or hook
-//   ✓ Extracting validation logic into a separate validator module
-// INCORRECT:
-//   ✗ A UserProfile component that also handles authentication, navigation, and data fetching
-//   ✗ A utility function that both formats data and makes API calls
-//   ✗ Breaking a component into smaller parts when specifications require it to be a single unit
+// Using 'any' to bypass type checking
+function processData(data: any) {
+  return data.value;
+}]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Follow the Single Responsibility Principle (SRP): Each component should have one and only one reason to change.</description>
+      <examples>
+        <example title="Single Responsibility">
+          <correct-example title="Component with single responsibility" conditions="Designing components" expected-result="Focused components with clear responsibilities" correctness-criteria="Follows SRP"><![CDATA[// TaskCard component only responsible for displaying a task
+const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange }) => {
+  return (
+    <div className="task-card">
+      <h3>{task.title}</h3>
+      <p>{task.description}</p>
+      <StatusSelector
+        status={task.status}
+        onChange={(status) => onStatusChange(task.id, status)}
+      />
+    </div>
+  );
+};
 
-// 2. OPEN/CLOSED PRINCIPLE (OCP):
-//    Components should be open for extension but closed for modification.
-//    - Design components that can be extended without modifying their source code
-//    - Use composition, props, and dependency injection to modify behavior
-//    - Allow for customization through well-defined extension points
-//    - But ALWAYS validate extensions against specifications
+// Separate hook for data fetching logic
+const useTaskData = (taskId: string) => {
+  const [task, setTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
 
-// CORRECT vs INCORRECT OCP Examples:
-// CORRECT:
-//   ✓ A Button component that accepts render props for custom content
-//   ✓ A Table component that can be extended with custom cell renderers
-//   ✓ Using strategy pattern for pluggable behaviors as specified in specs
-//   ✓ Composing behavior through props rather than inheritance
-// INCORRECT:
-//   ✗ Hardcoding behaviors that will likely need to change
-//   ✗ Using internal if/else logic instead of accepting strategy components
-//   ✗ Modifying core component code for feature-specific behavior
-//   ✗ Creating deep inheritance hierarchies instead of using composition
+  useEffect(() => {
+    const fetchTask = async () => {
+      setLoading(true);
+      const data = await taskService.getTask(taskId);
+      setTask(data);
+      setLoading(false);
+    };
 
-// 3. LISKOV SUBSTITUTION PRINCIPLE (LSP):
-//    Subtypes must be substitutable for their base types without altering the correctness of the program.
-//    - Child components should maintain the interface of parent components
-//    - Specialized components should not break expectations set by base components
-//    - When extending a component, preserve its core behavior
-//    - But NEVER violate specifications in pursuit of LSP
-//    - Prefer composition over inheritance to avoid LSP violations
+    fetchTask();
+  }, [taskId]);
 
-// CORRECT vs INCORRECT LSP Examples:
-// CORRECT:
-//   ✓ A PrimaryButton that behaves the same as a Button with different styling
-//   ✓ A specialized DataTable that supports all the same props as a regular Table
-//   ✓ A FormInput that can be used anywhere a base Input is expected
-//   ✓ Using composition to combine behaviors rather than inheritance
-// INCORRECT:
-//   ✗ A PrimaryButton that ignores the onClick handler expected by Button
-//   ✗ A specialized component that changes the expected prop behavior
-//   ✗ Adding unexpected side effects to extended components
-//   ✗ Creating inheritance hierarchies that violate substitutability
+  return { task, loading };
+};]]></correct-example>
+          <incorrect-example title="Component with mixed responsibilities" conditions="Designing components" expected-result="Focused components with clear responsibilities" incorrectness-criteria="Violates SRP"><![CDATA[// TaskCard with too many responsibilities
+const TaskCard: React.FC<TaskCardProps> = ({ taskId }) => {
+  const [task, setTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const router = useRouter();
 
-// 4. INTERFACE SEGREGATION PRINCIPLE (ISP):
-//    Clients should not be forced to depend on interfaces they don't use.
-//    - Break large interfaces into smaller, more focused ones
-//    - Components should only require props they actually use
-//    - Prefer multiple specific interfaces over one general interface
-//    - But NEVER contradict interface definitions in specifications
+  // Data fetching logic
+  useEffect(() => {
+    const fetchTask = async () => {
+      setLoading(true);
+      try {
+        const data = await fetch(`/api/tasks/${taskId}`).then(res => res.json());
+        setTask(data);
+      } catch (err) {
+        setError("Failed to load task");
+      }
+      setLoading(false);
+    };
 
-// CORRECT vs INCORRECT ISP Examples:
-// CORRECT:
-//   ✓ Splitting Form component props into validation, submission, and layout interfaces
-//   ✓ Using specific prop types like ButtonProps, IconButtonProps instead of a generic Props
-//   ✓ Creating focused custom hooks that only expose what's needed
-// INCORRECT:
-//   ✗ Creating components that require many unused props
-//   ✗ Large, monolithic interfaces with many unrelated properties
-//   ✗ Breaking specified interfaces into smaller ones without updating specifications
+    fetchTask();
+  }, [taskId]);
 
-// 5. DEPENDENCY INVERSION PRINCIPLE (DIP):
-//    High-level modules should not depend on low-level modules. Both should depend on abstractions.
-//    - Components should receive services/utilities as props or context
-//    - Use dependency injection to provide implementations
-//    - Avoid importing concrete implementations directly in components
-//    - Prefer composition and dependency injection over inheritance
-//    - But NEVER break specifications to implement dependency inversion
+  // Status update logic
+  const handleStatusChange = async (status: string) => {
+    try {
+      await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      });
+      setTask(prev => prev ? { ...prev, status } : null);
+    } catch (err) {
+      setError("Failed to update status");
+    }
+  };
 
-// CORRECT vs INCORRECT DIP Examples:
-// CORRECT:
-//   ✓ A DataTable receiving a data fetching function rather than calling an API directly
-//   ✓ Using context to provide service implementations throughout the app
-//   ✓ Injecting logger, API client, and other dependencies as specified
-//   ✓ Composing behavior through injected dependencies rather than inheritance
-// INCORRECT:
-//   ✗ Hardcoding API calls inside components
-//   ✗ Direct imports of concrete implementations instead of using abstractions
-//   ✗ Changing the dependency structure defined in specifications
-//   ✗ Using inheritance to access parent class functionality instead of dependency injection
+  // Navigation logic
+  const navigateToUserProfile = () => {
+    router.push(`/users/${task?.assignedTo}`);
+  };
 
-// 6. MINIMAL INTERFACE PRINCIPLE:
-//    Components should expose the smallest possible public API needed for their functionality.
-//    - Implement the bare minimum needed to fulfill the specifications
-//    - Avoid speculative features or "nice-to-haves" not in specifications
-//    - Only expose what's necessary for the component to function
+  // Rendering with multiple responsibilities
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+  if (!task) return <div>Task not found</div>;
 
-// CORRECT vs INCORRECT MINIMAL INTERFACE Examples:
-// CORRECT:
-//   ✓ A Button component that only exposes essential props like "onClick" and "children"
-//   ✓ Implementing exactly what the specifications require, no more
-//   ✓ Keeping component APIs focused on their specific purpose
-// INCORRECT:
-//   ✗ Adding extra props "just in case" they might be needed later
-//   ✗ Implementing features not specified in requirements
-//   ✗ Creating overly complex APIs with unnecessary flexibility
+  return (
+    <div className="task-card">
+      {isEditing ? (
+        <TaskForm task={task} onSave={(updatedTask) => {
+          setTask(updatedTask);
+          setIsEditing(false);
+        }} />
+      ) : (
+        <>
+          <h3>{task.title}</h3>
+          <p>{task.description}</p>
+          <select
+            value={task.status}
+            onChange={(e) => handleStatusChange(e.target.value)}
+          >
+            <option value="todo">To Do</option>
+            <option value="in-progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+          <button onClick={() => setIsEditing(true)}>Edit</button>
+          <button onClick={navigateToUserProfile}>View Assignee</button>
+        </>
+      )}
+    </div>
+  );
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Follow the Open/Closed Principle (OCP): Components should be open for extension but closed for modification.</description>
+      <examples>
+        <example title="Open/Closed Principle">
+          <correct-example title="Component open for extension" conditions="Designing extensible components" expected-result="Extensible design without modification" correctness-criteria="Follows OCP"><![CDATA[// Button component designed to be extended through props
+type ButtonProps = {
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  icon?: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+  children: React.ReactNode;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-// ====================================================
-// TYPE SYSTEM USAGE
-// ====================================================
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  size = 'md',
+  icon,
+  onClick,
+  className,
+  children,
+  ...rest
+}) => {
+  const baseStyles = "rounded font-medium transition-colors";
+  const variantStyles = {
+    primary: "bg-blue-500 text-white hover:bg-blue-600",
+    secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
+    ghost: "bg-transparent text-gray-800 hover:bg-gray-100"
+  };
+  const sizeStyles = {
+    sm: "px-2 py-1 text-sm",
+    md: "px-4 py-2",
+    lg: "px-6 py-3 text-lg"
+  };
 
-// 1. Use types instead of interfaces for most cases, as specified in @conventions.mdc.
-// 2. Only use interfaces when:
-//    a. You're defining a contract that will be implemented by a class
-//    b. You need declaration merging
-//    c. You're working with multiple implementations of the same contract
-// 3. Prefer union types with string literals over enums.
-// 4. Use explicit type annotations for function parameters and return values.
-// 5. ALWAYS use explicit type annotations as required by @conventions.mdc.
-// 6. Follow the type conventions in @conventions.mdc exactly.
+  return (
+    <button
+      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className || ''}`}
+      onClick={onClick}
+      {...rest}
+    >
+      {icon && <span className="mr-2">{icon}</span>}
+      {children}
+    </button>
+  );
+};
 
-// CORRECT vs INCORRECT Examples:
-// CORRECT:
-//   ✓ type TaskStatus = 'todo' | 'in-progress' | 'done';
-//   ✓ type TaskPriority = 'low' | 'medium' | 'high';
-//   ✓ interface TaskService { /* methods that will be implemented by a class */ }
-//   ✓ type Task = { /* task properties */ };
-//   ✓ const [project, setProject] = useState<Project>(initialProject); // Following conventions
-//   ✓ const handleTaskUpdate = (taskId: string, newStatus: Task['status']) => {...}
-// INCORRECT:
-//   ✗ enum TaskStatus { TODO, IN_PROGRESS, DONE }
-//   ✗ using 'any' instead of specific types
-//   ✗ const [project, setProject] = useState(initialProject); // Missing explicit type annotation
-//   ✗ const handleTaskUpdate = (taskId, newStatus) => {...} // Missing type annotations
-//   ✗ interface Task { /* task properties */ } // Using interface when a type is more appropriate
+// Using the component with different extensions:
+<Button>Default Button</Button>
+<Button variant="secondary" size="sm">Small Secondary Button</Button>
+<Button icon={<Icon name="settings" />}>Button with Icon</Button>
+<Button className="w-full" disabled>Custom Styled Button</Button>]]></correct-example>
+          <incorrect-example title="Component requiring modification" conditions="Designing extensible components" expected-result="Extensible design without modification" incorrectness-criteria="Violates OCP"><![CDATA[// Button component with hardcoded variants
+export const Button = ({ onClick, children }) => {
+  return (
+    <button
+      className="bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};
 
-// ====================================================
-// STATE AND VARIABLE MANAGEMENT
-// ====================================================
+// To add a new variant, we need to modify the Button component:
+export const SecondaryButton = ({ onClick, children }) => {
+  return (
+    <button
+      className="bg-gray-200 text-gray-800 rounded px-4 py-2 hover:bg-gray-300"
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};
 
-// 1. Extract hardcoded values into constants files as specified in @conventions.mdc.
-// 2. Use constants where reasonable, especially for values that might change in the future.
-// 3. Do not use global variables - prefer proper scoping and dependency injection.
-// 4. Use dependency injection where reasonable to improve testability and flexibility.
-// 5. When state needs to be shared between components, ALWAYS make this sharing explicit by:
-//    a. Extracting shared state into a dedicated state class or controller
-//    b. Using an existing suitable shared dependency where appropriate
-//    c. Ensuring the state management approach adheres to SOLID principles
-//    d. Documenting the state sharing pattern in specifications
-// 6. Follow state management conventions in @conventions.mdc, including:
-//    a. Using useState for component-level state
-//    b. Using callbacks for state updates
+// And again for another variant:
+export const GhostButton = ({ onClick, children }) => {
+  return (
+    <button
+      className="bg-transparent text-gray-800 rounded px-4 py-2 hover:bg-gray-100"
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Follow the Interface Segregation Principle (ISP): Clients should not be forced to depend on interfaces they don't use.</description>
+      <examples>
+        <example title="Interface Segregation">
+          <correct-example title="Focused interfaces" conditions="Designing component interfaces" expected-result="Small, focused interfaces" correctness-criteria="Follows ISP"><![CDATA[// Segregated, focused interfaces
+type FormFieldProps = {
+  name: string;
+  label: string;
+};
 
-// CORRECT vs INCORRECT Examples:
-// CORRECT:
-//   ✓ import { PROJECT_ID, TASK_IDS } from '@/constants/ids';
-//   ✓ id: PROJECT_ID.WEBSITE_REDESIGN
-//   ✓ import { COLORS } from '@/ui/theme/colors';
-//   ✓ const priorityColors = COLORS.priority;
-//   ✓ import { BUTTON_STYLES } from '@/ui/base/design_kit/button/button_styles';
-//   ✓ function TaskList({ taskService }: { taskService: TaskService }) { /* ... */ }
-//   ✓ const [isEditing, setIsEditing] = useState(false);
-//   ✓ const handleTaskUpdate = (updatedTask: Task) => { setTask(updatedTask); };
-// INCORRECT:
-//   ✗ id: '1'
-//   ✗ id: 'website-redesign'
-//   ✗ const highPriorityColor = '#FF0000';
-//   ✗ let globalTaskList = []; // Global variable
-//   ✗ let isEditing = false; // Mutable variable instead of state
-//   ✗ const handleTaskUpdate = () => { task.status = 'completed'; setTask(task); }; // Mutating state directly
+type TextInputProps = FormFieldProps & {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+};
 
-// ====================================================
-// CODE QUALITY AND PERFORMANCE
-// ====================================================
+type CheckboxProps = FormFieldProps & {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+};
 
-// 1. Optimize for quality and performance but ALWAYS RESPECT SPECIFICATIONS.
-// 2. When making assumptions (rather than relying on facts), mention this in the relevant specification and in code comments.
-// 3. Prefer simplicity and readability over clever solutions.
-// 4. Be careful with performance optimizations and make sure they're actually needed before implementing them.
-// 5. When specifications and performance considerations conflict, ALWAYS prioritize specifications.
-// 6. Follow the BARE MINIMUM IMPLEMENTATION principle from @specifications.mdc:
-//    - Both specifications and code must do only the bare minimum needed to fulfill their purpose
-//    - Specifications should only require what is absolutely necessary for the component to function
-//    - Code should only include what directly fulfills the specification requirements
-//    - Avoid speculative features, "nice-to-haves," or premature optimizations
+// Components use only the props they need
+export const TextInput: React.FC<TextInputProps> = ({
+  name, label, value, onChange, placeholder
+}) => {
+  return (
+    <div>
+      <label htmlFor={name}>{label}</label>
+      <input
+        id={name}
+        name={name}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+      />
+    </div>
+  );
+};
 
-// CORRECT vs INCORRECT Examples:
-// CORRECT:
-//   ✓ // Assuming tasks are sorted by priority from the API (see task_service.specs.md)
-//   ✓ Using memoization for expensive computations when justified
-//   ✓ Breaking complex logic into well-named helper functions
-//   ✓ Implementing performance optimizations exactly as specified
-//   ✓ Implementing only what the specifications require
-// INCORRECT:
-//   ✗ Premature optimizations without measurement
-//   ✗ Overly complex solutions that are hard to understand
-//   ✗ Optimizing for performance when specifications explicitly require a different approach
-//   ✗ Making unspecified "improvements" to performance that change behavior
-//   ✗ Adding features not required by specifications
+export const Checkbox: React.FC<CheckboxProps> = ({
+  name, label, checked, onChange
+}) => {
+  return (
+    <div>
+      <label htmlFor={name}>
+        <input
+          id={name}
+          name={name}
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        {label}
+      </label>
+    </div>
+  );
+};]]></correct-example>
+          <incorrect-example title="Monolithic interface" conditions="Designing component interfaces" expected-result="Small, focused interfaces" incorrectness-criteria="Violates ISP"><![CDATA[// Large, monolithic interface that forces dependencies
+type FormInputProps = {
+  name: string;
+  label: string;
+  type: 'text' | 'checkbox' | 'select' | 'radio' | 'textarea';
+  value: string | boolean | string[];
+  onChange: (value: any) => void;
+  placeholder?: string;
+  options?: Array<{ value: string; label: string }>;
+  multiple?: boolean;
+  disabled?: boolean;
+  required?: boolean;
+  min?: number;
+  max?: number;
+  pattern?: string;
+  rows?: number;
+  cols?: number;
+  autoFocus?: boolean;
+  className?: string;
+};
 
-// ====================================================
-// ALIGNMENT WITH SPECIFICATIONS - EXEMPLARY PRACTICES
-// ====================================================
+// Component has to handle all possible input types
+export const FormInput: React.FC<FormInputProps> = (props) => {
+  const {
+    name, label, type, value, onChange,
+    placeholder, options, multiple, disabled,
+    required, min, max, pattern, rows, cols,
+    autoFocus, className
+  } = props;
 
-// 1. Start by reading ALL relevant specifications thoroughly:
-//    - Package specs (e.g., task_board.package_specs.md)
-//    - Individual component specs (e.g., task_card.specs.md)
-// 2. Follow the specification discovery process in @specifications.mdc:
-//    a. Check if there's a `<folder_basename>.package_specs.md` file in the target folder - READ IT FIRST
-//    b. Check if there's a `<file_name_without_extension>.specs.md` file in the same folder - READ IT NEXT
-//    c. Only proceed with code modifications after understanding all specifications
-// 3. Implement ALL requirements specified, EXACTLY as they are defined.
-// 4. Follow the exact interfaces, props, and behaviors defined in specs.
-// 5. Do not add unspecified features or behaviors without updating specs first.
-// 6. Do not remove or modify specified behavior without spec changes.
-// 7. When something is ambiguous, refer to existing code patterns or seek clarification.
-// 8. Follow the specification creation, discovery, and update workflow as defined in @specifications.mdc.
+  switch (type) {
+    case 'text':
+      return (
+        <div>
+          <label htmlFor={name}>{label}</label>
+          <input
+            id={name}
+            name={name}
+            type="text"
+            value={value as string}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            disabled={disabled}
+            required={required}
+            min={min}
+            max={max}
+            pattern={pattern}
+            autoFocus={autoFocus}
+            className={className}
+          />
+        </div>
+      );
+    case 'checkbox':
+      return (
+        <div>
+          <label htmlFor={name}>
+            <input
+              id={name}
+              name={name}
+              type="checkbox"
+              checked={value as boolean}
+              onChange={(e) => onChange(e.target.checked)}
+              disabled={disabled}
+              required={required}
+              autoFocus={autoFocus}
+              className={className}
+            />
+            {label}
+          </label>
+        </div>
+      );
+    // And so on for other input types...
+    default:
+      return null;
+  }
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <requirement priority="high">
+      <description>Follow the Dependency Inversion Principle (DIP): High-level modules should not depend on low-level modules. Both should depend on abstractions.</description>
+      <examples>
+        <example title="Dependency Inversion">
+          <correct-example title="Using dependency injection" conditions="Handling dependencies" expected-result="Loose coupling through abstractions" correctness-criteria="Follows DIP"><![CDATA[// Define abstraction (interface) for the service
+type TaskService = {
+  getTasks: () => Promise<Task[]>;
+  createTask: (task: Omit<Task, 'id'>) => Promise<Task>;
+  updateTask: (id: string, updates: Partial<Task>) => Promise<Task>;
+  deleteTask: (id: string) => Promise<void>;
+};
 
-// CORRECT vs INCORRECT Examples:
-// CORRECT:
-//   ✓ Implementing a component with exactly the props defined in its spec
-//   ✓ Following the behavior description in specs precisely
-//   ✓ Using the exact data structures and types defined in specs
-//   ✓ Updating specifications before changing implementation
-// INCORRECT:
-//   ✗ Adding "helpful" features not mentioned in specifications
-//   ✗ Changing behavior from what's defined in specs for "better UX"
-//   ✗ Renaming props or interfaces from what's defined in specs
-//   ✗ Implementing only part of what's required in specifications
+// High-level component depends on abstraction, not implementation
+const TaskList: React.FC<{ taskService: TaskService }> = ({ taskService }) => {
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-// ====================================================
-// COMPONENT CONVENTIONS
-// ====================================================
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const data = await taskService.getTasks();
+      setTasks(data);
+    };
 
-// 1. Follow the component conventions defined in @conventions.mdc exactly.
-// 2. Use function component syntax with React.FC and explicit props type as specified in @conventions.mdc.
-// 3. Keep components focused and extract complex logic as shown in the examples in @conventions.mdc.
-// 4. Use event handler conventions from @conventions.mdc, including:
-//    a. Prefixing event handlers with 'handle'
-//    b. Using explicit event types
-// 5. Follow the CSS & styling conventions in @conventions.mdc, including:
-//    a. Using className with Tailwind CSS utilities
-//    b. Using the cn utility for conditional classes
-// 6. Use destructuring for props as shown in the examples in @conventions.mdc.
-// 7. Prefer composition and dependency injection over inheritance for component reuse and extension.
+    fetchTasks();
+  }, [taskService]);
 
-// ====================================================
-// IMPORTANT REMINDERS
-// ====================================================
+  const handleCreateTask = async (newTask: Omit<Task, 'id'>) => {
+    const created = await taskService.createTask(newTask);
+    setTasks([...tasks, created]);
+  };
 
-// 1. NEVER commit without explicit permission, triple confirmation, and following the exact rules in @commits.mdc.
-// 2. ALWAYS maintain alignment with specifications defined in @specifications.mdc.
-// 3. ALWAYS follow project conventions in @conventions.mdc.
-// 4. Be cautious when modifying existing code - understand the impact before making changes.
-// 5. Remember that code is read much more often than it is written - optimize for readability.
-// 6. NEVER make engineering decisions that contradict specifications or conventions.
-// 7. PREVENT REGRESSIONS. Ensure all changes preserve existing functionality unless specifications explicitly require changes.
-// 8. ALWAYS DOUBLE-CHECK, TRIPLE-CHECK THAT THE CODE THAT IS SAVED IN FILES IMPLEMENTS SPECIFICATIONS.
-// 9. Prefer composition and dependency injection over inheritance wherever possible.
-// 10. NEVER EVER create index.ts files just for re-exporting files (barrel files).
-// 11. DELETE any code that is not used (transitively or directly) by entry points and has no specifications.
+  return (
+    <div>
+      <TaskForm onSubmit={handleCreateTask} />
+      {tasks.map(task => (
+        <TaskItem
+          key={task.id}
+          task={task}
+          onUpdate={(updates) => taskService.updateTask(task.id, updates)}
+          onDelete={() => taskService.deleteTask(task.id)}
+        />
+      ))}
+    </div>
+  );
+};
 
-// ====================================================
-// DECISION MAKING HIERARCHY
-// ====================================================
+// Implementation provided by dependency injection
+const App = () => {
+  // Could be swapped with different implementations
+  const apiTaskService: TaskService = {
+    getTasks: () => fetch('/api/tasks').then(res => res.json()),
+    createTask: (task) => fetch('/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(task)
+    }).then(res => res.json()),
+    updateTask: (id, updates) => fetch(`/api/tasks/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates)
+    }).then(res => res.json()),
+    deleteTask: (id) => fetch(`/api/tasks/${id}`, {
+      method: 'DELETE'
+    }).then(() => {})
+  };
 
-// When making engineering and design decisions, follow this priority order:
-// 1. SPECIFICATIONS (as defined in @specifications.mdc) - these must be respected above all else
-// 2. PROJECT CONVENTIONS (as defined in @conventions.mdc)
-// 3. CODE QUALITY PRINCIPLES (as defined in this file)
-// 4. PERFORMANCE CONSIDERATIONS
-// 5. DEVELOPER CONVENIENCE
+  return <TaskList taskService={apiTaskService} />;
+};]]></correct-example>
+          <incorrect-example title="Direct dependency on implementation" conditions="Handling dependencies" expected-result="Loose coupling through abstractions" incorrectness-criteria="Violates DIP"><![CDATA[// TaskList directly depends on implementation details
+import { apiClient } from '@/services/api_client';
 
-// The higher priority item always takes precedence when there's a conflict.
-// This means specifications ALWAYS override any engineering principles in this document.
-// If engineering principles suggest one approach but specifications require another, ALWAYS follow specifications.
+const TaskList: React.FC = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-// ====================================================
-// VALID VS INVALID APPROACH EXAMPLES
-// ====================================================
+  useEffect(() => {
+    const fetchTasks = async () => {
+      // Direct dependency on apiClient implementation
+      const data = await apiClient.get('/tasks');
+      setTasks(data);
+    };
 
-/*
-// VALID APPROACH:
-1. Task: Add a new feature to TaskCard
-2. First steps:
-   a. Check for task_board.package_specs.md and read it first
-   b. Check for task_card.specs.md and read it thoroughly
-   c. Read the project conventions in @conventions.mdc
-3. Implementation aligns exactly with specifications:
-   - Uses the interface defined in specs
-   - Implements all required behavior
-   - Follows conventions as required
-   - Makes engineering decisions that respect specs
-4. Result: Code that perfectly matches specifications
+    fetchTasks();
+  }, []);
 
-// INVALID APPROACH:
-1. Task: Add a new feature to TaskCard
-2. Problem: Skip reading specifications or read incompletely
-3. Implementation issues:
-   - Partially implements requirements
-   - Changes interfaces without updating specs
-   - Refactors structure in ways that contradict specs
-   - Makes engineering "improvements" that deviate from specs
-4. Result: Code that fails to implement specifications correctly
-*/
+  const handleCreateTask = async (newTask: Omit<Task, 'id'>) => {
+    // Direct dependency on apiClient implementation
+    const created = await apiClient.post('/tasks', newTask);
+    setTasks([...tasks, created]);
+  };
+
+  const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
+    // Direct dependency on apiClient implementation
+    await apiClient.patch(`/tasks/${id}`, updates);
+    setTasks(tasks.map(task =>
+      task.id === id ? { ...task, ...updates } : task
+    ));
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    // Direct dependency on apiClient implementation
+    await apiClient.delete(`/tasks/${id}`);
+    setTasks(tasks.filter(task => task.id !== id));
+  };
+
+  return (
+    <div>
+      <TaskForm onSubmit={handleCreateTask} />
+      {tasks.map(task => (
+        <TaskItem
+          key={task.id}
+          task={task}
+          onUpdate={(updates) => handleUpdateTask(task.id, updates)}
+          onDelete={() => handleDeleteTask(task.id)}
+        />
+      ))}
+    </div>
+  );
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+  </requirements>
+  <references>
+    <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
+    <reference as="dependency" href=".cursor/rules/conventions.mdc" reason="Related to project conventions">Project coding conventions</reference>
+    <reference as="dependency" href=".cursor/rules/specifications.mdc" reason="Related to specification handling">Specification development rules</reference>
+  </references>
+</rule>
