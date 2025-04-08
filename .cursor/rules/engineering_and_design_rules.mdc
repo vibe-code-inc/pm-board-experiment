@@ -19,6 +19,51 @@ alwaysApply: true
   </meta>
   <requirements>
     <non-negotiable priority="critical">
+      <description>SPECIFICATION-FIRST DEVELOPMENT: All development MUST begin with writing specifications. No code should be written without an approved specification document.</description>
+      <examples>
+        <example title="Specification-First Approach">
+          <correct-example title="Following specification-first workflow" conditions="Starting a new feature" expected-result="Specification created before implementation" correctness-criteria="Creates specification before writing code"><![CDATA[// CORRECT WORKFLOW:
+// 1. Create a complete specification first
+const newFeatureSpec = `
+---
+description: Task Filter Feature Specification
+type: component
+---
+
+<specification>
+  <meta>
+    <title>Task Filter Component</title>
+    <description>Allows filtering tasks by status, priority, and assignee</description>
+    <!-- Meta details -->
+  </meta>
+
+  <overview>
+    <description>The TaskFilter component enables users to filter task lists by multiple criteria.</description>
+    <responsibility>Provide filtering UI controls and emit filter change events</responsibility>
+  </overview>
+
+  <!-- Additional specification sections -->
+</specification>
+`;
+
+// 2. Only after specification is complete and approved, begin implementation
+// 3. Implementation follows the specification exactly]]></correct-example>
+          <incorrect-example title="Code-first approach" conditions="Starting a new feature" expected-result="Specification created before implementation" incorrectness-criteria="Writes code before specification"><![CDATA[// INCORRECT WORKFLOW:
+// 1. Start by writing implementation code without a specification
+const TaskFilter: React.FC = () => {
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
+
+  // Implementation continues without clear requirements
+  // ...
+};
+
+// 2. Maybe document what was built later (or never)
+// 3. Result lacks clear requirements and boundaries]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <non-negotiable priority="critical">
       <description>ALWAYS RESPECT THE SPECIFICATIONS. When specifications and engineering principles conflict, SPECIFICATIONS ALWAYS WIN.</description>
       <examples>
         <example title="Specification Primacy">
@@ -597,6 +642,6 @@ const TaskList: React.FC = () => {
   <references>
     <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
     <reference as="dependency" href=".cursor/rules/conventions.mdc" reason="Related to project conventions">Project coding conventions</reference>
-    <reference as="dependency" href=".cursor/rules/specifications.mdc" reason="Related to specification handling">Specification development rules</reference>
+    <reference as="dependency" href=".cursor/rules/specifications.mdc" reason="Related to specification handling">Specification format and development practices</reference>
   </references>
 </rule>

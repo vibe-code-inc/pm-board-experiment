@@ -19,6 +19,45 @@ alwaysApply: true
   </meta>
   <requirements>
     <non-negotiable priority="critical">
+      <description>NO IMPLEMENTATION WITHOUT SPECIFICATION: Every implementation MUST have a corresponding specification document. Code without a specification MUST NOT exist.</description>
+      <examples>
+        <example title="Implementation with Specification">
+          <correct-example title="Proper implementation process" conditions="Creating new components" expected-result="Specification exists before implementation" correctness-criteria="Has specification before implementation"><![CDATA[// CORRECT APPROACH:
+// 1. First, create task_filter.specs.md with complete specification
+// 2. Reference the specification when implementing
+// File: src/components/task_filter/task_filter.tsx
+/**
+ * Implementation of the Task Filter component
+ * @see specification: src/components/task_filter/task_filter.specs.md
+ */
+
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { FilterOption } from '@/types';
+
+type TaskFilterProps = {
+  onChange: (filters: FilterState) => void;
+};
+
+export const TaskFilter: React.FC<TaskFilterProps> = ({ onChange }) => {
+  // Implementation following the specification
+};]]></correct-example>
+          <incorrect-example title="Implementation without specification" conditions="Creating new components" expected-result="Specification exists before implementation" incorrectness-criteria="Lacks specification"><![CDATA[// INCORRECT APPROACH:
+// File: src/components/task_filter/task_filter.tsx
+// No corresponding specification document exists
+
+import { useState } from 'react';
+
+// Implementation lacks reference to any specification
+export const TaskFilter = ({ onChange }) => {
+  const [statusFilter, setStatusFilter] = useState([]);
+
+  // Ad-hoc implementation without specification guidance
+};]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <non-negotiable priority="critical">
       <description>ALL specification files MUST COMPLY with ALL conventions in this file. When a specification file CONTRADICTS any convention, the contradictory part is considered INVALID and must be updated.</description>
       <examples>
         <example title="Specification Compliance">
@@ -240,5 +279,7 @@ const dragStart = (e: React.DragEvent) => {
   </requirements>
   <references>
     <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
+    <reference as="dependency" href=".cursor/rules/engineering_and_design_rules.mdc" reason="Supports engineering principles">Engineering and design principles</reference>
+    <reference as="dependency" href=".cursor/rules/specifications.mdc" reason="Ensures specification consistency">Specification format and requirements</reference>
   </references>
 </rule>

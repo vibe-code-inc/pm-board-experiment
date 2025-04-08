@@ -1,6 +1,6 @@
 ---
 description: Required rules for building features and creating, updating, and handling any code changes
-globs: "*.{ts,tsx,js,jsx,md}"
+globs: "*.{ts,tsx,js,jsx,specs.md,package_specs.md}"
 alwaysApply: true
 ---
 
@@ -9,13 +9,14 @@ alwaysApply: true
     <title>Specification Development</title>
     <description>Enforces development practices centered around specifications to ensure requirements are properly documented and implemented</description>
     <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
-    <last-updated-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</last-updated-at>
+    <last-updated-at utc-timestamp="1712848400">April 11, 2024, 9:00 AM EDT</last-updated-at>
     <applies-to>
       <file-matcher glob="*.{ts,tsx}">TypeScript and React files</file-matcher>
       <file-matcher glob="*.{js,jsx}">JavaScript and React files</file-matcher>
       <file-matcher glob="*.specs.md">Specification files</file-matcher>
       <file-matcher glob="*.package_specs.md">Package specification files</file-matcher>
       <action-matcher action="code-modification">Triggered when modifying code</action-matcher>
+      <action-matcher action="spec-creation">Triggered when creating specifications</action-matcher>
     </applies-to>
   </meta>
   <requirements>
@@ -55,11 +56,140 @@ alwaysApply: true
         </example>
       </examples>
     </non-negotiable>
-    <requirement priority="high">
-      <description>Specifications must include: Technical requirements, Product requirements, Behavioral expectations, Interfaces, and Files/modules to be changed.</description>
+    <non-negotiable priority="critical">
+      <description>ALL specifications MUST follow the XML-based structure defined in this rule. Existing specifications that don't follow this format MUST be updated.</description>
       <examples>
-        <example title="Complete Specification Content">
-          <correct-example title="Comprehensive specification" conditions="Creating a specification" expected-result="Complete specification with all required sections" correctness-criteria="Includes all required content sections"><![CDATA[# Task Card Component Specification
+        <example title="Specification Format">
+          <correct-example title="Properly structured specification" conditions="Creating a specification" expected-result="Valid XML-structured specification" correctness-criteria="Follows the required XML format"><![CDATA[---
+description: Task Card Component Specification
+type: component
+---
+
+<specification>
+  <meta>
+    <title>Task Card Component</title>
+    <description>Displays and manages individual task information with drag-and-drop support</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/features/task_board/task_card.tsx">Task Card Component</file-matcher>
+    </applies-to>
+  </meta>
+
+  <overview>
+    <description>The Task Card component displays individual task information and supports drag-and-drop functionality for moving tasks between columns.</description>
+    <responsibility>Display task information and handle direct task status updates</responsibility>
+  </overview>
+
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display task title, description, priority, and due date</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support drag-and-drop between columns</description>
+      </requirement>
+    </functional-requirements>
+
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Use React DnD library for drag-and-drop</description>
+        <examples>
+          <example title="DnD Implementation">
+            <correct-example title="Proper DnD setup" use-case="Task dragging"><![CDATA[import { useDrag } from 'react-dnd';
+import { cn } from '@/lib/utils';
+import { Task } from '@/types';
+
+type TaskCardProps = {
+  task: Task;
+  onStatusChange?: (taskId: string, newStatus: string) => void;
+  className?: string;
+};
+
+const TaskCard: React.FC<TaskCardProps> = ({ task, className }) => {
+  const [{ isDragging }, dragRef] = useDrag({
+    type: 'TASK',
+    item: { id: task.id },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  return (
+    <div
+      ref={dragRef}
+      className={cn(
+        "border-2 p-4 rounded cursor-move",
+        isDragging ? "opacity-50" : "opacity-100",
+        className
+      )}
+    >
+      <h3 className="font-semibold">{task.title}</h3>
+      {/* Additional task content */}
+    </div>
+  );
+};]]></correct-example>
+          </example>
+        </examples>
+      </requirement>
+    </technical-requirements>
+
+    <behavioral-expectations>
+      <expectation priority="medium">
+        <description>Cards should snap to valid drop zones</description>
+        <scenarios>
+          <scenario title="Task Dropping Behavior">
+            <steps><![CDATA[Given a task card is being dragged
+When it is released over a valid column
+Then it should snap into position in that column
+And task status should be updated to match the column]]></steps>
+          </scenario>
+        </scenarios>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type TaskCardProps = {
+  task: {
+    id: string;
+    title: string;
+    description: string;
+    status: 'todo' | 'in-progress' | 'done';
+    priority: 'low' | 'medium' | 'high';
+    dueDate?: Date;
+  };
+  onStatusChange?: (taskId: string, newStatus: string) => void;
+  onDelete?: (taskId: string) => void;
+  className?: string;
+};]]></definition>
+    </interface>
+  </interfaces>
+
+  <implementation>
+    <files>
+      <file path="src/features/task_board/task_card.tsx" action="create">
+        <changes>Create new component file with TaskCard implementation following all project conventions (snake_case, absolute imports, React.FC, etc.)</changes>
+      </file>
+      <file path="src/features/task_board/task_board.tsx" action="modify">
+        <changes>Import and use TaskCard component with absolute imports</changes>
+        <example><![CDATA[// In task_board.tsx
+import { TaskCard } from '@/features/task_board/task_card';
+// NOT: import { TaskCard } from './task_card';]]></example>
+      </file>
+    </files>
+
+    <dependencies>
+      <dependency type="external">react-dnd for drag and drop functionality</dependency>
+      <dependency type="internal">@/lib/utils for the cn utility</dependency>
+    </dependencies>
+  </implementation>
+
+  <references>
+    <reference href="src/features/task_board/task_board.package_specs.md">Task Board package specification</reference>
+  </references>
+</specification>]]></correct-example>
+          <incorrect-example title="Improperly structured specification" conditions="Creating a specification" expected-result="Valid XML-structured specification" incorrectness-criteria="Uses Markdown instead of required XML format"><![CDATA[# Task Card Component Specification
 
 ## Overview
 The Task Card component displays individual task information and supports drag-and-drop functionality.
@@ -87,19 +217,107 @@ type TaskCardProps = {
 
 ## Files/Modules to be Changed
 - src/features/task_board/task_card.tsx - Create new component
-- src/features/task_board/task_board.tsx - Import and use TaskCard]]></correct-example>
-          <incorrect-example title="Incomplete specification" conditions="Creating a specification" expected-result="Complete specification with all required sections" incorrectness-criteria="Missing critical sections"><![CDATA[# Task Card Component Specification
+- src/features/task_board/task_board.tsx - Import and use TaskCard]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
+    <requirement priority="high">
+      <description>Specifications must include: Technical requirements, Product/Functional requirements, Behavioral expectations, Interfaces, and Files/modules to be changed.</description>
+      <examples>
+        <example title="Complete Specification Content">
+          <correct-example title="Comprehensive specification" conditions="Creating a specification" expected-result="Complete specification with all required sections" correctness-criteria="Includes all required content sections"><![CDATA[<specification>
+  <!-- Meta section omitted for brevity -->
 
-## Overview
-The Task Card component displays tasks.
+  <overview>
+    <description>The Task Card component displays individual task information.</description>
+    <responsibility>Display task information and handle direct task status updates</responsibility>
+  </overview>
 
-## Technical Requirements
-- Make it draggable
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display task title, description, priority, and due date</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support drag-and-drop between columns</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Show visual feedback during drag operations</description>
+      </requirement>
+    </functional-requirements>
 
-## Interfaces
-type TaskCardProps = {
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Use React DnD library for drag-and-drop</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Implement edge scrolling when dragging near viewport boundaries</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Optimize rendering to prevent performance issues</description>
+      </requirement>
+    </technical-requirements>
+
+    <behavioral-expectations>
+      <expectation priority="medium">
+        <description>Cards should snap to valid drop zones</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Invalid drop zones should reject cards with visual feedback</description>
+      </expectation>
+      <expectation priority="low">
+        <description>Dragging should start after 150ms of mouse down</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type TaskCardProps = {
   task: Task;
-}]]></incorrect-example>
+  onStatusChange: (taskId: string, status: Task['status']) => void;
+};]]></definition>
+    </interface>
+  </interfaces>
+
+  <implementation>
+    <files>
+      <file path="src/features/task_board/task_card.tsx" action="create">
+        <changes>Create new component file with TaskCard implementation</changes>
+      </file>
+      <file path="src/features/task_board/task_board.tsx" action="modify">
+        <changes>Import and use TaskCard component</changes>
+      </file>
+    </files>
+
+    <dependencies>
+      <dependency type="external">react-dnd for drag and drop functionality</dependency>
+    </dependencies>
+  </implementation>
+</specification>]]></correct-example>
+          <incorrect-example title="Incomplete specification" conditions="Creating a specification" expected-result="Complete specification with all required sections" incorrectness-criteria="Missing critical sections"><![CDATA[<specification>
+  <!-- Meta section omitted for brevity -->
+
+  <overview>
+    <description>The Task Card component displays tasks.</description>
+  </overview>
+
+  <requirements>
+    <technical-requirements>
+      <requirement priority="medium">
+        <description>Make it draggable</description>
+      </requirement>
+    </technical-requirements>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type TaskCardProps = {
+  task: Task;
+};]]></definition>
+    </interface>
+  </interfaces>
+</specification>]]></incorrect-example>
         </example>
       </examples>
     </requirement>
@@ -125,10 +343,12 @@ type TaskCardProps = {
       <examples>
         <example title="Specification Compliance">
           <correct-example title="Precise implementation of specification" conditions="Implementing a feature" expected-result="Code matches specification exactly" correctness-criteria="Implements all requirements precisely"><![CDATA[// Specification Requirement:
-// "Task cards must display a colored border based on priority:
-// - High: red border
-// - Medium: yellow border
-// - Low: green border"
+// <requirement priority="high">
+//   <description>Task cards must display a colored border based on priority:
+//   - High: red border
+//   - Medium: yellow border
+//   - Low: green border</description>
+// </requirement>
 
 // CORRECT IMPLEMENTATION:
 const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
@@ -146,10 +366,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
   );
 };]]></correct-example>
           <incorrect-example title="Implementation deviating from specification" conditions="Implementing a feature" expected-result="Code matches specification exactly" incorrectness-criteria="Deviates from specification requirements"><![CDATA[// Specification Requirement:
-// "Task cards must display a colored border based on priority:
-// - High: red border
-// - Medium: yellow border
-// - Low: green border"
+// <requirement priority="high">
+//   <description>Task cards must display a colored border based on priority:
+//   - High: red border
+//   - Medium: yellow border
+//   - Low: green border</description>
+// </requirement>
 
 // INCORRECT IMPLEMENTATION:
 const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
@@ -173,48 +395,262 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
       <description>Each specification must define components with a single responsibility (SOLID Principle: Single Responsibility).</description>
       <examples>
         <example title="Single Responsibility Principle">
-          <correct-example title="Component with single responsibility" conditions="Designing a component" expected-result="Focused component with clear responsibility" correctness-criteria="Adheres to Single Responsibility Principle"><![CDATA[// CORRECT SPECIFICATION:
-# UserProfile Specification
+          <correct-example title="Component with single responsibility" conditions="Designing a component" expected-result="Focused component with clear responsibility" correctness-criteria="Adheres to Single Responsibility Principle"><![CDATA[<specification>
+  <meta>
+    <title>User Profile Component</title>
+    <description>Displays user information</description>
+    <!-- Meta details omitted for brevity -->
+  </meta>
 
-## Overview
-The UserProfile component is responsible for displaying user information.
+  <overview>
+    <description>The UserProfile component is responsible for displaying user information.</description>
+    <responsibility>Display user profile data in various formats</responsibility>
+  </overview>
 
-## Technical Requirements
-- Display user name, avatar, and profile details
-- Support different display formats (compact/full)
-- Handle loading states
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display user name, avatar, and profile details</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support different display formats (compact/full)</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Handle loading states</description>
+      </requirement>
+    </functional-requirements>
+  </requirements>
 
-## Interfaces
-type UserProfileProps = {
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type UserProfileProps = {
   userId: string;
   displayFormat?: 'compact' | 'full';
-}
+};]]></definition>
+    </interface>
+  </interfaces>
 
-// Note: Authentication logic is handled separately in AuthService]]></correct-example>
-          <incorrect-example title="Component with mixed responsibilities" conditions="Designing a component" expected-result="Focused component with clear responsibility" incorrectness-criteria="Violates Single Responsibility Principle"><![CDATA[// INCORRECT SPECIFICATION:
-# UserProfile Specification
+  <!-- Implementation details omitted for brevity -->
+</specification>
 
-## Overview
-The UserProfile component displays user information and handles authentication.
+<!-- Note: Authentication logic is handled separately in AuthService specification -->]]></correct-example>
+          <incorrect-example title="Component with mixed responsibilities" conditions="Designing a component" expected-result="Focused component with clear responsibility" incorrectness-criteria="Violates Single Responsibility Principle"><![CDATA[<specification>
+  <meta>
+    <title>User Profile Component</title>
+    <description>Displays user information and handles authentication</description>
+    <!-- Meta details omitted for brevity -->
+  </meta>
 
-## Technical Requirements
-- Display user name, avatar, and profile details
-- Handle user login and authentication
-- Manage authentication tokens and session
-- Display login form when user is not authenticated
+  <overview>
+    <description>The UserProfile component displays user information and handles authentication.</description>
+    <responsibility>Display user information and manage user authentication</responsibility>
+  </overview>
 
-## Interfaces
-type UserProfileProps = {
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display user name, avatar, and profile details</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Handle user login and authentication</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Manage authentication tokens and session</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Display login form when user is not authenticated</description>
+      </requirement>
+    </functional-requirements>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type UserProfileProps = {
   userId?: string;
   onLogin: (username: string, password: string) => void;
   onLogout: () => void;
-}]]></incorrect-example>
+};]]></definition>
+    </interface>
+  </interfaces>
+
+  <!-- Implementation details omitted for brevity -->
+</specification>]]></incorrect-example>
         </example>
       </examples>
     </requirement>
+    <requirement priority="high">
+      <description>Specifications must provide examples of implementation for complex or critical requirements.</description>
+      <examples>
+        <example title="Implementation Examples">
+          <correct-example title="Requirement with implementation example" conditions="Documenting complex requirement" expected-result="Clear implementation example" correctness-criteria="Includes concrete implementation example"><![CDATA[<requirement priority="high">
+  <description>Implement optimistic updates for task status changes</description>
+  <examples>
+    <example title="Optimistic Update Implementation">
+      <implementation><![CDATA[import { useState } from 'react';
+import { Task } from '@/types';
+import { api } from '@/lib/api';
+import { notifications } from '@/lib/notifications';
+
+// Handle status change with optimistic updates
+const handleStatusChange = (taskId: string, newStatus: string): void => {
+  // First, update the UI optimistically
+  setTasks(prevTasks =>
+    prevTasks.map(task =>
+      task.id === taskId ? { ...task, status: newStatus } : task
+    )
+  );
+
+  // Then, send the update to the server
+  api.updateTaskStatus(taskId, newStatus)
+    .catch(error => {
+      // If the API call fails, revert the optimistic update
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === taskId ? { ...task, status: task.originalStatus } : task
+        )
+      );
+      // Show error notification
+      notifications.error('Failed to update task status');
+    });
+};]]></implementation>
+    </example>
+  </examples>
+</requirement>]]></correct-example>
+          <incorrect-example title="Requirement without implementation example" conditions="Documenting complex requirement" expected-result="Clear implementation example" incorrectness-criteria="Lacks implementation details"><![CDATA[<requirement priority="high">
+  <description>Implement optimistic updates for task status changes</description>
+</requirement>]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
+    <non-negotiable priority="critical">
+      <description>Use concise, clear, and unambiguous language throughout all specifications. Avoid vague terms, subjective descriptions, and imprecise requirements.</description>
+      <examples>
+        <example title="Specification Language Clarity">
+          <correct-example title="Clear requirement description" conditions="Writing a specification requirement" expected-result="Precise, actionable instruction" correctness-criteria="Uses specific, measurable language"><![CDATA[<requirement priority="high">
+  <description>Implement client-side form validation that checks:
+  - Email addresses must be valid format (name@domain.tld)
+  - Passwords must be minimum 8 characters with at least one number
+  - Username must be 3-20 alphanumeric characters
+  </description>
+</requirement>]]></correct-example>
+          <incorrect-example title="Ambiguous requirement description" conditions="Writing a specification requirement" expected-result="Precise, actionable instruction" incorrectness-criteria="Uses vague, subjective language"><![CDATA[<requirement priority="high">
+  <description>Add validation to make sure users enter proper information in the signup form</description>
+</requirement>]]></incorrect-example>
+        </example>
+        <example title="Behavioral Expectations Clarity">
+          <correct-example title="Clear behavioral expectation" conditions="Defining component behavior" expected-result="Precise, testable expectation" correctness-criteria="Describes exact behavior"><![CDATA[<expectation priority="medium">
+  <description>When a task is dragged over a valid drop zone, the drop zone should display a 2px blue border (border-blue-500) and increase opacity to 100%</description>
+</expectation>]]></correct-example>
+          <incorrect-example title="Vague behavioral expectation" conditions="Defining component behavior" expected-result="Precise, testable expectation" incorrectness-criteria="Uses subjective qualifiers"><![CDATA[<expectation priority="medium">
+  <description>Drop zones should provide good visual feedback when a task is dragged over them</description>
+</expectation>]]></incorrect-example>
+        </example>
+      </examples>
+    </non-negotiable>
   </requirements>
+  <grammar>
+    <schema title="Specification Schema" description="Standard structure for specification files">
+<![CDATA[---
+description: {Component/Feature specification}
+type: {component|endpoint|script|schema|service|factory|state}
+---
+
+<specification>
+  <meta>
+    <title>{Name}</title>
+    <description>{Concise purpose description}</description>
+    <created-at utc-timestamp="{timestamp}">{Human readable date}</created-at>
+    <applies-to>
+      <!-- IMPORTANT: All file paths MUST use snake_case as per @conventions.mdc -->
+      <file-matcher glob="{file pattern}">{Description}</file-matcher>
+    </applies-to>
+  </meta>
+
+  <overview>
+    <!-- Use CLEAR, SPECIFIC language throughout the specification -->
+    <!-- Avoid vague terms like "proper", "good", "better", etc. -->
+    <!-- All requirements must be precise and measurable -->
+    <description>{High-level description and purpose}</description>
+    <responsibility>{Single responsibility of this component}</responsibility>
+  </overview>
+
+  <requirements>
+    <functional-requirements>
+      <requirement priority="{critical|high|medium}">
+        <!-- Provide SPECIFIC, MEASURABLE criteria, not vague goals -->
+        <description>{Clear functional requirement}</description>
+        <examples>
+          <example title="{Example name}">
+            <!-- All implementation examples MUST follow project conventions:
+                 - snake_case for files/directories
+                 - Absolute imports with @/ prefix
+                 - React.FC with explicit props type
+                 - Other conventions from @conventions.mdc -->
+            <implementation><![CDATA[// Sample implementation code]]]]><![CDATA[></implementation>
+          </example>
+        </examples>
+      </requirement>
+    </functional-requirements>
+
+    <technical-requirements>
+      <requirement priority="{critical|high|medium}">
+        <description>{Clear technical requirement}</description>
+        <examples>
+          <example title="{Example name}">
+            <correct-example title="Proper implementation" use-case="Common scenario"><![CDATA[// Example code following ALL project conventions]]]]><![CDATA[></correct-example>
+            <incorrect-example title="Inefficient implementation" use-case="Common scenario"><![CDATA[// Example of what NOT to do]]]]><![CDATA[></incorrect-example>
+          </example>
+        </examples>
+      </requirement>
+    </technical-requirements>
+
+    <behavioral-expectations>
+      <expectation priority="{critical|high|medium}">
+        <description>{Expected behavior}</description>
+        <scenarios>
+          <scenario title="{Scenario name}">
+            <steps><![CDATA[Given {condition}
+When {action}
+Then {result}]]]]><![CDATA[></steps>
+            <implementation><![CDATA[// Implementation code following project conventions]]]]><![CDATA[></implementation>
+          </scenario>
+        </scenarios>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="{props|api|arguments|schema|response}">
+      <definition><![CDATA[// Type definition using types rather than interfaces when appropriate
+// Follow @conventions.mdc guidelines for type definitions]]]]><![CDATA[></definition>
+      <example><![CDATA[// Usage example with absolute imports]]]]><![CDATA[></example>
+    </interface>
+  </interfaces>
+
+  <implementation>
+    <files>
+      <!-- All file paths MUST use snake_case naming convention -->
+      <file path="{file_path.tsx}" action="{create|modify}">
+        <changes>{What changes are needed}</changes>
+        <example><![CDATA[// Example of changes with absolute imports
+import { Something } from '@/path/to/something';]]]]><![CDATA[></example>
+      </file>
+    </files>
+
+    <dependencies>
+      <dependency type="{internal|external}">{Name and reason}</dependency>
+    </dependencies>
+  </implementation>
+
+  <references>
+    <reference href="{path}">{Reference description}</reference>
+  </references>
+</specification>]]>
+    </schema>
+  </grammar>
   <references>
     <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
     <reference as="dependency" href=".cursor/rules/conventions.mdc" reason="Follows project conventions">Defines fundamental project conventions</reference>
+    <reference as="dependency" href=".cursor/rules/engineering_and_design_rules.mdc" reason="Follows engineering principles">Defines engineering and design principles</reference>
   </references>
 </rule>
