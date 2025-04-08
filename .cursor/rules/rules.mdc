@@ -71,6 +71,21 @@ alwaysApply: false
         </example>
       </examples>
     </requirement>
+    <requirement priority="critical">
+      <description>All other rule files (.mdc) must reference this file as a dependency in their references section.</description>
+      <examples>
+        <example title="Rule Dependency Reference">
+          <correct-example title="Proper dependency reference" conditions="Creating a new rule file" expected-result="Valid reference to rules.mdc" correctness-criteria="Includes proper reference to the main rules file"><![CDATA[<references>
+  <reference as="dependency" href=".cursor/rules/rules.mdc" reason="Follows standard rule format">Base rule format definition</reference>
+  <!-- Other references as needed -->
+</references>]]></correct-example>
+          <incorrect-example title="Missing dependency reference" conditions="Creating a new rule file" expected-result="Valid reference to rules.mdc" incorrectness-criteria="Missing required reference to the main rules file"><![CDATA[<references>
+  <reference as="context" href=".cursor/rules/other-file.mdc" reason="Related context">Additional context</reference>
+  <!-- No reference to the main rules.mdc file -->
+</references>]]></incorrect-example>
+        </example>
+      </examples>
+    </requirement>
     <requirement priority="high">
       <description>Use CDATA tags for multiline content within XML elements.</description>
       <examples>
