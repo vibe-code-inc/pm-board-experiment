@@ -1,73 +1,205 @@
-# Task Card Component Specification
+---
+description: Task Card Component Specification
+type: component
+---
 
-## Overview
-The Task Card component displays a visual representation of a task within the application. It shows the task's key information in a compact, scannable format and supports interactions such as viewing details, editing, and being a draggable element.
+<specification>
+  <meta>
+    <title>Task Card Component</title>
+    <description>Displays a visual representation of a task within the application with drag-and-drop support</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/ui/features/task_card/task_card.tsx">Task Card Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Display task title prominently
-- Show task description (truncated if too long)
-- Indicate task priority with visual cues (color coding)
-- Show task status through visual indication
-- Display assignee information when available
-- Show due date with appropriate formatting and color indicators for approaching/past dates
-- Support clicking to view/edit task details
-- Provide a dedicated edit button/icon for quick edit access
-- Support being dragged between columns and within columns
-- Provide visual feedback for interactive states (hover, drag)
-- Show appropriate truncation for overly long content
-- Support touch-based drag and drop on mobile devices
-- Provide a vertical grip handle for dragging on mobile
-- Indicate itself when being dragged with semi-transparency
-- Be removed from source list when picked up during drag operations
-- Support drag preview that follows cursor/touch point during dragging
-- Maintain exact dimensions in drag preview as the original card
+  <overview>
+    <description>The Task Card component displays a visual representation of a task within the application. It shows the task's key information in a compact, scannable format and supports interactions such as viewing details, editing, and being a draggable element.</description>
+    <responsibility>Display task information and provide drag-and-drop functionality for task movement</responsibility>
+  </overview>
 
-## Technical Requirements
-- Build with React and TypeScript
-- Use Tailwind CSS for styling
-- Implement type safety with proper type definitions (not interfaces)
-- Support responsive design for different screen sizes
-- Implement proper keyboard accessibility
-- Support drag-and-drop functionality with appropriate event handlers
-- Optimize rendering performance with appropriate React hooks
-- Implement auto-scrolling during drag operations
-- Support touchscreen-based drag and drop with dedicated touch handlers
-- Handle both mouse and touch events appropriately with pointer events
-- Create a reusable component that follows single responsibility principle
-- Use refs for DOM manipulation during drag operations
-- Maintain accessibility during all interaction states
-- Properly communicate drag events to parent components
-- Implement drag preview that exactly matches the card's appearance
-- Support removal from source list during drag operations
-- Integrate with the drag and drop manager for coordinated drag behavior
-- Support mobile interactions using pointer events API
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display task title prominently</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Show task description (truncated if too long)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Indicate task priority with visual cues (color coding)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Show task status through visual indication</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Display assignee information when available</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Show due date with appropriate formatting and color indicators for approaching/past dates</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support clicking to view/edit task details</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Provide a dedicated edit button/icon for quick edit access</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support being dragged between columns and within columns</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide visual feedback for interactive states (hover, drag)</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Show appropriate truncation for overly long content</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support touch-based drag and drop on mobile devices</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Provide a vertical grip handle for dragging on mobile</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Indicate itself when being dragged with semi-transparency</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Be removed from source list when picked up during drag operations</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support drag preview that follows cursor/touch point during dragging</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Maintain exact dimensions in drag preview as the original card</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Card should be draggable between status columns
-- Card should be draggable within the same column for reordering
-- Clicking the card should open the task detail modal
-- Clicking the edit button/icon should log "Edit {taskId} {taskTitle}" to the console
-- Visual indicators should reflect the task's priority
-- Due date should be formatted appropriately
-- Due date should be highlighted in yellow if approaching (within 3 days)
-- Due date should be highlighted in red if past due
-- Card should provide visual feedback during drag operations
-- When being dragged, the card should appear semi-transparent
-- Long text fields should be properly truncated with ellipsis
-- Empty fields (like missing assignee) should be handled gracefully
-- Auto-scrolling should activate when dragging near screen edges
-- Touch-based dragging should only activate when using the grip handle
-- Screen should auto-scroll during dragging operations
-- Card should be removed from its original position when dragging starts
-- Drag preview should be created that matches the card's appearance exactly
-- Drag preview should follow the cursor/touch point during dragging
-- Drag preview should be removed when dragging ends
-- Card should be added to the exact position where it was dropped
-- All drag interactions should work on mobile devices with pointer events
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Build with React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use Tailwind CSS for styling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement type safety with proper type definitions (not interfaces)</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support responsive design for different screen sizes</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Implement proper keyboard accessibility</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support drag-and-drop functionality with appropriate event handlers</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Optimize rendering performance with appropriate React hooks</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Implement auto-scrolling during drag operations</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support touchscreen-based drag and drop with dedicated touch handlers</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Handle both mouse and touch events appropriately with pointer events</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Create a reusable component that follows single responsibility principle</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Use refs for DOM manipulation during drag operations</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Maintain accessibility during all interaction states</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Properly communicate drag events to parent components</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement drag preview that exactly matches the card's appearance</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support removal from source list during drag operations</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Integrate with the drag and drop manager for coordinated drag behavior</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support mobile interactions using pointer events API</description>
+      </requirement>
+    </technical-requirements>
 
-## Component Structure
-```typescript
-type TaskCardProps = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Card should be draggable between status columns</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Card should be draggable within the same column for reordering</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Clicking the card should open the task detail modal</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Clicking the edit button/icon should log "Edit {taskId} {taskTitle}" to the console</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Visual indicators should reflect the task's priority</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Due date should be formatted appropriately</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Due date should be highlighted in yellow if approaching (within 3 days)</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Due date should be highlighted in red if past due</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Card should provide visual feedback during drag operations</description>
+      </expectation>
+      <expectation priority="high">
+        <description>When being dragged, the card should appear semi-transparent</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Long text fields should be properly truncated with ellipsis</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Empty fields (like missing assignee) should be handled gracefully</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Auto-scrolling should activate when dragging near screen edges</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Touch-based dragging should only activate when using the grip handle</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Screen should auto-scroll during dragging operations</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Card should be removed from its original position when dragging starts</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Drag preview should be created that matches the card's appearance exactly</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Drag preview should follow the cursor/touch point during dragging</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Drag preview should be removed when dragging ends</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Card should be added to the exact position where it was dropped</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>All drag interactions should work on mobile devices with pointer events</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type TaskCardProps = {
   task: Task;
   onStatusChange: (status: Task['status']) => void;
   onEdit: (task: Task) => void;
@@ -75,9 +207,10 @@ type TaskCardProps = {
   onDragEnd?: () => void;
   // Flag to indicate the card is being dragged
   isDragging?: boolean;
-};
-
-// Color maps for visual styling
+};]]></definition>
+    </interface>
+    <interface type="helpers">
+      <definition><![CDATA[// Color maps for visual styling
 const priorityColors = {
   low: 'bg-blue-100 text-blue-800',
   medium: 'bg-yellow-100 text-yellow-800',
@@ -88,9 +221,15 @@ const statusColors = {
   'todo': 'bg-gray-100',
   'in-progress': 'bg-purple-100',
   'done': 'bg-green-100',
-};
+};]]></definition>
+    </interface>
+  </interfaces>
 
-export const TaskCard: React.FC<TaskCardProps> = ({
+  <implementation>
+    <files>
+      <file path="src/ui/features/task_card/task_card.tsx" action="create">
+        <changes>Create TaskCard component implementation following the specification</changes>
+        <example><![CDATA[export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   onStatusChange,
   onEdit,
@@ -128,56 +267,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
   };
 
-  const handleAutoScroll = (e: React.DragEvent | React.TouchEvent | MouseEvent) => {
-    // Auto-scroll implementation when dragging near screen edges
-  };
-
-  // Pointer event handlers for mobile
-  const handlePointerDown = (e: React.PointerEvent<HTMLElement>) => {
-    // Only start drag if user is touching the grip handle
-    if (!e.target || !(e.target as HTMLElement).closest('.drag-handle')) return;
-
-    // Capture the pointer to track movement
-    e.currentTarget.setPointerCapture(e.pointerId);
-    setTouchDragging(true);
-
-    // Notify parent component of drag start
-    if (onDragStart && cardRef.current) {
-      onDragStart(task.id, task.status, cardRef.current);
-    }
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
-    if (!touchDragging) return;
-
-    // Get drag position for the drag preview
-    const position = {
-      x: e.clientX,
-      y: e.clientY
-    };
-
-    // This is handled by the drag and drop manager
-    // which updates the drag preview position
-  };
-
-  const handlePointerUp = (e: React.PointerEvent<HTMLElement>) => {
-    if (!touchDragging) return;
-
-    // Release pointer capture
-    e.currentTarget.releasePointerCapture(e.pointerId);
-    setTouchDragging(false);
-
-    // Notify parent component of drag end
-    if (onDragEnd) {
-      onDragEnd();
-    }
-  };
-
-  // Handle edit button click
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent opening the modal
-    console.log(`Edit ${task.id} ${task.title}`);
-  };
+  // Additional handlers omitted for brevity...
 
   // If this card is being dragged, it should be visually hidden
   // as the drag preview is showing instead
@@ -200,40 +290,25 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       onClick={() => onEdit(task)}
       data-task-id={task.id}
     >
-      <div className="flex justify-between items-start">
-        <h3 className="font-medium text-gray-900 truncate">{task.title}</h3>
-        <div className="flex items-center">
-          <div className="drag-handle mr-2 touch-manipulation cursor-grab p-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="8" cy="6" r="2" />
-              <circle cx="8" cy="12" r="2" />
-              <circle cx="8" cy="18" r="2" />
-              <circle cx="16" cy="6" r="2" />
-              <circle cx="16" cy="12" r="2" />
-              <circle cx="16" cy="18" r="2" />
-            </svg>
-          </div>
-          <button
-            onClick={handleEditClick}
-            className="text-gray-500 hover:text-gray-700 p-1"
-            aria-label="Edit task"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-      {/* Card content */}
+      {/* Card content implementation */}
     </div>
   );
-};
-```
+};]]></example>
+      </file>
+    </files>
 
-## Related Specifications
-- [Feature UI Components](../features.package_specs.md)
-- [Task Modal Component](../task_modal/task_modal.specs.md)
-- [Project Board Feature](../../../features/project_board/project_board.package_specs.md)
-- [Drag and Drop Manager](../../../lib/drag_drop/drag_drop_manager.specs.md)
-- [Drop Placeholder Component](../../../ui/features/project_board/drop_placeholder.specs.md)
+    <dependencies>
+      <dependency type="external">react for UI components</dependency>
+      <dependency type="external">react hooks for state and refs</dependency>
+      <dependency type="internal">Task type from @/types</dependency>
+    </dependencies>
+  </implementation>
+
+  <references>
+    <reference href="../features.package_specs.md">Feature UI Components</reference>
+    <reference href="../task_modal/task_modal.specs.md">Task Modal Component</reference>
+    <reference href="../../../features/project_board/project_board.package_specs.md">Project Board Feature</reference>
+    <reference href="../../../lib/drag_drop/drag_drop_manager.specs.md">Drag and Drop Manager</reference>
+    <reference href="../../../ui/features/project_board/drop_placeholder.specs.md">Drop Placeholder Component</reference>
+  </references>
+</specification>

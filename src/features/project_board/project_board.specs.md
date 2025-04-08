@@ -1,335 +1,259 @@
-# Project Board Component Specification
+---
+description: Project Board Component Specification
+type: component
+---
 
-## Overview
-The ProjectBoard component implements a kanban-style board for visualizing and managing tasks across different status categories. It coordinates task management operations and delegates specific responsibilities to specialized components, following SOLID principles.
+<specification>
+  <meta>
+    <title>Project Board Component Specification</title>
+    <description>The ProjectBoard component is the main interface for visualizing and managing tasks across different status categories. It implements a kanban-style board with columns for each task status.</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/features/project_board/project_board.tsx">Project Board Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Display tasks organized into columns by status (todo, in-progress, done)
-- Show column headers with status names and task counts
-- Allow dragging tasks between columns to update status
-- Allow reordering tasks within the same column by dragging
-- Support clicking on tasks to view/edit details
-- Support clicking edit button/icon to quickly log task details to console
-- Implement responsive design for various screen sizes
-- Support keyboard navigation for accessibility
-- Provide comprehensive visual feedback during drag operations
-- Remove dragged task from source list during drag operations
-- Create and manage drag preview that follows cursor/touch during dragging
-- Provide placeholder at the precise position where the task would be dropped
-- Support exact positioning between cards when dragging
-- Support touch-based drag and drop on mobile devices using pointer events
-- Ensure drag preview maintains exact dimensions of original card
+  <overview>
+    <description>The ProjectBoard component is the main interface for visualizing and managing tasks across different status categories. It implements a kanban-style board with columns for each task status and provides comprehensive drag-and-drop functionality for both status updates and task reordering.</description>
+    <responsibility>Coordinate the kanban board layout and orchestrate task management operations</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement component using React and TypeScript
-- Follow single responsibility principle by delegating specific concerns:
-  - Column rendering to TaskColumn component
-  - Drag and drop logic to DragAndDropManager
-  - Placeholder visualization to DropPlaceholder component
-  - Drag preview rendering to DragAndDropManager
-- Create responsive layout using Tailwind CSS
-- Optimize rendering performance for large task lists
-- Implement proper keyboard event handling
-- Ensure proper state management for task updates
-- Implement accessible UI elements with proper ARIA attributes
-- Coordinate communication between delegated components
-- Maintain type safety throughout implementation
-- Support touch interactions for mobile devices with pointer events
-- Implement drag preview mechanism that follows cursor/touch
-- Handle temporary removal of dragged tasks from source list
-- Implement exact positioning of placeholders between task cards
-- Ensure placeholders have exact dimensions matching dragged cards
-- Clean up drag preview and restore state when drag operation ends
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display tasks organized into columns by status (todo, in-progress, done)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Allow users to view all tasks at a glance</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support dragging tasks between status columns to update their status</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support reordering tasks within the same column through drag-and-drop</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Display task cards with key information (title, priority, assignee, etc.)</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Provide ability to open task details by clicking on a task card</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support task filtering and sorting options</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Maintain responsive layout across different device sizes</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support keyboard navigation and accessibility requirements</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide visual feedback during drag operations</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Coordinate the overall task management interface
-- Delegate column rendering to TaskColumn components
-- Delegate drag-and-drop logic to DragAndDropManager
-- Delegate drop placeholder rendering to DropPlaceholder component
-- Manage the overall task data state
-- Update task status when moved between columns
-- Update task order when reordered within the same column
-- Open task detail modal when a task is clicked
-- Log task details to console when edit button/icon is clicked
-- Propagate task updates to parent components
-- Maintain consistent task state across the board
-- Remove task card from source list when it's being dragged
-- Create drag preview that follows cursor/touch and has same dimensions as original card
-- Position drop placeholder precisely between cards based on cursor/touch position
-- Support pointer events for cross-device compatibility
-- Clean up drag preview when drag operation completes
-- Add tasks to exact position where dropped between other cards
-- Ensure placeholders accurately represent where cards will be placed
-- Handle pointer event-based interactions for mobile devices
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Built with React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow SOLID principles through a well-structured component hierarchy</description>
+        <examples>
+          <example title="Component Hierarchy">
+            <correct-example title="Proper component structure" conditions="Designing the component hierarchy" expected-result="Clear separation of concerns"><![CDATA[// ProjectBoard: Overall coordination and state management
+// TaskColumn: Column-specific rendering and interactions
+// DragAndDropManager: Complex drag and drop logic
+// DropPlaceholder: Visual placeholder for drag operations]]></correct-example>
+          </example>
+        </examples>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement comprehensive drag-and-drop functionality for both cross-column and within-column operations</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Calculate exact drop positions for precise card placement based on mouse/touch position</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement exact positioning logic to place cards between the nearest cards where the card was dropped</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Optimize performance for large numbers of tasks</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support responsive design for mobile and desktop</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Implement proper keyboard accessibility</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure component reusability</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Maintain type safety throughout implementation</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement visual feedback for all drag-and-drop interactions</description>
+        <examples>
+          <example title="Drag Feedback">
+            <correct-example title="Comprehensive visual feedback" conditions="During drag operations" expected-result="Clear visual indicators"><![CDATA[// Visual feedback includes:
+// - Semi-transparent dragged card
+// - Drag preview following cursor
+// - Highlighted column borders
+// - Drop placeholder between cards
+// - Cards moving apart to make space]]></correct-example>
+          </example>
+        </examples>
+      </requirement>
+    </technical-requirements>
 
-## Component Structure
-```typescript
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>When a task is dragged between columns, its status should update immediately</description>
+        <scenarios>
+          <scenario title="Cross-Column Drag">
+            <steps><![CDATA[Given a task is in the "Todo" column
+When the user drags the task to the "In Progress" column
+Then the task should visually move to the "In Progress" column
+And the task's status should update to "in-progress" in the application state]]></steps>
+          </scenario>
+        </scenarios>
+      </expectation>
+      <expectation priority="medium">
+        <description>When a task is dragged within the same column, it should be reordered precisely at the drop position</description>
+        <scenarios>
+          <scenario title="Within-Column Drag">
+            <steps><![CDATA[Given a column has multiple tasks
+When a user drags a task between two other tasks
+Then the task should be positioned exactly at the drop location
+And the other tasks should reflow around it]]></steps>
+          </scenario>
+        </scenarios>
+      </expectation>
+      <expectation priority="high">
+        <description>When a card is dropped between two cards, it should be positioned exactly at the drop location</description>
+      </expectation>
+      <expectation priority="high">
+        <description>The system should insert the card at the exact position between the cards closest to where it was dropped</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Task cards should open a detail view when clicked</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Empty columns should display appropriate messaging</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Columns should scroll independently if they contain many tasks</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Drag operations should provide comprehensive visual feedback</description>
+        <scenarios>
+          <scenario title="Drag Visual Feedback">
+            <steps><![CDATA[Given a user is dragging a task card
+Then the card should appear semi-transparent
+And a drag preview should follow the cursor
+And columns should be highlighted when dragged over
+And a drop placeholder should appear between cards showing exact insertion point]]></steps>
+          </scenario>
+        </scenarios>
+      </expectation>
+      <expectation priority="medium">
+        <description>The board should remain usable on smaller screens</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Touch-based dragging should work smoothly on mobile devices</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type ProjectBoardProps = {
+  project: Project;
+  onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
+  onTaskEdit: (task: Task) => void;
+};]]></definition>
+    </interface>
+  </interfaces>
+
+  <implementation>
+    <files>
+      <file path="src/features/project_board/project_board.tsx" action="create">
+        <changes>Create the ProjectBoard component implementation</changes>
+        <example><![CDATA[import React from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { Project, Task, TaskStatus } from '@/types';
+import { TaskColumn } from './task_column';
+
 type ProjectBoardProps = {
   project: Project;
   onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
   onTaskEdit: (task: Task) => void;
-  onTaskReorder?: (taskId: string, columnId: string, targetTaskId: string, position: 'before' | 'after') => void;
 };
 
 export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   project,
   onTaskUpdate,
   onTaskEdit,
-  onTaskReorder
 }) => {
-  // Task state management
-  const [tasks, setTasks] = useState<Task[]>(project.tasks);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Filter tasks by status
+  const todoTasks = project.tasks.filter(task => task.status === 'todo');
+  const inProgressTasks = project.tasks.filter(task => task.status === 'in-progress');
+  const doneTasks = project.tasks.filter(task => task.status === 'done');
 
-  // Use the drag and drop manager
-  const {
-    draggedItemId,
-    draggedOverContainerId,
-    dropPlaceholderPosition,
-    draggedElement,
-    dragPreviewElement,
-    handleDragStart,
-    handleDragEnd,
-    handleContainerDragOver,
-    handleContainerDragLeave,
-    handleContainerDrop,
-    handlePointerDown,
-    handlePointerMove,
-    handlePointerUp
-  } = useDragAndDropManager();
-
-  // Task filtering by status
-  const todoTasks = tasks.filter(task => task.status === 'todo');
-  const inProgressTasks = tasks.filter(task => task.status === 'in-progress');
-  const doneTasks = tasks.filter(task => task.status === 'done');
-
-  // Task status change handler
-  const handleStatusChange = (taskId: string, status: Task['status']) => {
-    onTaskUpdate(taskId, { status });
-    setTasks(prev =>
-      prev.map(task =>
-        task.id === taskId
-          ? { ...task, status, updatedAt: new Date().toISOString().split('T')[0] }
-          : task
-      )
-    );
+  // Handle task status changes via drag and drop
+  const handleTaskDrop = (taskId: string, newStatus: TaskStatus) => {
+    onTaskUpdate(taskId, { status: newStatus });
   };
-
-  // Task reordering handler
-  const handleTaskReorder = (draggedTaskId: string, targetTaskId: string, position: 'before' | 'after') => {
-    const updatedTasks = [...tasks];
-    const draggedTaskIndex = updatedTasks.findIndex(t => t.id === draggedTaskId);
-    const targetTaskIndex = updatedTasks.findIndex(t => t.id === targetTaskId);
-
-    if (draggedTaskIndex === -1 || targetTaskIndex === -1) return;
-
-    // Remove the dragged task
-    const [draggedTask] = updatedTasks.splice(draggedTaskIndex, 1);
-
-    // Calculate new position
-    const insertIndex = position === 'before'
-      ? targetTaskIndex > draggedTaskIndex ? targetTaskIndex - 1 : targetTaskIndex
-      : targetTaskIndex > draggedTaskIndex ? targetTaskIndex : targetTaskIndex + 1;
-
-    // Insert the task at the new position
-    updatedTasks.splice(insertIndex, 0, draggedTask);
-
-    setTasks(updatedTasks);
-
-    // Propagate to parent if callback exists
-    if (onTaskReorder) {
-      onTaskReorder(draggedTaskId, draggedTask.status, targetTaskId, position);
-    }
-  };
-
-  // Task editing handler
-  const handleEditTask = (task: Task) => {
-    setSelectedTask(task);
-    setIsModalOpen(true);
-  };
-
-  // Task save handler
-  const handleSaveTask = (updatedTask: Task) => {
-    onTaskEdit(updatedTask);
-    setTasks(prev =>
-      prev.map(task =>
-        task.id === updatedTask.id
-          ? { ...updatedTask, updatedAt: new Date().toISOString().split('T')[0] }
-          : task
-      )
-    );
-    setIsModalOpen(false);
-  };
-
-  // Container drop handler
-  const onContainerDrop = (e: React.DragEvent<HTMLDivElement>, columnId: TaskStatus) => {
-    const result = handleContainerDrop(e, columnId);
-    if (result) {
-      const { itemId, sourceContainerId, targetId, position } = result;
-
-      if (sourceContainerId !== columnId) {
-        // Moving between columns - update status
-        handleStatusChange(itemId, columnId);
-      } else if (targetId) {
-        // Reordering within same column
-        handleTaskReorder(itemId, targetId, position as 'before' | 'after');
-      }
-    }
-  };
-
-  // Handle pointer event interactions for mobile
-  const onContainerPointerDown = (e: React.PointerEvent<HTMLDivElement>, columnId: TaskStatus) => {
-    // This is delegated to the task card's pointer handlers
-  };
-
-  const onContainerPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!draggedItemId) return;
-
-    handlePointerMove(e);
-
-    // Find the column element
-    const columnElement = e.currentTarget.closest('[data-column]');
-    if (!columnElement) return;
-
-    // Get the column ID
-    const columnId = columnElement.getAttribute('data-column') as TaskStatus;
-    if (!columnId) return;
-
-    // Get all task elements in this column
-    const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
-
-    // Use the same logic as dragOver to calculate placeholder position
-    const point = { clientY: e.clientY };
-    // Process pointer move similar to dragOver (implementation details in DragAndDropManager)
-  };
-
-  const onContainerPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!draggedItemId) return;
-
-    handlePointerUp(e);
-
-    // Find the column element
-    const columnElement = e.currentTarget.closest('[data-column]');
-    if (!columnElement) return;
-
-    // Get the column ID
-    const columnId = columnElement.getAttribute('data-column') as TaskStatus;
-    if (!columnId) return;
-
-    // Similar logic to onContainerDrop but for pointer events
-    // Process pointer up similar to drop (implementation details in DragAndDropManager)
-  };
-
-  // Create the drop placeholder element
-  const placeholderElement = (
-    <DropPlaceholder
-      isActive={!!dropPlaceholderPosition}
-      draggedElement={draggedElement}
-      position={dropPlaceholderPosition?.position || null}
-      targetElement={
-        dropPlaceholderPosition?.targetId
-          ? document.querySelector(`[data-task-id="${dropPlaceholderPosition.targetId}"]`) as HTMLElement
-          : null
-      }
-    />
-  );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
-      {/* Todo Column */}
-      <TaskColumn
-        status="todo"
-        title="Todo"
-        tasks={todoTasks}
-        isDraggedOver={draggedOverContainerId === 'todo'}
-        dropPlaceholderPosition={dropPlaceholderPosition}
-        placeholderComponent={placeholderElement}
-        draggedTaskId={draggedItemId}
-        onDragOver={(e) => {
-          const columnElement = e.currentTarget;
-          const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
-          handleContainerDragOver(e, 'todo', taskElements);
-        }}
-        onDrop={(e) => onContainerDrop(e, 'todo')}
-        onDragLeave={handleContainerDragLeave}
-        onTaskStatusChange={handleStatusChange}
-        onTaskEdit={handleEditTask}
-        onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'todo', element)}
-        onTaskDragEnd={handleDragEnd}
-        onPointerDown={(e) => onContainerPointerDown(e, 'todo')}
-        onPointerMove={onContainerPointerMove}
-        onPointerUp={onContainerPointerUp}
-      />
-
-      {/* In Progress Column */}
-      <TaskColumn
-        status="in-progress"
-        title="In Progress"
-        tasks={inProgressTasks}
-        isDraggedOver={draggedOverContainerId === 'in-progress'}
-        dropPlaceholderPosition={dropPlaceholderPosition}
-        placeholderComponent={placeholderElement}
-        draggedTaskId={draggedItemId}
-        onDragOver={(e) => {
-          const columnElement = e.currentTarget;
-          const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
-          handleContainerDragOver(e, 'in-progress', taskElements);
-        }}
-        onDrop={(e) => onContainerDrop(e, 'in-progress')}
-        onDragLeave={handleContainerDragLeave}
-        onTaskStatusChange={handleStatusChange}
-        onTaskEdit={handleEditTask}
-        onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'in-progress', element)}
-        onTaskDragEnd={handleDragEnd}
-        onPointerDown={(e) => onContainerPointerDown(e, 'in-progress')}
-        onPointerMove={onContainerPointerMove}
-        onPointerUp={onContainerPointerUp}
-      />
-
-      {/* Done Column */}
-      <TaskColumn
-        status="done"
-        title="Done"
-        tasks={doneTasks}
-        isDraggedOver={draggedOverContainerId === 'done'}
-        dropPlaceholderPosition={dropPlaceholderPosition}
-        placeholderComponent={placeholderElement}
-        draggedTaskId={draggedItemId}
-        onDragOver={(e) => {
-          const columnElement = e.currentTarget;
-          const taskElements = Array.from(columnElement.querySelectorAll('[data-task-id]'));
-          handleContainerDragOver(e, 'done', taskElements);
-        }}
-        onDrop={(e) => onContainerDrop(e, 'done')}
-        onDragLeave={handleContainerDragLeave}
-        onTaskStatusChange={handleStatusChange}
-        onTaskEdit={handleEditTask}
-        onTaskDragStart={(taskId, element) => handleDragStart(taskId, 'done', element)}
-        onTaskDragEnd={handleDragEnd}
-        onPointerDown={(e) => onContainerPointerDown(e, 'done')}
-        onPointerMove={onContainerPointerMove}
-        onPointerUp={onContainerPointerUp}
-      />
-
-      {/* Task Modal */}
-      {selectedTask && (
-        <TaskModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          task={selectedTask}
-          onSave={handleSaveTask}
-        />
-      )}
+    <div className="flex flex-col">
+      <h2 className="text-xl font-semibold mb-4">{project.name}</h2>
+      <div className="overflow-hidden">
+        <DndProvider backend={HTML5Backend}>
+          <div className="flex space-x-4 overflow-x-auto pb-4">
+            <TaskColumn
+              title="To Do"
+              tasks={todoTasks}
+              status="todo"
+              onTaskDrop={handleTaskDrop}
+              onTaskEdit={onTaskEdit}
+            />
+            <TaskColumn
+              title="In Progress"
+              tasks={inProgressTasks}
+              status="in-progress"
+              onTaskDrop={handleTaskDrop}
+              onTaskEdit={onTaskEdit}
+            />
+            <TaskColumn
+              title="Done"
+              tasks={doneTasks}
+              status="done"
+              onTaskDrop={handleTaskDrop}
+              onTaskEdit={onTaskEdit}
+            />
+          </div>
+        </DndProvider>
+      </div>
     </div>
   );
-};
-```
+};]]></example>
+      </file>
+    </files>
 
-## Related Specifications
-- [Project Board Feature](./project_board.package_specs.md)
-- [Task Column Component](./task_column.specs.md)
-- [Task Card Component](../../ui/features/task_card/task_card.specs.md)
-- [Task Modal Component](../../ui/features/task_modal/task_modal.specs.md)
-- [Drag and Drop Manager](../../lib/drag_drop/drag_drop_manager.specs.md)
-- [Drop Placeholder Component](../../ui/features/project_board/drop_placeholder.specs.md)
+    <dependencies>
+      <dependency type="external">react for UI components</dependency>
+      <dependency type="external">react-dnd for drag-and-drop functionality</dependency>
+      <dependency type="external">react-dnd-html5-backend for HTML5 drag-and-drop support</dependency>
+      <dependency type="internal">Task and Project types from @/types</dependency>
+      <dependency type="internal">TaskColumn component from ./task_column</dependency>
+    </dependencies>
+  </implementation>
+
+  <references>
+    <reference href="./project_board.package_specs.md">Project Board Feature Package</reference>
+    <reference href="./task_column.specs.md">Task Column Component</reference>
+    <reference href="../../types.specs.md">Types</reference>
+  </references>
+</specification>

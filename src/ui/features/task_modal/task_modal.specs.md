@@ -1,66 +1,191 @@
-# Task Modal Component Specification
+---
+description: Task Modal Component Specification
+type: component
+---
 
-## Overview
-The Task Modal component provides an interface for viewing and editing task details. It displays all task information in a modal dialog and allows users to update task properties.
+<specification>
+  <meta>
+    <title>Task Modal Component</title>
+    <description>Provides an interface for viewing and editing task details in a modal dialog</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/ui/features/task_modal/task_modal.tsx">Task Modal Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Display task details in a modal overlay
-- Support editing all task properties (title, description, status, priority, assignee, due date)
-- Provide form validation for required fields
-- Allow users to save or cancel edits
-- Show appropriate error messages for invalid inputs
-- Support keyboard navigation and shortcuts (Escape to close, Alt+S to save)
-- Implement accessible form controls with proper labeling
-- Display loading state during save operations
-- Confirm before discarding unsaved changes
-- Provide visual feedback for form submission
-- Allow task deletion from the modal with confirmation
-- Focus appropriate elements when modal opens
+  <overview>
+    <description>The Task Modal component provides an interface for viewing and editing task details. It displays all task information in a modal dialog and allows users to update task properties.</description>
+    <responsibility>Display and edit task details in a modal interface with form validation and accessibility support</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement with React and TypeScript
-- Use Tailwind CSS for styling
-- Implement proper focus management with focus trapping
-- Support keyboard shortcuts for common actions
-- Implement comprehensive form validation with error messages
-- Use refs to manage focus within the modal
-- Implement proper ARIA attributes for accessibility
-- Handle unsaved changes with confirmation
-- Track all focusable elements in the modal
-- Set initial focus on the title input when opened
-- Optimize for performance with appropriate React hooks
-- Follow single responsibility principle for state and UI logic
-- Use type definitions instead of interfaces according to project conventions
-- Maintain proper state updates for form data and validation
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display task details in a modal overlay</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support editing all task properties (title, description, status, priority, assignee, due date)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide form validation for required fields</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Allow users to save or cancel edits</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Show appropriate error messages for invalid inputs</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support keyboard navigation and shortcuts (Escape to close, Alt+S to save)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement accessible form controls with proper labeling</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Display loading state during save operations</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Confirm before discarding unsaved changes</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Provide visual feedback for form submission</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Allow task deletion from the modal with confirmation</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Focus appropriate elements when modal opens</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Modal should open centered on the screen
-- Backdrop should prevent interaction with the underlying page
-- Focus should be trapped within the modal (Tab cycles through controls)
-- Required fields should be validated before save
-- Pressing Escape key should close the modal with confirmation if changes exist
-- Tab key should cycle through form controls in a logical order
-- Alt+S keyboard shortcut should trigger save action
-- Changes should only be applied after Save button is clicked
-- Cancel button should discard changes with confirmation if unsaved changes exist
-- Save button should be disabled during save operation
-- Error states should be clearly indicated with messages
-- Initial focus should be set on the title input field
-- Field labels should be properly associated with inputs
-- Invalid fields should have proper ARIA attributes
-- Delete confirmation should prevent accidental deletion
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement with React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use Tailwind CSS for styling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement proper focus management with focus trapping</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support keyboard shortcuts for common actions</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement comprehensive form validation with error messages</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use refs to manage focus within the modal</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement proper ARIA attributes for accessibility</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Handle unsaved changes with confirmation</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Track all focusable elements in the modal</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Set initial focus on the title input when opened</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Optimize for performance with appropriate React hooks</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow single responsibility principle for state and UI logic</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use type definitions instead of interfaces according to project conventions</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Maintain proper state updates for form data and validation</description>
+      </requirement>
+    </technical-requirements>
 
-## Component Structure
-```typescript
-type TaskModalProps = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Modal should open centered on the screen</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Backdrop should prevent interaction with the underlying page</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Focus should be trapped within the modal (Tab cycles through controls)</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Required fields should be validated before save</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Pressing Escape key should close the modal with confirmation if changes exist</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Tab key should cycle through form controls in a logical order</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Alt+S keyboard shortcut should trigger save action</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Changes should only be applied after Save button is clicked</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Cancel button should discard changes with confirmation if unsaved changes exist</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Save button should be disabled during save operation</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Error states should be clearly indicated with messages</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Initial focus should be set on the title input field</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Field labels should be properly associated with inputs</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Invalid fields should have proper ARIA attributes</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Delete confirmation should prevent accidental deletion</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type TaskModalProps = {
   isOpen: boolean;
   onClose: () => void;
   task: Task;
   onSave: (task: Task) => void;
   onDelete?: (taskId: string) => void;
-};
+};]]></definition>
+    </interface>
+    <interface type="state">
+      <definition><![CDATA[// State for form fields and validation
+const [formData, setFormData] = useState<Task>({...task});
+const [errors, setErrors] = useState<Record<string, string>>({});
+const [isSubmitting, setIsSubmitting] = useState(false);
+const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-export const TaskModal: React.FC<TaskModalProps> = ({
+// Refs for focus management
+const modalRef = useRef<HTMLDivElement>(null);
+const titleInputRef = useRef<HTMLInputElement>(null);
+const firstFocusableRef = useRef<HTMLButtonElement>(null);
+const lastFocusableRef = useRef<HTMLButtonElement>(null);
+const saveButtonRef = useRef<HTMLButtonElement>(null);
+
+// Track all focusable elements for focus trap
+const focusableElements = useRef<HTMLElement[]>([]);]]></definition>
+    </interface>
+  </interfaces>
+
+  <implementation>
+    <files>
+      <file path="src/ui/features/task_modal/task_modal.tsx" action="create">
+        <changes>Create TaskModal component implementation following the specification</changes>
+        <example><![CDATA[export const TaskModal: React.FC<TaskModalProps> = ({
   isOpen,
   onClose,
   task,
@@ -412,10 +537,20 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       </div>
     </div>
   );
-};
-```
+};]]></example>
+      </file>
+    </files>
 
-## Related Specifications
-- [Feature UI Components](../features.package_specs.md)
-- [Base Button Component](../../base/design_kit/button/button.specs.md)
-- [Task Card Component](../task_card/task_card.specs.md)
+    <dependencies>
+      <dependency type="external">react for UI components</dependency>
+      <dependency type="external">react hooks for state and effects</dependency>
+      <dependency type="internal">Task type from @/types</dependency>
+    </dependencies>
+  </implementation>
+
+  <references>
+    <reference href="../features.package_specs.md">Features UI Components</reference>
+    <reference href="../../../features/task_management/task_manager.specs.md">Task Manager Component</reference>
+    <reference href="../task_card/task_card.specs.md">Task Card Component</reference>
+  </references>
+</specification>

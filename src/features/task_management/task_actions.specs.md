@@ -1,211 +1,270 @@
-# Task Actions Utility Specification
+---
+description: Task Actions Component Specification
+type: component
+---
 
-## Overview
-The Task Actions utility provides a set of functions for common task operations such as creating, updating, and deleting tasks. It centralizes task manipulation logic for consistent handling across the application.
+<specification>
+  <meta>
+    <title>Task Actions Component</title>
+    <description>A component providing action buttons for task management operations such as creating, editing, and deleting tasks.</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <last-updated utc-timestamp="1712764800">April 10, 2024, 10:00 AM EDT</last-updated>
+    <applies-to>
+      <file-matcher glob="src/features/task_management/task_actions.tsx">Task Actions Component Implementation</file-matcher>
+    </applies-to>
+  </meta>
 
-## Technical Requirements
-- Implement utility functions for task CRUD operations
-- Create helper functions for task validation
-- Provide functions for task filtering and sorting
-- Use TypeScript for full type safety with proper typing
-- Include proper error handling with typed error responses
-- Support batch operations on multiple tasks
-- Export functions individually for tree-shaking optimization
-- Document functions with JSDoc comments
-- Follow single responsibility principle for each function
-- Use immutable data patterns for all operations
-- Implement proper error handling with meaningful error messages
-- Ensure type safety across all operations
+  <overview>
+    <description>
+      The TaskActions component provides a set of buttons for performing common task operations like creating new tasks,
+      editing existing tasks, and deleting tasks. It is designed to be used within the TaskManager to enable user
+      interaction with the task list.
+    </description>
+    <responsibility>
+      Provide a consistent interface for task management operations with appropriate conditional rendering based on
+      the current selection state.
+    </responsibility>
+  </overview>
 
-## Functional Requirements
-- Create function to generate a new task with default values
-- Create function to validate task data
-- Implement function to update task properties
-- Provide function to delete tasks
-- Create function to filter tasks by various criteria
-- Implement sorting functions for different task attributes
-- Support batch operations for updating multiple tasks
-- Ensure all operations are pure functions without side effects
-- Provide defensive programming with proper input validation
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display a button for creating new tasks</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Show edit button when a task is selected</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Show delete button when a task is selected</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Provide visual feedback for hover and active states</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support keyboard navigation and activation</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Include tooltips for button actions</description>
+      </requirement>
+      <requirement priority="low">
+        <description>Support additional custom actions through props</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Maintain consistent styling with the rest of the application</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure full accessibility support for all buttons</description>
+      </requirement>
+    </functional-requirements>
 
-## Implementation Details
-```typescript
-/**
- * Type for validation errors
- */
-export type ValidationErrors = Record<string, string> | null;
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement with React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use Tailwind CSS for styling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use proper TypeScript typing for props and event handlers</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support responsive layouts on different screen sizes</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Add proper ARIA attributes for accessibility</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Implement focus management for keyboard users</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Add screen reader announcements for button actions</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Include loading states for buttons during operations</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Use proper event delegation for performance</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Implement error handling for button actions</description>
+      </requirement>
+    </technical-requirements>
 
-/**
- * Type for sorting direction
- */
-export type SortDirection = 'asc' | 'desc';
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Buttons should visually reflect their interactive state (hover, focus, active)</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Edit and delete buttons should only be enabled when a task is selected</description>
+      </expectation>
+      <expectation priority="high">
+        <description>All buttons should be accessible via keyboard navigation</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Buttons should have appropriate ARIA labels for screen readers</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Tooltips should appear on hover/focus after a short delay</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Loading state should be indicated while operations are in progress</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Disabled buttons should have visual indication and explanation</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
 
-/**
- * Creates a new task with default values and the provided overrides
- * @param taskData Partial task data to override defaults
- * @returns A new task object
- */
-export const createTask = (taskData: Partial<Task> = {}): Task => {
-  const now = new Date().toISOString();
-  return {
-    id: crypto.randomUUID(),
-    title: '',
-    description: '',
-    status: 'todo',
-    priority: 'medium',
-    createdAt: now,
-    updatedAt: now,
-    ...taskData,
-  };
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type TaskActionsProps = {
+  onCreateTask: () => void;
+  onEditTask: () => void;
+  onDeleteTask: () => void;
+  isTaskSelected: boolean;
+  isLoading?: boolean;
+  customActions?: {
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+    icon?: React.ReactNode;
+  }[];
+};]]></definition>
+    </interface>
+  </interfaces>
+
+  <implementation>
+    <files>
+      <file path="src/features/task_management/task_actions.tsx" action="create">
+        <changes>Create the TaskActions component implementation</changes>
+        <example><![CDATA[import React from 'react';
+import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+
+export type TaskActionsProps = {
+  onCreateTask: () => void;
+  onEditTask: () => void;
+  onDeleteTask: () => void;
+  isTaskSelected: boolean;
+  isLoading?: boolean;
+  customActions?: {
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+    icon?: React.ReactNode;
+  }[];
 };
 
-/**
- * Validates task data and returns any validation errors
- * @param task Task to validate
- * @returns Object with validation errors or null if valid
- */
-export const validateTask = (task: Task): ValidationErrors => {
-  const errors: Record<string, string> = {};
+export const TaskActions: React.FC<TaskActionsProps> = ({
+  onCreateTask,
+  onEditTask,
+  onDeleteTask,
+  isTaskSelected,
+  isLoading = false,
+  customActions = [],
+}) => {
+  // Common button styling
+  const baseButtonClasses = "inline-flex items-center px-3 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed";
+  const primaryButtonClasses = `${baseButtonClasses} bg-blue-600 text-white hover:bg-blue-700`;
+  const secondaryButtonClasses = `${baseButtonClasses} bg-white text-gray-700 border border-gray-300 hover:bg-gray-50`;
+  const dangerButtonClasses = `${baseButtonClasses} bg-red-600 text-white hover:bg-red-700`;
 
-  if (!task.title.trim()) {
-    errors.title = 'Title is required';
-  } else if (task.title.length > 100) {
-    errors.title = 'Title must be less than 100 characters';
-  }
+  return (
+    <div className="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Task actions">
+      {/* Create task button */}
+      <button
+        type="button"
+        className={primaryButtonClasses}
+        onClick={onCreateTask}
+        disabled={isLoading}
+        aria-label="Create new task"
+      >
+        <PlusIcon className="h-4 w-4 mr-2" aria-hidden="true" />
+        <span>Create Task</span>
+      </button>
 
-  if (!task.description.trim()) {
-    errors.description = 'Description is required';
-  }
+      {/* Edit task button - only enabled when a task is selected */}
+      <button
+        type="button"
+        className={secondaryButtonClasses}
+        onClick={onEditTask}
+        disabled={!isTaskSelected || isLoading}
+        aria-label="Edit selected task"
+      >
+        <PencilIcon className="h-4 w-4 mr-2" aria-hidden="true" />
+        <span>Edit</span>
+      </button>
 
-  if (!['todo', 'in-progress', 'done'].includes(task.status)) {
-    errors.status = 'Invalid status value';
-  }
+      {/* Delete task button - only enabled when a task is selected */}
+      <button
+        type="button"
+        className={dangerButtonClasses}
+        onClick={onDeleteTask}
+        disabled={!isTaskSelected || isLoading}
+        aria-label="Delete selected task"
+      >
+        <TrashIcon className="h-4 w-4 mr-2" aria-hidden="true" />
+        <span>Delete</span>
+      </button>
 
-  if (!['low', 'medium', 'high'].includes(task.priority)) {
-    errors.priority = 'Invalid priority value';
-  }
+      {/* Custom actions */}
+      {customActions.map((action, index) => (
+        <button
+          key={`custom-action-${index}`}
+          type="button"
+          className={secondaryButtonClasses}
+          onClick={action.onClick}
+          disabled={action.disabled || isLoading}
+          aria-label={action.label}
+        >
+          {action.icon && <span className="mr-2">{action.icon}</span>}
+          <span>{action.label}</span>
+        </button>
+      ))}
 
-  if (task.dueDate) {
-    const dueDate = new Date(task.dueDate);
-    if (isNaN(dueDate.getTime())) {
-      errors.dueDate = 'Invalid date format';
-    }
-  }
-
-  return Object.keys(errors).length > 0 ? errors : null;
-};
-
-/**
- * Updates a task with new values
- * @param task Original task
- * @param updates Partial updates to apply
- * @returns New task object with updates applied
- */
-export const updateTask = (task: Task, updates: Partial<Task>): Task => {
-  return {
-    ...task,
-    ...updates,
-    // Ensure updatedAt is always refreshed
-    updatedAt: new Date().toISOString(),
-  };
-};
-
-/**
- * Updates multiple tasks that match a predicate function
- * @param tasks Array of original tasks
- * @param predicate Function to determine which tasks to update
- * @param updates Partial updates to apply
- * @returns New array with updated tasks
- */
-export const updateTasks = (
-  tasks: Task[],
-  predicate: (task: Task) => boolean,
-  updates: Partial<Task>
-): Task[] => {
-  return tasks.map(task =>
-    predicate(task) ? updateTask(task, updates) : task
+      {/* Loading indicator */}
+      {isLoading && (
+        <span className="ml-2 inline-flex items-center text-sm text-gray-500">
+          <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Processing...
+        </span>
+      )}
+    </div>
   );
-};
+};]]></example>
+      </file>
+    </files>
+  </implementation>
 
-/**
- * Deletes a task from an array of tasks
- * @param tasks Array of tasks
- * @param taskId ID of task to delete
- * @returns New array with the task removed
- */
-export const deleteTask = (tasks: Task[], taskId: string): Task[] => {
-  return tasks.filter(task => task.id !== taskId);
-};
+  <dependencies>
+    <dependency>
+      <name>React</name>
+      <version>^18.0.0</version>
+    </dependency>
+    <dependency>
+      <name>TypeScript</name>
+      <version>^5.0.0</version>
+    </dependency>
+    <dependency>
+      <name>Tailwind CSS</name>
+      <version>^3.0.0</version>
+    </dependency>
+    <dependency>
+      <name>Heroicons</name>
+      <version>^2.0.0</version>
+    </dependency>
+  </dependencies>
 
-/**
- * Deletes multiple tasks that match a predicate function
- * @param tasks Array of tasks
- * @param predicate Function to determine which tasks to delete
- * @returns New array with matching tasks removed
- */
-export const deleteTasks = (
-  tasks: Task[],
-  predicate: (task: Task) => boolean
-): Task[] => {
-  return tasks.filter(task => !predicate(task));
-};
-
-/**
- * Filters tasks based on provided criteria
- * @param tasks Array of tasks to filter
- * @param filters Filter criteria
- * @returns Filtered array of tasks
- */
-export const filterTasks = (tasks: Task[], filters: Partial<TaskFilters>): Task[] => {
-  return tasks.filter(task => {
-    if (filters.status && task.status !== filters.status) {
-      return false;
-    }
-
-    if (filters.priority && task.priority !== filters.priority) {
-      return false;
-    }
-
-    if (filters.assignee && task.assignee !== filters.assignee) {
-      return false;
-    }
-
-    return true;
-  });
-};
-
-/**
- * Sorts tasks by the specified field and direction
- * @param tasks Array of tasks to sort
- * @param field Field to sort by
- * @param direction Sort direction (asc or desc)
- * @returns Sorted array of tasks
- */
-export const sortTasks = (
-  tasks: Task[],
-  field: keyof Task = 'updatedAt',
-  direction: SortDirection = 'desc'
-): Task[] => {
-  return [...tasks].sort((a, b) => {
-    const valueA = a[field];
-    const valueB = b[field];
-
-    if (valueA === valueB) return 0;
-
-    const comparison = valueA < valueB ? -1 : 1;
-    return direction === 'asc' ? comparison : -comparison;
-  });
-};
-```
-
-## Error Handling
-- All functions should validate their inputs
-- Invalid inputs should result in meaningful error messages
-- Errors should be properly typed for consistent handling
-- Functions should fail gracefully with clear error messages
-- Error messages should be user-friendly and actionable
-
-## Related Specifications
-- [Task Management Features](./task_management.package_specs.md)
-- [Task Manager Component](./task_manager.specs.md)
-- [Task Types](../../types.specs.md)
+  <references>
+    <reference>
+      <name>Task Manager Specification</name>
+      <path>src/features/task_management/task_manager.specs.md</path>
+    </reference>
+    <reference>
+      <name>Task Management Package Specification</name>
+      <path>src/features/task_management/task_management.package_specs.md</path>
+    </reference>
+  </references>
+</specification>

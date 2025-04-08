@@ -1,48 +1,131 @@
-# Task Filter Component Specification
+---
+description: Task Filter Utility Specification
+type: utility
+---
 
-## Overview
-The TaskFilter component provides an interface for filtering tasks based on different criteria. It allows users to refine the task list view by selecting various filter options.
+<specification>
+  <meta>
+    <title>Task Filter Utility</title>
+    <description>A utility for filtering tasks based on various criteria including status, priority, and assignee.</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <last-updated utc-timestamp="1712764800">April 10, 2024, 10:00 AM EDT</last-updated>
+    <applies-to>
+      <file-matcher glob="src/features/task_management/task_filter.tsx">Task Filter Component Implementation</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Allow filtering tasks by status
-- Allow filtering tasks by priority
-- Allow filtering tasks by assignee
-- Support clearing all filters
-- Provide a clean and intuitive filter interface
-- Show active filters with visual indicators
-- Support combining multiple filter criteria
-- Allow saving common filter combinations
-- Ensure the filter interface is accessible to all users
+  <overview>
+    <description>The TaskFilter component provides an interface for filtering tasks based on different criteria. It allows users to refine the task list view by selecting various filter options.</description>
+    <responsibility>Enable users to filter and refine task list views based on various criteria</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement with React and TypeScript
-- Create responsive filter layout
-- Support various screen sizes
-- Implement accessible form controls with proper labels and ARIA attributes
-- Optimize for performance
-- Support keyboard navigation and screen readers
-- Use Tailwind CSS for styling
-- Use types instead of interfaces as per project conventions
-- Follow single responsibility principle for filter logic
-- Properly handle state management for filter options
-- Implement proper TypeScript typing for all props and handlers
-- Use proper event typing for change handlers
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Allow filtering tasks by status</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Allow filtering tasks by priority</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Allow filtering tasks by assignee</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support clearing all filters</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide a clean and intuitive filter interface</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Show active filters with visual indicators</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support combining multiple filter criteria</description>
+      </requirement>
+      <requirement priority="low">
+        <description>Allow saving common filter combinations</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure the filter interface is accessible to all users</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Changing a filter should immediately update the task list
-- Multiple filters should be combined with AND logic
-- Active filters should be visually indicated
-- Clearing filters should reset to showing all tasks
-- Filter state should persist during the session
-- Filter controls should be intuitive and easy to use
-- Mobile view should adapt for touch interaction
-- Keyboard users should be able to navigate and operate all filter controls
-- Screen readers should properly announce filter options and current selections
-- Form controls should have proper focus states
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement with React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Create responsive filter layout</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support various screen sizes</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement accessible form controls with proper labels and ARIA attributes</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Optimize for performance</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support keyboard navigation and screen readers</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use Tailwind CSS for styling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use types instead of interfaces as per project conventions</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow single responsibility principle for filter logic</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Properly handle state management for filter options</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement proper TypeScript typing for all props and handlers</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use proper event typing for change handlers</description>
+      </requirement>
+    </technical-requirements>
 
-## Component Structure
-```typescript
-type TaskFilters = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Changing a filter should immediately update the task list</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Multiple filters should be combined with AND logic</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Active filters should be visually indicated</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Clearing filters should reset to showing all tasks</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Filter state should persist during the session</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Filter controls should be intuitive and easy to use</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Mobile view should adapt for touch interaction</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Keyboard users should be able to navigate and operate all filter controls</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Screen readers should properly announce filter options and current selections</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Form controls should have proper focus states</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type TaskFilters = {
   status?: Task['status'];
   priority?: Task['priority'];
   assignee?: string;
@@ -52,9 +135,15 @@ type TaskFilterProps = {
   filters: TaskFilters;
   onFilterChange: (filters: Partial<TaskFilters>) => void;
   availableAssignees?: string[];
-};
+};]]></definition>
+    </interface>
+  </interfaces>
 
-export const TaskFilter: React.FC<TaskFilterProps> = ({
+  <implementation>
+    <files>
+      <file path="src/features/task_management/task_filter.tsx" action="create">
+        <changes>Create the TaskFilter component implementation</changes>
+        <example><![CDATA[export const TaskFilter: React.FC<TaskFilterProps> = ({
   filters,
   onFilterChange,
   availableAssignees = [],
@@ -161,26 +250,51 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({
           <button
             className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             onClick={clearFilters}
-            aria-label={activeFilterCount > 0 ? `Clear ${activeFilterCount} active filters` : "Clear filters"}
+            aria-label={`Clear all filters ${activeFilterCount > 0 ? `(${activeFilterCount} active)` : ''}`}
           >
             Clear Filters
+            {activeFilterCount > 0 && (
+              <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-gray-700 rounded-full">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
-
-      {activeFilterCount > 0 && (
-        <div
-          className="mt-2 text-sm text-gray-500"
-          aria-live="polite"
-        >
-          {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} applied
-        </div>
-      )}
     </div>
   );
-};
-```
+};]]></example>
+      </file>
+    </files>
+  </implementation>
 
-## Related Specifications
-- [Task Management Features](./task_management.package_specs.md)
-- [Select Component](../../ui/base/design_kit/select/select.specs.md)
+  <dependencies>
+    <dependency>
+      <name>React</name>
+      <version>^18.0.0</version>
+    </dependency>
+    <dependency>
+      <name>TypeScript</name>
+      <version>^5.0.0</version>
+    </dependency>
+    <dependency>
+      <name>Tailwind CSS</name>
+      <version>^3.0.0</version>
+    </dependency>
+  </dependencies>
+
+  <references>
+    <reference>
+      <name>Task Type Definition</name>
+      <path>src/types.specs.md</path>
+    </reference>
+    <reference>
+      <name>Task List Specification</name>
+      <path>src/features/task_management/task_list.specs.md</path>
+    </reference>
+    <reference>
+      <name>Task Management Package Specification</name>
+      <path>src/features/task_management/task_management.package_specs.md</path>
+    </reference>
+  </references>
+</specification>

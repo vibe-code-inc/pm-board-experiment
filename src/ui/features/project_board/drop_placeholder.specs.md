@@ -1,52 +1,142 @@
-# Drop Placeholder Component Specification
+---
+description: Drop Placeholder Component Specification
+type: component
+---
 
-## Overview
-The DropPlaceholder component provides a visual indicator for where a dragged item will be placed when dropped. It renders a placeholder element with appropriate styling to show the insertion point during drag-and-drop operations.
+<specification>
+  <meta>
+    <title>Drop Placeholder Component</title>
+    <description>Provides a visual indicator for where a dragged item will be placed when dropped during drag-and-drop operations</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/ui/features/project_board/drop_placeholder.tsx">Drop Placeholder Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Provide clear visual feedback about where a dragged item will be placed
-- Maintain consistent appearance with the overall design system
-- Support appropriate sizing to match exactly the dimensions of the dragged card
-- Ensure sufficient visual contrast to be easily noticed during drag operations
-- Support accessibility by providing screen reader context
-- Display with exactly the same width and height as the dragged item
-- Show the placeholder between cards, moving them apart to create enough space
-- Match the exact dimensions of the dragged card including all padding and margins
-- Provide visual indication of the exact insertion point between existing cards
+  <overview>
+    <description>The DropPlaceholder component provides a visual indicator for where a dragged item will be placed when dropped. It renders a placeholder element with appropriate styling to show the insertion point during drag-and-drop operations.</description>
+    <responsibility>Provide visual feedback about drop targets during drag-and-drop operations</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement using React and TypeScript
-- Use Tailwind CSS for styling consistent with the application
-- Support customization through props to match dragged item dimensions
-- Support obtaining dimensions from the dragged element
-- Optimize rendering performance
-- Follow single responsibility principle by focusing only on placeholder visualization
-- Support accessibility with appropriate ARIA attributes and screen reader text
-- Keep the component lightweight and focused
-- Calculate and apply exact dimensions of the dragged element including margins
-- Support dynamic positioning between existing cards
-- Use identical spacing to ensure consistent layout when item is dropped
-- Ensure proper display in both horizontal and vertical layouts
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Provide clear visual feedback about where a dragged item will be placed</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Maintain consistent appearance with the overall design system</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support appropriate sizing to match exactly the dimensions of the dragged card</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Ensure sufficient visual contrast to be easily noticed during drag operations</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support accessibility by providing screen reader context</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Display with exactly the same width and height as the dragged item</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Show the placeholder between cards, moving them apart to create enough space</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Match the exact dimensions of the dragged card including all padding and margins</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide visual indication of the exact insertion point between existing cards</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Display a visual placeholder with dimensions matching the dragged card
-- Adapt to different container widths and contexts
-- Maintain consistent appearance across the application
-- Support animation properties for enhanced visual feedback
-- Provide screen reader text describing the purpose of the element
-- Match width of the dragged element
-- Match height of the dragged element
-- Appear exactly at the position where the card would be inserted
-- Move existing cards apart to create space for placeholder
-- Maintain exact spacing that would occur when item is actually dropped
-- Be positioned precisely between the closest items to the drag position
-- Update position dynamically as dragged item moves over different drop targets
-- Maintain exact visual representation of what will happen on drop
-- Have identical dimensions to the dragged card including all spacing
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement using React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use Tailwind CSS for styling consistent with the application</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support customization through props to match dragged item dimensions</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support obtaining dimensions from the dragged element</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Optimize rendering performance</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow single responsibility principle by focusing only on placeholder visualization</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support accessibility with appropriate ARIA attributes and screen reader text</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Keep the component lightweight and focused</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Calculate and apply exact dimensions of the dragged element including margins</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support dynamic positioning between existing cards</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use identical spacing to ensure consistent layout when item is dropped</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Ensure proper display in both horizontal and vertical layouts</description>
+      </requirement>
+    </technical-requirements>
 
-## Component Structure
-```typescript
-type DropPlaceholderProps = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Display a visual placeholder with dimensions matching the dragged card</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Adapt to different container widths and contexts</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Maintain consistent appearance across the application</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Support animation properties for enhanced visual feedback</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Provide screen reader text describing the purpose of the element</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Match width of the dragged element</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Match height of the dragged element</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Appear exactly at the position where the card would be inserted</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Move existing cards apart to create space for placeholder</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Maintain exact spacing that would occur when item is actually dropped</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Be positioned precisely between the closest items to the drag position</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Update position dynamically as dragged item moves over different drop targets</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Maintain exact visual representation of what will happen on drop</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Have identical dimensions to the dragged card including all spacing</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type DropPlaceholderProps = {
   // The width of the placeholder (should match the dragged item)
   width?: string | number;
   // The height of the placeholder (should match the dragged item)
@@ -65,9 +155,15 @@ type DropPlaceholderProps = {
   position?: 'before' | 'after' | null;
   // The reference to the target element to position relative to
   targetElement?: HTMLElement | null;
-};
+};]]></definition>
+    </interface>
+  </interfaces>
 
-export const DropPlaceholder: React.FC<DropPlaceholderProps> = ({
+  <implementation>
+    <files>
+      <file path="src/ui/features/project_board/drop_placeholder.tsx" action="create">
+        <changes>Create DropPlaceholder component implementation following the specification</changes>
+        <example><![CDATA[export const DropPlaceholder: React.FC<DropPlaceholderProps> = ({
   width = 'auto',
   height = '4rem',
   className = '',
@@ -144,42 +240,20 @@ export const DropPlaceholder: React.FC<DropPlaceholderProps> = ({
       <span className="sr-only">{label}</span>
     </div>
   );
-};
-```
+};]]></example>
+      </file>
+    </files>
 
-## Usage Examples
-```tsx
-// Basic usage
-<DropPlaceholder />
+    <dependencies>
+      <dependency type="external">react for UI components</dependency>
+      <dependency type="internal">cn utility from @/lib/utils</dependency>
+    </dependencies>
+  </implementation>
 
-// Custom dimensions
-<DropPlaceholder width="100%" height="3rem" />
-
-// Using dragged element reference
-<DropPlaceholder draggedElement={draggedTaskCardRef.current} />
-
-// With position relative to target
-<DropPlaceholder
-  draggedElement={draggedTaskCardRef.current}
-  position="before"
-  targetElement={document.querySelector('[data-task-id="task-2"]')}
-/>
-
-// Custom styling
-<DropPlaceholder className="border-green-300 bg-green-50" />
-
-// Custom accessible label
-<DropPlaceholder label="Drop task here" />
-
-// Without animation
-<DropPlaceholder animate={false} />
-
-// Conditionally shown
-<DropPlaceholder isActive={showPlaceholder} />
-```
-
-## Related Specifications
-- [Project Board Component](../../../features/project_board/project_board.specs.md)
-- [Task Column Component](../../../features/project_board/task_column.specs.md)
-- [Task Card Component](../../features/task_card/task_card.specs.md)
-- [Drag and Drop Manager](../../../lib/drag_drop/drag_drop_manager.specs.md)
+  <references>
+    <reference href="../../../features/project_board/project_board.specs.md">Project Board Component</reference>
+    <reference href="../../../features/project_board/task_column.specs.md">Task Column Component</reference>
+    <reference href="../../features/task_card/task_card.specs.md">Task Card Component</reference>
+    <reference href="../../../lib/drag_drop/drag_drop_manager.specs.md">Drag and Drop Manager</reference>
+  </references>
+</specification>

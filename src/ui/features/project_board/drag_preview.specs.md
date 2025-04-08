@@ -1,54 +1,148 @@
-# Drag Preview Component Specification
+---
+description: Drag Preview Component Specification
+type: component
+---
 
-## Overview
-The DragPreview component creates a visual representation of an element being dragged during drag-and-drop operations. It clones the appearance of the dragged element and follows the cursor/touch point, providing clear visual feedback about what is being moved and maintaining the exact dimensions of the original element.
+<specification>
+  <meta>
+    <title>Drag Preview Component</title>
+    <description>Creates a visual representation of an element being dragged during drag-and-drop operations</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/ui/features/project_board/drag_preview.tsx">Drag Preview Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Create an exact visual duplicate of the dragged element
-- Follow cursor or touch point during drag operations
-- Maintain same dimensions as the original dragged element
-- Provide visual indication that the element is being dragged (semi-transparency)
-- Support both mouse and touch-based drag operations
-- Ensure drag preview is visible above all other elements
-- Support pointer events for cross-device compatibility
-- Automatically clean up when drag operation ends
-- Ensure smooth movement that precisely follows cursor/touch
-- Match exact styling of the original element but with slight transparency
+  <overview>
+    <description>The DragPreview component creates a visual representation of an element being dragged during drag-and-drop operations. It clones the appearance of the dragged element and follows the cursor/touch point, providing clear visual feedback about what is being moved and maintaining the exact dimensions of the original element.</description>
+    <responsibility>Provide visual feedback during drag operations by creating and positioning a preview element that follows the cursor</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement using React and TypeScript
-- Use DOM APIs to create and position the drag preview
-- Calculate exact dimensions including margins, padding, and borders
-- Clone styling from original element
-- Position element to follow cursor with appropriate offset
-- Handle z-index to ensure visibility above other elements
-- Support smooth animation during movement
-- Clean up DOM elements when dragging ends
-- Follow single responsibility principle
-- Support proper accessibility attributes
-- Optimize performance for smooth movement
-- Support all device types through pointer events
-- Implement proper clean-up on unmount and drag end
-- Calculate precise position based on initial grab coordinates
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Create an exact visual duplicate of the dragged element</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow cursor or touch point during drag operations</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Maintain same dimensions as the original dragged element</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide visual indication that the element is being dragged (semi-transparency)</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support both mouse and touch-based drag operations</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure drag preview is visible above all other elements</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support pointer events for cross-device compatibility</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Automatically clean up when drag operation ends</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Ensure smooth movement that precisely follows cursor/touch</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Match exact styling of the original element but with slight transparency</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Preview should be created when drag begins
-- Preview should follow cursor/touch point with precise positioning
-- Preview should maintain exact dimensions of original element
-- Preview should be semi-transparent to indicate dragging state
-- Preview should appear above all other elements
-- Preview should be removed when drag ends or is canceled
-- Preview should move smoothly without lag
-- Preview should accurately represent the dragged element's appearance
-- Preview should handle different card sizes and styles
-- Preview should match original element but with visual indication it's being dragged
-- Preview should have same width, height, and appearance as original
-- Preview should be appended to document body to avoid positioning constraints
-- Preview should be removed from DOM when no longer needed
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement using React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use DOM APIs to create and position the drag preview</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Calculate exact dimensions including margins, padding, and borders</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Clone styling from original element</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Position element to follow cursor with appropriate offset</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Handle z-index to ensure visibility above other elements</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support smooth animation during movement</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Clean up DOM elements when dragging ends</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow single responsibility principle</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support proper accessibility attributes</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Optimize performance for smooth movement</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support all device types through pointer events</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement proper clean-up on unmount and drag end</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Calculate precise position based on initial grab coordinates</description>
+      </requirement>
+    </technical-requirements>
 
-## Component Structure
-```typescript
-type DragPreviewProps = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Preview should be created when drag begins</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should follow cursor/touch point with precise positioning</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should maintain exact dimensions of original element</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should be semi-transparent to indicate dragging state</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should appear above all other elements</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should be removed when drag ends or is canceled</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Preview should move smoothly without lag</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should accurately represent the dragged element's appearance</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Preview should handle different card sizes and styles</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should match original element but with visual indication it's being dragged</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should have same width, height, and appearance as original</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should be appended to document body to avoid positioning constraints</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Preview should be removed from DOM when no longer needed</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type DragPreviewProps = {
   // Reference to the element being dragged
   sourceElement: HTMLElement | null;
   // Whether the preview is currently active/visible
@@ -69,9 +163,15 @@ type DragPreviewProps = {
   zIndex?: number;
   // Optional callback when preview is created
   onPreviewCreated?: (previewElement: HTMLElement) => void;
-};
+};]]></definition>
+    </interface>
+  </interfaces>
 
-export const DragPreview: React.FC<DragPreviewProps> = ({
+  <implementation>
+    <files>
+      <file path="src/ui/features/project_board/drag_preview.tsx" action="create">
+        <changes>Create DragPreview component implementation following the specification</changes>
+        <example><![CDATA[export const DragPreview: React.FC<DragPreviewProps> = ({
   sourceElement,
   isActive,
   position,
@@ -151,59 +251,21 @@ export const DragPreview: React.FC<DragPreviewProps> = ({
   // This component doesn't render anything directly
   // It manipulates the DOM using refs and effects
   return null;
-};
-```
+};]]></example>
+      </file>
+    </files>
 
-## Usage Examples
-```tsx
-// Basic usage with drag and drop manager
-const App = () => {
-  const {
-    draggedElement,
-    draggedItemId,
-    cursorPosition,
-    grabOffset
-  } = useDragAndDropManager();
+    <dependencies>
+      <dependency type="external">react for UI components</dependency>
+      <dependency type="external">react hooks (useRef, useEffect) for DOM manipulation</dependency>
+    </dependencies>
+  </implementation>
 
-  return (
-    <div>
-      {/* Other components */}
-
-      <DragPreview
-        sourceElement={draggedElement}
-        isActive={!!draggedItemId}
-        position={cursorPosition}
-        grabOffset={grabOffset}
-      />
-    </div>
-  );
-};
-
-// With custom z-index and opacity
-<DragPreview
-  sourceElement={taskCardRef.current}
-  isActive={isDragging}
-  position={{ x: mouseX, y: mouseY }}
-  grabOffset={{ x: offsetX, y: offsetY }}
-  opacity={0.8}
-  zIndex={2000}
-/>
-
-// With callback for preview creation
-<DragPreview
-  sourceElement={taskCardRef.current}
-  isActive={isDragging}
-  position={{ x: mouseX, y: mouseY }}
-  onPreviewCreated={(previewElement) => {
-    // Store reference or perform additional modifications
-    customPreviewRef.current = previewElement;
-  }}
-/>
-```
-
-## Related Specifications
-- [Project Board Component](../../../features/project_board/project_board.specs.md)
-- [Task Column Component](../../../features/project_board/task_column.specs.md)
-- [Task Card Component](../../features/task_card/task_card.specs.md)
-- [Drag and Drop Manager](../../../lib/drag_drop/drag_drop_manager.specs.md)
-- [Drop Placeholder Component](../drop_placeholder.specs.md)
+  <references>
+    <reference href="../../../features/project_board/project_board.specs.md">Project Board Component</reference>
+    <reference href="../../../features/project_board/task_column.specs.md">Task Column Component</reference>
+    <reference href="../../features/task_card/task_card.specs.md">Task Card Component</reference>
+    <reference href="../../../lib/drag_drop/drag_drop_manager.specs.md">Drag and Drop Manager</reference>
+    <reference href="../drop_placeholder.specs.md">Drop Placeholder Component</reference>
+  </references>
+</specification>

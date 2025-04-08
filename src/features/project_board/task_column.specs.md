@@ -1,62 +1,145 @@
-# Task Column Component Specification
+---
+description: Task Column Component Specification
+type: component
+---
 
-## Overview
-The TaskColumn component represents a single status column in the ProjectBoard. It displays tasks of a specific status and handles the column-specific aspects of drag-and-drop interactions, while delegating board-level coordination to the parent ProjectBoard component.
+<specification>
+  <meta>
+    <title>Task Column Component Specification</title>
+    <description>The TaskColumn component represents a single status column in the ProjectBoard. It displays tasks of a specific status and handles the column-specific aspects of drag-and-drop interactions.</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/features/project_board/task_column.tsx">Task Column Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Display tasks of a specific status in a vertical column
-- Show column header with status name and task count
-- Provide empty state messaging when there are no tasks
-- Support receiving dropped tasks from other columns
-- Support receiving dropped tasks for reordering within the column
-- Provide visual feedback when a task is being dragged over the column (vivid blue border)
-- Display drop placeholders in the appropriate position between tasks with dimensions matching the dragged card
-- Support scrolling independently when containing many tasks
-- Handle touch events for mobile device support with pointer events
-- Hide task cards that are currently being dragged (as they appear in the drag preview)
-- Provide space between remaining cards for the drop placeholder at precise positions
-- Support exact positioning of drop placeholders based on cursor/touch proximity
+  <overview>
+    <description>The TaskColumn component represents a single status column in the ProjectBoard. It displays tasks of a specific status and handles the column-specific aspects of drag-and-drop interactions, while delegating board-level coordination to the parent ProjectBoard component.</description>
+    <responsibility>Display and manage tasks of a specific status in a vertical column</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement component using React and TypeScript
-- Use Tailwind CSS for styling
-- Support drag-and-drop event handling (dragOver, drop, dragLeave)
-- Support pointer events for mobile touch interaction
-- Maintain column-specific state
-- Follow single responsibility principle by handling only column concerns
-- Implement type safety with TaskStatus type
-- Optimize rendering performance for large task lists
-- Provide visual feedback for drag targets using conditional styling
-- Receive drop placeholder positioning data from parent component
-- Display tasks with proper ordering
-- Support keyboard accessibility
-- Implement precise positioning of cards based on drag location
-- Handle the temporary removal of task cards during drag operations
-- Coordinate with DragAndDropManager for proper placeholder positioning
-- Ensure accurate spacing between items during drag operations
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display tasks of a specific status in a vertical column</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Show column header with status name and task count</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Provide empty state messaging when there are no tasks</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support receiving dropped tasks from other columns</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support receiving dropped tasks for reordering within the column</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide visual feedback when a task is being dragged over the column</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Display drop placeholders in the appropriate position between tasks</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support scrolling independently when containing many tasks</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Handle touch events for mobile device support</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Hide task cards that are currently being dragged</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Provide space between remaining cards for the drop placeholder at precise positions</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Column should highlight with a vivid blue border when a card is dragged over it
-- Column should display tasks in the specified order
-- Column should show a drop placeholder at the calculated position when a task is dragged over
-- Column should display a message when empty
-- Column should scroll independently when it contains many tasks
-- Column should support keyboard navigation
-- Column should render TaskCard components for each task in the column
-- Column should not manage global drag-and-drop state (delegated to parent ProjectBoard)
-- Column should present task cards with appropriate edit button functionality
-- Column should ensure placeholders match the dimensions of dragged cards
-- Column should support exact positioning of cards between other cards
-- Column should hide task cards that are currently being dragged
-- Column should create space between cards where the placeholder will be displayed
-- Column should support both mouse and touch/pointer interactions
-- Column should ensure placeholder appears exactly between the appropriate cards
-- Column should adjust spacing dynamically based on drag position
-- Column should integrate with the drag preview system to avoid visual duplication
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement component using React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use Tailwind CSS for styling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support drag-and-drop event handling (dragOver, drop, dragLeave)</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support pointer events for mobile touch interaction</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Maintain column-specific state</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow single responsibility principle by handling only column concerns</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement type safety with TaskStatus type</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Optimize rendering performance for large task lists</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide visual feedback for drag targets using conditional styling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Receive drop placeholder positioning data from parent component</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Display tasks with proper ordering</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support keyboard accessibility</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement precise positioning of cards based on drag location</description>
+      </requirement>
+    </technical-requirements>
 
-## Component Structure
-```typescript
-type TaskColumnProps = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Column should highlight with a vivid blue border when a card is dragged over it</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Column should display tasks in the specified order</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Column should show a drop placeholder at the calculated position when a task is dragged over</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Column should display a message when empty</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Column should scroll independently when it contains many tasks</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Column should support keyboard navigation</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Column should render TaskCard components for each task in the column</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Column should not manage global drag-and-drop state (delegated to parent ProjectBoard)</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Column should present task cards with appropriate edit button functionality</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Column should ensure placeholders match the dimensions of dragged cards</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Column should hide task cards that are currently being dragged</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Column should support both mouse and touch/pointer interactions</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type TaskColumnProps = {
   // Column status identifier
   status: TaskStatus;
   // Display name for the column
@@ -87,9 +170,15 @@ type TaskColumnProps = {
   onPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void;
   onPointerMove?: (e: React.PointerEvent<HTMLDivElement>) => void;
   onPointerUp?: (e: React.PointerEvent<HTMLDivElement>) => void;
-};
+};]]></definition>
+    </interface>
+  </interfaces>
 
-export const TaskColumn: React.FC<TaskColumnProps> = ({
+  <implementation>
+    <files>
+      <file path="src/features/project_board/task_column.tsx" action="create">
+        <changes>Create the TaskColumn component implementation</changes>
+        <example><![CDATA[export const TaskColumn: React.FC<TaskColumnProps> = ({
   status,
   title,
   tasks,
@@ -190,12 +279,21 @@ export const TaskColumn: React.FC<TaskColumnProps> = ({
       </div>
     </div>
   );
-};
-```
+};]]></example>
+      </file>
+    </files>
 
-## Related Specifications
-- [Project Board Feature](./project_board.package_specs.md)
-- [Project Board Component](./project_board.specs.md)
-- [Task Card Component](../../ui/features/task_card/task_card.specs.md)
-- [Drag and Drop Manager](../../lib/drag_drop/drag_drop_manager.specs.md)
-- [Drop Placeholder Component](../../ui/features/project_board/drop_placeholder.specs.md)
+    <dependencies>
+      <dependency type="external">react for UI components</dependency>
+      <dependency type="internal">TaskCard component from src/ui/features/task_card/task_card</dependency>
+      <dependency type="internal">Task and TaskStatus types from @/types</dependency>
+    </dependencies>
+  </implementation>
+
+  <references>
+    <reference href="./project_board.package_specs.md">Project Board Feature Package</reference>
+    <reference href="./project_board.specs.md">Project Board Component</reference>
+    <reference href="../../ui/features/task_card/task_card.specs.md">Task Card Component</reference>
+    <reference href="../../lib/drag_drop/drag_drop_manager.specs.md">Drag and Drop Manager</reference>
+  </references>
+</specification>
