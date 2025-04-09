@@ -1,6 +1,6 @@
 # PM Board - Task Management Application
 
-PM Board is a modern task management application built with React and TypeScript that helps users organize and track tasks across different projects.
+PM Board is a modern task management application built with React and TypeScript that helps users organize and track tasks across different projects. This application follows specification-first development principles with a strong focus on engineering best practices.
 
 ## Features
 
@@ -10,6 +10,7 @@ PM Board is a modern task management application built with React and TypeScript
 - **Drag and Drop**: Intuitive drag-and-drop functionality for status updates
 - **Task Details**: Track priorities, assignees, due dates, and descriptions
 - **Responsive Design**: Works seamlessly across devices of all sizes
+- **Type Safety**: Strong TypeScript typing throughout the codebase
 
 ## Screenshots
 
@@ -20,6 +21,7 @@ PM Board is a modern task management application built with React and TypeScript
 - **Frontend**: React, TypeScript
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
+- **Utilities**: clsx, tailwind-merge
 - **Build Tool**: Vite
 - **Package Manager**: npm
 - **Code Quality**: ESLint, TypeScript
@@ -33,15 +35,27 @@ PM Board is a modern task management application built with React and TypeScript
     /task_management - Task CRUD operations and management
   /ui - UI components
     /base - Primitive UI components
-      /design_kit - Design system components
-    /features - Complex reusable UI components
-      /task_card - Task card component
-      /task_modal - Task creation/editing modal
+    /features - Feature-specific UI components
   /lib - Utility functions and helpers
-  /types.ts - Type definitions
+    /utils.ts - Common utility functions
+    /hooks - Custom React hooks
+    /drag_drop - Drag and drop functionality
+  /types - Type definitions
   /app.tsx - Main application
   /main.tsx - Entry point
+  /*.specs.md - Specification files
 ```
+
+## Development Principles
+
+PM Board follows a strict specification-first development process:
+
+1. **Specification-First Development**: All code is written based on detailed specifications
+2. **Single Responsibility Principle**: Each component has one clear responsibility
+3. **Type Safety**: Rigorous TypeScript typing with minimal use of type assertions
+4. **Component Extension**: Components are designed for extension without modification
+5. **Interface Segregation**: Props interfaces are focused and specific
+6. **Dependency Inversion**: High-level modules depend on abstractions
 
 ## Getting Started
 
@@ -83,12 +97,13 @@ PM Board is a modern task management application built with React and TypeScript
 
 PM Board follows specific coding conventions:
 
-- File and directory names use snake_case
-- Components use functional component syntax with TypeScript interfaces
-- Absolute imports with @/ prefix
-- ESLint rules are enforced for code quality
-- All features must have corresponding specifications
-- Color coding for priorities and statuses is standardized
+- **File and directory names**: Use snake_case
+- **Component definition**: Use React.FC with explicit props type
+- **Import paths**: Use absolute imports with @/ prefix
+- **Event handlers**: Prefix with 'handle'
+- **Styling**: Use className with Tailwind CSS utilities and cn utility for conditionals
+- **Type definitions**: Use types instead of interfaces for most cases
+- **State and parameters**: Use explicit type annotations
 
 ## License
 
@@ -97,5 +112,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Inspired by modern kanban tools like Trello and Jira
-- Built on the shoulders of the amazing React ecosystem
-- Designed for developers who value clean code and type safety
+- Built with an emphasis on clean architecture and maintainable code
+- Designed for developers who value specification-first development and type safety
