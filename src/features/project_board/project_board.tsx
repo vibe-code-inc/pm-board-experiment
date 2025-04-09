@@ -9,14 +9,12 @@ type ProjectBoardProps = {
   project: Project;
   onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
   onTaskEdit: (task: Task) => void;
-  onTaskReorder?: (taskId: string, columnId: string, targetTaskId: string, position: 'before' | 'after') => void;
 };
 
 export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   project,
   onTaskUpdate,
-  onTaskEdit,
-  onTaskReorder
+  onTaskEdit
 }) => {
   // Task state management
   const [tasks, setTasks] = useState<Task[]>(project.tasks);
@@ -53,33 +51,6 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
     );
   };
 
-  // Task reordering handler
-  const handleTaskReorder = (draggedTaskId: string, targetTaskId: string, position: 'before' | 'after') => {
-    const updatedTasks = [...tasks];
-    const draggedTaskIndex = updatedTasks.findIndex(t => t.id === draggedTaskId);
-    const targetTaskIndex = updatedTasks.findIndex(t => t.id === targetTaskId);
-
-    if (draggedTaskIndex === -1 || targetTaskIndex === -1) return;
-
-    // Remove the dragged task
-    const [draggedTask] = updatedTasks.splice(draggedTaskIndex, 1);
-
-    // Calculate new position
-    const insertIndex = position === 'before'
-      ? targetTaskIndex > draggedTaskIndex ? targetTaskIndex - 1 : targetTaskIndex
-      : targetTaskIndex > draggedTaskIndex ? targetTaskIndex : targetTaskIndex + 1;
-
-    // Insert the task at the new position
-    updatedTasks.splice(insertIndex, 0, draggedTask);
-
-    setTasks(updatedTasks);
-
-    // Propagate to parent if callback exists
-    if (onTaskReorder) {
-      onTaskReorder(draggedTaskId, draggedTask.status, targetTaskId, position);
-    }
-  };
-
   // Task editing handler
   const handleEditTask = (task: Task) => {
     setSelectedTask(task);
@@ -104,15 +75,10 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   const onContainerDrop = (e: React.DragEvent<HTMLDivElement>, columnId: TaskStatus) => {
     const result = handleContainerDrop(e, columnId);
     if (result) {
-      const { itemId, sourceContainerId, targetId, position } = result;
+      const { itemId } = result;
 
-      if (sourceContainerId !== columnId) {
-        // Moving between columns - update status
-        handleStatusChange(itemId, columnId);
-      } else if (targetId) {
-        // Reordering within same column
-        handleTaskReorder(itemId, targetId, position as 'before' | 'after');
-      }
+      // Update task status when dropped in a different column
+      handleStatusChange(itemId, columnId);
     }
   };
 

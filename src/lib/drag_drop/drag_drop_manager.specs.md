@@ -1,59 +1,163 @@
-# Drag and Drop Manager Specification
+---
+description: Drag and Drop Manager Specification
+type: utility
+---
 
-## Overview
-The DragAndDropManager provides functionality for handling complex drag-and-drop operations across the application, with a primary focus on task management interfaces. It abstracts the logic for calculating drop positions, managing drag states, and coordinating visual feedback during drag operations.
+<specification>
+  <meta>
+    <title>Drag and Drop Manager Specification</title>
+    <description>The DragAndDropManager provides functionality for handling complex drag-and-drop operations across the application, with a primary focus on task management interfaces. It abstracts the logic for calculating drop positions, managing drag states, and coordinating visual feedback during drag operations.</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/lib/drag_drop/drag_drop_manager.ts">Drag and Drop Manager</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Support drag-and-drop operations between different containers (e.g., columns)
-- Support reordering items within the same container
-- Calculate precise drop positions between items
-- Ensure dropped items are placed between the closest items where the cursor/touch is positioned
-- Track the currently dragged item
-- Track which container is being dragged over
-- Determine the exact insertion position within containers
-- Provide necessary information for rendering visual feedback
-- Create and manage drag preview that follows cursor and has the same dimensions as the dragged item
-- Remove dragged item from source list during drag operation
-- Ensure proper cleanup of drag preview when item is dropped
-- Support touch-based interactions using pointer events
+  <overview>
+    <description>The DragAndDropManager provides functionality for handling complex drag-and-drop operations across the application, with a primary focus on task management interfaces. It abstracts the logic for calculating drop positions, managing drag states, and coordinating visual feedback during drag operations.</description>
+    <responsibility>Provide a reusable system for advanced drag-and-drop operations with precise positioning and visual feedback</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement using TypeScript with strong type safety
-- Use a functional, hooks-based approach for React integration
-- Follow single responsibility principle by focusing only on drag-and-drop logic
-- Decouple from specific UI components to ensure reusability
-- Provide a clean API for components to consume
-- Optimize calculations for performance
-- Support both mouse and touch interactions with pointer events
-- Handle edge cases like empty containers
-- Support accessibility requirements
-- Maintain stateless design where possible
-- Implement precise position calculation algorithms for determining drop positions
-- Create drag preview elements that match the exact dimensions of the dragged item
-- Handle removal of items from source container while being dragged
-- Manage display and positioning of drag preview to follow cursor/touch point
-- Clean up drag preview elements when drag operation completes
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Support drag-and-drop operations between different containers (e.g., columns)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support reordering items within the same container</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Calculate precise drop positions between items</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure dropped items are placed between the closest items where the cursor/touch is positioned</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Track the currently dragged item</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Track which container is being dragged over</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Determine the exact insertion position within containers</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide necessary information for rendering visual feedback</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Create and manage drag preview that follows cursor and has the same dimensions as the dragged item</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Remove dragged item from source list during drag operation</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Ensure proper cleanup of drag preview when item is dropped</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support touch-based interactions using pointer events</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Accurately track which item is being dragged
-- Determine the closest items to a drag point
-- Calculate whether an item should be placed before or after a target item based on the cursor/touch position
-- Handle all cases for positioning - not just beginning/end of lists but precise middle positions
-- Provide exact positional information to ensure items are placed exactly where they are dropped
-- Track which container is currently being hovered
-- Handle the transition of items between containers
-- Support item reordering within the same container
-- Provide position data for rendering placeholders with the same dimensions as the dragged item
-- Work seamlessly on mobile devices with touch support using pointer events
-- Display drag preview element that follows cursor/touch point during drag operations
-- Ensure drag preview looks identical to the original dragged item with exact same dimensions
-- Temporarily remove dragged item from its source container during drag operation
-- Add the item back to the target location upon drop (exact position between items)
-- Clean up drag preview when drag operation is completed (drop or cancel)
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement using TypeScript with strong type safety</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use a functional, hooks-based approach for React integration</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow single responsibility principle by focusing only on drag-and-drop logic</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Decouple from specific UI components to ensure reusability</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide a clean API for components to consume</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Optimize calculations for performance</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support both mouse and touch interactions with pointer events</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Handle edge cases like empty containers</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support accessibility requirements</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Maintain stateless design where possible</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement precise position calculation algorithms for determining drop positions</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Create drag preview elements that match the exact dimensions of the dragged item</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Handle removal of items from source container while being dragged</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Manage display and positioning of drag preview to follow cursor/touch point</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Clean up drag preview elements when drag operation completes</description>
+      </requirement>
+    </technical-requirements>
 
-## Interface
-```typescript
-type DragItem = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Accurately track which item is being dragged</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Determine the closest items to a drag point</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Calculate whether an item should be placed before or after a target item based on the cursor/touch position</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Handle all cases for positioning - not just beginning/end of lists but precise middle positions</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Provide exact positional information to ensure items are placed exactly where they are dropped</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Track which container is currently being hovered</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Handle the transition of items between containers</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Support item reordering within the same container</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Provide position data for rendering placeholders with the same dimensions as the dragged item</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Work seamlessly on mobile devices with touch support using pointer events</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Display drag preview element that follows cursor/touch point during drag operations</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Ensure drag preview looks identical to the original dragged item with exact same dimensions</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Temporarily remove dragged item from its source container during drag operation</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Add the item back to the target location upon drop (exact position between items)</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Clean up drag preview when drag operation is completed (drop or cancel)</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="hook">
+      <definition><![CDATA[type DragItem = {
   id: string;
   containerId: string;
   [key: string]: any;
@@ -127,190 +231,315 @@ export function useDragAndDropManager({
   initialDraggedItem = null,
   initialDraggedOverContainer = null,
   initialDropPosition = null,
-}: DragAndDropManagerProps = {}): DragAndDropManager;
-```
+}: DragAndDropManagerProps = {}): DragAndDropManager;]]></definition>
+    </interface>
+  </interfaces>
 
-## Implementation Details
+  <implementation>
+    <files>
+      <file path="src/lib/drag_drop/drag_drop_manager.ts" action="create">
+        <changes>Create the DragAndDropManager hook with all required functionality</changes>
+        <example><![CDATA[import { useState, useRef, useCallback } from 'react';
 
-### Core Functions
-1. **handleDragStart**:
-   - Sets the currently dragged item and its source container
-   - Stores reference to the dragged DOM element for dimension matching
-   - Captures initial dimensions of the dragged element
-   - Creates a drag preview element matching the dragged element's appearance and dimensions
-   - Removes the original item from the source container's display
-   - Positions the drag preview at the cursor location
+type DragItem = {
+  id: string;
+  containerId: string;
+  [key: string]: any;
+};
 
-2. **handleDragEnd**:
-   - Resets all drag state
-   - Removes the drag preview element from the DOM
-   - Ensures proper cleanup of any temporary DOM elements
+type DropPlaceholderPosition = {
+  containerId: string;
+  targetId: string | null;
+  position: 'before' | 'after';
+};
 
-3. **handleContainerDragOver**:
-   - Updates the currently dragged-over container
-   - Calculates drop position based on cursor location
-   - Determines if item should be placed before or after a target
-   - Identifies the exact two items between which the dragged item should be placed
-   - Updates drag preview position to follow cursor
+type DragAndDropManagerProps = {
+  initialDraggedItem?: string | null;
+  initialDraggedOverContainer?: string | null;
+  initialDropPosition?: DropPlaceholderPosition | null;
+};
 
-4. **handleContainerDragLeave**:
-   - Clears the dragged-over container state
-   - Maintains drag preview following cursor
+export function useDragAndDropManager({
+  initialDraggedItem = null,
+  initialDraggedOverContainer = null,
+  initialDropPosition = null,
+}: DragAndDropManagerProps = {}) {
+  // State for tracking drag operations
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(initialDraggedItem);
+  const [draggedOverContainerId, setDraggedOverContainerId] = useState<string | null>(initialDraggedOverContainer);
+  const [dropPlaceholderPosition, setDropPlaceholderPosition] = useState<DropPlaceholderPosition | null>(initialDropPosition);
 
-5. **handleContainerDrop**:
-   - Extracts the dragged item ID from event data
-   - Provides precise position information for the drop target
-   - Returns data needed for the actual move/reorder operation with exact position information
-   - Removes the drag preview element
-   - Resets drag state
+  // Refs for DOM elements
+  const draggedElementRef = useRef<HTMLElement | null>(null);
+  const dragPreviewElementRef = useRef<HTMLElement | null>(null);
+  const sourceContainerIdRef = useRef<string | null>(null);
 
-6. **findClosestItem**:
-   - Calculates distances to each item's boundaries
-   - Determines the closest item based on cursor Y position
-   - Computes the exact position (before or after) for precise placement
-   - Returns null for empty containers
+  // Helper method to find the closest item to a Y position
+  const findClosestItem = useCallback((
+    clientY: number,
+    itemElements: Element[],
+    excludeItemId?: string
+  ) => {
+    if (itemElements.length === 0) return null;
 
-7. **createDragPreview**:
-   - Clones the dragged element to create a visual preview
-   - Applies the same styling but with semi-transparency
-   - Sets the preview to match exact dimensions of the original element
-   - Positions the preview to follow cursor movement
-   - Appends preview to document body to ensure it's above all other elements
+    // Map elements to their positions and dimensions
+    const itemPositions = itemElements.map(element => {
+      const rect = element.getBoundingClientRect();
+      const id = element.getAttribute('data-item-id');
+      if (!id) return null;
 
-8. **updateDragPreviewPosition**:
-   - Follows cursor/touch position with the drag preview
-   - Offsets the preview to be centered on the cursor/pointer
-   - Ensures smooth movement during drag operations
+      // Skip the dragged item
+      if (excludeItemId && id === excludeItemId) return null;
 
-9. **removeDragPreview**:
-   - Removes the drag preview element from the DOM
-   - Cleans up any related resources
-   - Called when drag operation completes
+      return {
+        id,
+        top: rect.top,
+        bottom: rect.bottom,
+        middle: rect.top + rect.height / 2,
+        height: rect.height
+      };
+    }).filter(Boolean);
 
-10. **Pointer Event Handlers**:
-    - **handlePointerDown**: Initiates drag operation for touch devices
-    - **handlePointerMove**: Updates drag preview position for touch devices
-    - **handlePointerUp**: Completes drag operation for touch devices
-    - All using pointer events for cross-device compatibility
+    if (itemPositions.length === 0) return null;
 
-### Precise Positioning Algorithm
-The manager implements a precise positioning algorithm that:
-1. Calculates the Y-position of the cursor/touch point
-2. Maps all droppable items in the container with their positions and dimensions
-3. Calculates the distance from the cursor to each item
-4. Finds the item(s) closest to the cursor position
-5. Determines if the dragged item should go before or after the closest item
-6. Handles special cases like:
-   - Empty containers
-   - Dropping at the beginning or end of a list
-   - Dropping between two specific items in the middle of a list
+    // Find the closest item
+    let closestItem = null;
+    let closestDistance = Infinity;
+    let position: 'before' | 'after' = 'after';
 
-### Usage Example
-```typescript
-// In a component that manages drag and drop
-function BoardComponent() {
-  const {
+    for (const item of itemPositions) {
+      // Distance to the middle point
+      const distanceToMiddle = Math.abs(clientY - item.middle);
+
+      if (distanceToMiddle < closestDistance) {
+        closestDistance = distanceToMiddle;
+        closestItem = item;
+        position = clientY < item.middle ? 'before' : 'after';
+      }
+    }
+
+    if (!closestItem) return null;
+
+    return {
+      itemId: closestItem.id,
+      position
+    };
+  }, []);
+
+  // Create drag preview element
+  const createDragPreview = useCallback((element: HTMLElement) => {
+    // Clone the element for the preview
+    const preview = element.cloneNode(true) as HTMLElement;
+    const rect = element.getBoundingClientRect();
+
+    // Style the preview
+    preview.style.position = 'fixed';
+    preview.style.width = `${rect.width}px`;
+    preview.style.height = `${rect.height}px`;
+    preview.style.left = '0';
+    preview.style.top = '0';
+    preview.style.opacity = '0.7';
+    preview.style.pointerEvents = 'none';
+    preview.style.zIndex = '9999';
+    preview.style.transform = 'translate(-9999px, -9999px)'; // Hide initially
+
+    // Add to the document
+    document.body.appendChild(preview);
+    return preview;
+  }, []);
+
+  // Update drag preview position
+  const updateDragPreviewPosition = useCallback((clientX: number, clientY: number) => {
+    if (!dragPreviewElementRef.current) return;
+
+    const preview = dragPreviewElementRef.current;
+    const rect = preview.getBoundingClientRect();
+
+    // Center the preview on the cursor
+    const offsetX = rect.width / 2;
+    const offsetY = rect.height / 2;
+
+    preview.style.transform = `translate(${clientX - offsetX}px, ${clientY - offsetY}px)`;
+  }, []);
+
+  // Remove drag preview
+  const removeDragPreview = useCallback(() => {
+    if (dragPreviewElementRef.current) {
+      document.body.removeChild(dragPreviewElementRef.current);
+      dragPreviewElementRef.current = null;
+    }
+  }, []);
+
+  // Reset all drag state
+  const resetDragState = useCallback(() => {
+    setDraggedItemId(null);
+    setDraggedOverContainerId(null);
+    setDropPlaceholderPosition(null);
+    draggedElementRef.current = null;
+    sourceContainerIdRef.current = null;
+    removeDragPreview();
+  }, [removeDragPreview]);
+
+  // Event handlers
+  const handleDragStart = useCallback((itemId: string, containerId: string, element: HTMLElement) => {
+    setDraggedItemId(itemId);
+    sourceContainerIdRef.current = containerId;
+    draggedElementRef.current = element;
+
+    // Create drag preview
+    const preview = createDragPreview(element);
+    dragPreviewElementRef.current = preview;
+  }, [createDragPreview]);
+
+  const handleContainerDragOver = useCallback((
+    e: React.DragEvent<HTMLElement>,
+    containerId: string,
+    itemElements: Element[]
+  ) => {
+    e.preventDefault();
+
+    setDraggedOverContainerId(containerId);
+
+    // Update preview position
+    updateDragPreviewPosition(e.clientX, e.clientY);
+
+    // Find closest item for drop positioning
+    const closestItem = findClosestItem(
+      e.clientY,
+      itemElements,
+      draggedItemId
+    );
+
+    if (closestItem) {
+      setDropPlaceholderPosition({
+        containerId,
+        targetId: closestItem.itemId,
+        position: closestItem.position
+      });
+    } else {
+      // Empty container or only contains the dragged item
+      setDropPlaceholderPosition({
+        containerId,
+        targetId: null,
+        position: 'after' // Default to appending
+      });
+    }
+  }, [draggedItemId, findClosestItem, updateDragPreviewPosition]);
+
+  const handleContainerDragLeave = useCallback(() => {
+    setDraggedOverContainerId(null);
+  }, []);
+
+  const handleContainerDrop = useCallback((
+    e: React.DragEvent<HTMLElement>,
+    containerId: string
+  ) => {
+    e.preventDefault();
+
+    if (!draggedItemId || !sourceContainerIdRef.current) {
+      resetDragState();
+      return null;
+    }
+
+    const result = {
+      itemId: draggedItemId,
+      sourceContainerId: sourceContainerIdRef.current,
+      targetId: dropPlaceholderPosition?.targetId || null,
+      position: dropPlaceholderPosition?.position || null
+    };
+
+    resetDragState();
+    return result;
+  }, [draggedItemId, dropPlaceholderPosition, resetDragState]);
+
+  const handleDragEnd = useCallback(() => {
+    resetDragState();
+  }, [resetDragState]);
+
+  // Pointer event handlers for touch support
+  const handlePointerDown = useCallback((
+    e: React.PointerEvent<HTMLElement>,
+    itemId: string,
+    containerId: string,
+    element: HTMLElement
+  ) => {
+    // Only handle touch events here, mouse uses standard drag events
+    if (e.pointerType !== 'touch') return;
+
+    e.stopPropagation();
+
+    handleDragStart(itemId, containerId, element);
+    updateDragPreviewPosition(e.clientX, e.clientY);
+
+    // Capture pointer to track movements outside the element
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, [handleDragStart, updateDragPreviewPosition]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== 'touch' || !draggedItemId) return;
+
+    e.stopPropagation();
+    updateDragPreviewPosition(e.clientX, e.clientY);
+
+    // Would need additional logic here to detect what container is being dragged over
+    // and what items are nearby - this would generally be handled by the component
+    // using the hook with custom logic
+  }, [draggedItemId, updateDragPreviewPosition]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== 'touch' || !draggedItemId) return;
+
+    e.stopPropagation();
+
+    // Release capture
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+
+    // Custom drop handling would be implemented by the component using the hook
+    // For now, just reset the state
+    resetDragState();
+  }, [draggedItemId, resetDragState]);
+
+  return {
+    // Current state
     draggedItemId,
     draggedOverContainerId,
     dropPlaceholderPosition,
-    draggedElement,
-    dragPreviewElement,
+    draggedElement: draggedElementRef.current,
+    dragPreviewElement: dragPreviewElementRef.current,
+
+    // Event handlers
     handleDragStart,
     handleDragEnd,
     handleContainerDragOver,
     handleContainerDragLeave,
     handleContainerDrop,
+
+    // Pointer events for touch
     handlePointerDown,
     handlePointerMove,
-    handlePointerUp
-  } = useDragAndDropManager();
+    handlePointerUp,
 
-  // Component-specific state and handlers
-  const [items, setItems] = useState<ItemsByContainer>({
-    'container1': [/* items */],
-    'container2': [/* items */],
-  });
+    // Drag preview methods
+    createDragPreview,
+    updateDragPreviewPosition,
+    removeDragPreview,
 
-  const handleItemMoved = (
-    itemId: string,
-    sourceContainerId: string,
-    targetContainerId: string,
-    targetId: string | null,
-    position: 'before' | 'after' | null
-  ) => {
-    // Implementation that ensures the item is placed at the exact position specified
-    // This means inserting it precisely between the two items closest to where it was dropped
-    setItems(prevItems => {
-      const newItems = {...prevItems};
-
-      // Remove item from source container
-      const item = prevItems[sourceContainerId].find(item => item.id === itemId);
-      newItems[sourceContainerId] = prevItems[sourceContainerId].filter(item => item.id !== itemId);
-
-      if (!item) return prevItems;
-
-      // Insert item at the correct position in target container
-      if (targetId === null) {
-        // Add to end of container if no target
-        newItems[targetContainerId] = [...newItems[targetContainerId], item];
-      } else {
-        // Insert before or after the target, at the exact position
-        const targetIndex = newItems[targetContainerId].findIndex(item => item.id === targetId);
-        const insertIndex = position === 'after' ? targetIndex + 1 : targetIndex;
-
-        newItems[targetContainerId] = [
-          ...newItems[targetContainerId].slice(0, insertIndex),
-          item,
-          ...newItems[targetContainerId].slice(insertIndex)
-        ];
-      }
-
-      return newItems;
-    });
+    // Helper methods
+    findClosestItem,
+    resetDragState
   };
+}]]></example>
+      </file>
+    </files>
 
-  const onContainerDrop = (e: React.DragEvent<HTMLElement>, containerId: string) => {
-    const result = handleContainerDrop(e, containerId);
-    if (result) {
-      const { itemId, sourceContainerId, targetId, position } = result;
-      handleItemMoved(itemId, sourceContainerId, containerId, targetId, position);
-    }
-  };
+    <dependencies>
+      <dependency type="external">react for hooks and event handling</dependency>
+    </dependencies>
+  </implementation>
 
-  return (
-    <div className="board">
-      {Object.entries(items).map(([containerId, containerItems]) => (
-        <Container
-          key={containerId}
-          id={containerId}
-          items={containerItems}
-          isDraggedOver={draggedOverContainerId === containerId}
-          dropPlaceholderPosition={dropPlaceholderPosition}
-          draggedElement={draggedElement}
-          draggedItemId={draggedItemId}
-          onDragOver={(e) => {
-            const containerElement = e.currentTarget;
-            const itemElements = Array.from(
-              containerElement.querySelectorAll('[data-item-id]')
-            );
-            handleContainerDragOver(e, containerId, itemElements);
-          }}
-          onDragLeave={handleContainerDragLeave}
-          onDrop={(e) => onContainerDrop(e, containerId)}
-          onItemDragStart={(itemId, element) => handleDragStart(itemId, containerId, element)}
-          onItemDragEnd={handleDragEnd}
-          onItemPointerDown={(e, itemId, element) => handlePointerDown(e, itemId, containerId, element)}
-          onItemPointerMove={handlePointerMove}
-          onItemPointerUp={handlePointerUp}
-        />
-      ))}
-    </div>
-  );
-}
-```
-
-## Related Specifications
-- [Project Board Component](../../features/project_board/project_board.specs.md)
-- [Task Column Component](../../features/project_board/task_column.specs.md)
-- [Task Card Component](../../ui/features/task_card/task_card.specs.md)
-- [Drop Placeholder Component](../../ui/features/project_board/drop_placeholder.specs.md)
+  <references>
+    <reference href="../lib.package_specs.md">Library Utilities</reference>
+    <reference href="../../features/project_board/project_board.specs.md">Project Board Component</reference>
+    <reference href="../../features/task_management/task_list.specs.md">Task List Component</reference>
+  </references>
+</specification>

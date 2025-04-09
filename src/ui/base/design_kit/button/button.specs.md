@@ -1,58 +1,139 @@
-# Button Component Specification
+---
+description: Button Component Specification
+type: component
+---
 
-## Overview
-The Button component provides a standardized button element with various visual styles and sizes. It serves as a fundamental interactive element used throughout the application for triggering actions.
+<specification>
+  <meta>
+    <title>Button Component Specification</title>
+    <description>The Button component provides a standardized button element with various visual styles and sizes. It serves as a fundamental interactive element used throughout the application for triggering actions.</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/ui/base/design_kit/button/button.tsx">Button Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Provide a consistent button appearance across the application
-- Support various visual styles to indicate different types of actions
-- Support different sizes for various contexts and layouts
-- Provide visual feedback for interactive states (hover, focus, active)
-- Indicate loading states during asynchronous operations
-- Support icon placement for enhanced visual communication
-- Ensure buttons are accessible to all users including keyboard and screen reader users
+  <overview>
+    <description>The Button component provides a standardized button element with various visual styles and sizes. It serves as a fundamental interactive element used throughout the application for triggering actions.</description>
+    <responsibility>Provide a consistent, customizable, and accessible button component for user interactions</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement with React and TypeScript
-- Support all standard HTML button attributes
-- Use Tailwind CSS for styling with the project's class naming conventions
-- Support different visual variants (primary, secondary, ghost, destructive, link)
-- Support different sizes (small, medium, large)
-- Support disabled state with visual indication
-- Support loading state with spinner animation
-- Support icons in leading and trailing positions
-- Ensure accessibility compliance (ARIA attributes, focus states)
-- Support keyboard navigation and interactions
-- Use the `cn` utility from lib/utils for conditional class merging
-- Follow single responsibility principle by focusing solely on button presentation
-- Implement proper TypeScript types (not interfaces) as per project conventions
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Provide a consistent button appearance across the application</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support various visual styles to indicate different types of actions</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support different sizes for various contexts and layouts</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Provide visual feedback for interactive states (hover, focus, active)</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Indicate loading states during asynchronous operations</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support icon placement for enhanced visual communication</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure buttons are accessible to all users including keyboard and screen reader users</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Buttons should provide visual feedback on hover, focus, and active states
-- Disabled buttons should prevent interactions and appear visually distinct
-- Loading buttons should show a spinner and prevent multiple clicks
-- Buttons should handle touch and mouse interactions appropriately
-- Focus states should be clearly visible for keyboard navigation
-- Buttons should respond to Enter and Space key presses
-- Buttons with icons should maintain proper alignment and spacing
-- All variants should maintain consistent height within their size category
-- The component should accept and properly handle all standard HTML button attributes
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement with React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support all standard HTML button attributes</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use Tailwind CSS for styling with the project's class naming conventions</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support different visual variants (primary, secondary, ghost, destructive, link)</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support different sizes (small, medium, large)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support disabled state with visual indication</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support loading state with spinner animation</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support icons in leading and trailing positions</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure accessibility compliance (ARIA attributes, focus states)</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support keyboard navigation and interactions</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use the `cn` utility from lib/utils for conditional class merging</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow single responsibility principle by focusing solely on button presentation</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement proper TypeScript types (not interfaces) as per project conventions</description>
+      </requirement>
+    </technical-requirements>
 
-## Props Interface
-```typescript
-type ButtonProps = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Buttons should provide visual feedback on hover, focus, and active states</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Disabled buttons should prevent interactions and appear visually distinct</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Loading buttons should show a spinner and prevent multiple clicks</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Buttons should handle touch and mouse interactions appropriately</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Focus states should be clearly visible for keyboard navigation</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Buttons should respond to Enter and Space key presses</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Buttons with icons should maintain proper alignment and spacing</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>All variants should maintain consistent height within their size category</description>
+      </expectation>
+      <expectation priority="high">
+        <description>The component should accept and properly handle all standard HTML button attributes</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type ButtonProps = {
   variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'link';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   className?: string;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>;
-```
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;]]></definition>
+    </interface>
+  </interfaces>
 
-## Implementation Details
-```typescript
-import * as React from 'react';
+  <implementation>
+    <files>
+      <file path="src/ui/base/design_kit/button/button.tsx" action="create">
+        <changes>Create Button component implementation</changes>
+        <example><![CDATA[import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export const Button: React.FC<ButtonProps> = ({
@@ -125,33 +206,17 @@ export const Button: React.FC<ButtonProps> = ({
       {!isLoading && rightIcon && <span className="ml-2" aria-hidden="true">{rightIcon}</span>}
     </button>
   );
-};
-```
+};]]></example>
+      </file>
+    </files>
 
-## Usage Examples
-```tsx
-// Primary button (default)
-<Button>Submit</Button>
+    <dependencies>
+      <dependency type="external">react for UI components</dependency>
+      <dependency type="internal">cn utility from @/lib/utils</dependency>
+    </dependencies>
+  </implementation>
 
-// Secondary button with icon
-<Button variant="secondary" leftIcon={<SaveIcon />}>
-  Save
-</Button>
-
-// Destructive button
-<Button variant="destructive">Delete</Button>
-
-// Small ghost button
-<Button variant="ghost" size="sm">
-  Cancel
-</Button>
-
-// Loading state
-<Button isLoading>Processing</Button>
-
-// Disabled state
-<Button disabled>Cannot Submit</Button>
-```
-
-## Related Specifications
-- [Base UI Components](../../base.package_specs.md)
+  <references>
+    <reference href="../../base.package_specs.md">Base UI Components</reference>
+  </references>
+</specification>

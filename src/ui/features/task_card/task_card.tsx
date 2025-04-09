@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Clock, Flag, GripVertical } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Clock, Flag } from 'lucide-react';
 import { Task } from '@/types';
 import { TaskModal } from '@/ui/features/task_modal/task_modal';
 
@@ -7,8 +7,6 @@ type TaskCardProps = {
   task: Task;
   onStatusChange: (status: Task['status']) => void;
   onEdit: (task: Task) => void;
-  columnTasks?: Task[];
-  onReorder?: (draggedTaskId: string, targetTaskId: string) => void;
 };
 
 const priorityColors = {
@@ -27,13 +25,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   onStatusChange,
   onEdit,
-  columnTasks,
-  onReorder,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [touchDragging, setTouchDragging] = useState(false);
-  const [scrollInterval, setScrollInterval] = useState<number | null>(null);
 
   // Format the due date for display
   const formatDueDate = (dateString?: string) => {
@@ -57,50 +51,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     const dueDate = new Date(dateString);
     const today = new Date();
     return dueDate < today;
-  };
-
-  // Clean up auto-scroll on unmount
-  useEffect(() => {
-    return () => {
-      if (scrollInterval) {
-        window.clearInterval(scrollInterval);
-      }
-    };
-  }, [scrollInterval]);
-
-  // Handle auto-scrolling during drag
-  const handleAutoScroll = (e: React.DragEvent | React.TouchEvent | MouseEvent) => {
-    if (scrollInterval) {
-      window.clearInterval(scrollInterval);
-      setScrollInterval(null);
-    }
-
-    let clientY: number;
-    if ('touches' in e && e.touches[0]) {
-      clientY = e.touches[0].clientY;
-    } else if ('clientY' in e) {
-      clientY = e.clientY;
-    } else {
-      return;
-    }
-
-    const windowHeight = window.innerHeight;
-    const scrollThreshold = 100;
-    const scrollSpeed = 10;
-
-    if (clientY < scrollThreshold) {
-      // Scroll up
-      const interval = window.setInterval(() => {
-        window.scrollBy(0, -scrollSpeed);
-      }, 20);
-      setScrollInterval(interval);
-    } else if (clientY > windowHeight - scrollThreshold) {
-      // Scroll down
-      const interval = window.setInterval(() => {
-        window.scrollBy(0, scrollSpeed);
-      }, 20);
-      setScrollInterval(interval);
-    }
   };
 
   // Handle drag start to initiate drag-and-drop
@@ -136,42 +86,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     if (e.currentTarget.classList) {
       e.currentTarget.classList.remove('dragging');
     }
-
-    // Clear any auto-scroll that might be happening
-    if (scrollInterval) {
-      window.clearInterval(scrollInterval);
-      setScrollInterval(null);
-    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    handleAutoScroll(e);
     e.dataTransfer.dropEffect = 'move';
-  };
-
-  // Handle touch events for mobile drag and drop
-  const handleTouchStart = (e: React.TouchEvent) => {
-    // Only enable dragging when using the grip handle
-    if ((e.target as HTMLElement).closest('.drag-handle')) {
-      setTouchDragging(true);
-      // Add any custom touch drag initialization here
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchDragging) {
-      handleAutoScroll(e);
-      // Implement custom touch dragging behavior here
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setTouchDragging(false);
-    if (scrollInterval) {
-      window.clearInterval(scrollInterval);
-      setScrollInterval(null);
-    }
   };
 
   // Determine the color class for the due date
@@ -193,51 +112,36 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
       onClick={() => onEdit(task)}
       data-task-id={task.id}
     >
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="font-medium text-gray-900 truncate mr-2">{task.title}</h3>
+      <div className="flex justify-between items-start">
+        <h3 className="font-semibold text-gray-800 mb-1">{task.title}</h3>
+        <span className={`text-xs px-2 py-1 rounded-full ${priorityColors[task.priority]}`}>
+          {task.priority}
+        </span>
+      </div>
+
+      <p className="text-gray-600 text-sm mb-2 line-clamp-2">{task.description}</p>
+
+      <div className="flex justify-between text-xs mt-2">
         <div className="flex items-center">
-          <span className={`text-xs rounded-full px-2 py-1 font-medium ${priorityColors[task.priority]} mr-2`}>
-            {task.priority}
-          </span>
-          <div className="drag-handle touch-manipulation cursor-grab md:hidden">
-            <GripVertical className="w-4 h-4 text-gray-400" />
-          </div>
+          {task.assignee && (
+            <span className="text-gray-500 mr-2">
+              {task.assignee}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center">
+          {task.dueDate && (
+            <span className={`flex items-center ${getDueDateColorClass()}`}>
+              <Clock className="h-3 w-3 mr-1" />
+              {formatDueDate(task.dueDate)}
+            </span>
+          )}
         </div>
       </div>
-
-      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{task.description}</p>
-
-      <div className="flex justify-between text-xs">
-        {task.assignee && (
-          <div className="text-gray-600 truncate flex-1">
-            {task.assignee}
-          </div>
-        )}
-
-        {task.dueDate && (
-          <div className={`flex items-center ${getDueDateColorClass()}`}>
-            <Clock className="w-3 h-3 mr-1" />
-            <span>{formatDueDate(task.dueDate)}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Placeholder element - this will be positioned absolutely and shown during drag operations */}
-      {isDragging && (
-        <div
-          className="absolute pointer-events-none border-2 border-blue-500 rounded-lg bg-blue-50 opacity-50"
-          style={{
-            width: cardRef.current?.offsetWidth || 'auto',
-            height: cardRef.current?.offsetHeight || 'auto',
-          }}
-        />
-      )}
     </div>
   );
 };

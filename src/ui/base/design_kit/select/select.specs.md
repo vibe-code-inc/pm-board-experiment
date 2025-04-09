@@ -1,55 +1,146 @@
-# Select Component Specification
+---
+description: Select Component Specification
+type: component
+---
 
-## Overview
-The Select component provides a standardized, accessible dropdown selection field with support for validation and error states. It serves as a foundational form element for dropdown selection throughout the application.
+<specification>
+  <meta>
+    <title>Select Component Specification</title>
+    <description>The Select component provides a standardized, accessible dropdown selection field with support for validation and error states. It serves as a foundational form element for dropdown selection throughout the application.</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/ui/base/design_kit/select/select.tsx">Select Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Display a dropdown selection field with consistent styling
-- Support optional label text displayed above the select
-- Display error messages when validation fails
-- Maintain consistent appearance with other form elements
-- Support responsive design for different screen sizes
-- Allow for selection from predefined options
-- Ensure accessibility for all users including keyboard and screen reader users
-- Provide clear visual feedback for different states (default, focus, error, disabled)
+  <overview>
+    <description>The Select component provides a standardized, accessible dropdown selection field with support for validation and error states. It serves as a foundational form element for dropdown selection throughout the application.</description>
+    <responsibility>Provide a consistent, accessible dropdown selection field for forms with validation support</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement as a controlled component with React and TypeScript
-- Extend the standard HTML select element attributes
-- Use Tailwind CSS for styling with project conventions
-- Support accessibility features with proper ARIA attributes and labeling
-- Ensure proper integration with form validation
-- Support nesting of option elements as children
-- Implement consistent error state styling
-- Use types instead of interfaces as per project conventions
-- Implement proper ID generation for label association
-- Follow single responsibility principle
-- Create a reusable component that maintains focus states
-- Support all standard HTML select attributes
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display a dropdown selection field with consistent styling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support optional label text displayed above the select</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Display error messages when validation fails</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Maintain consistent appearance with other form elements</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support responsive design for different screen sizes</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Allow for selection from predefined options</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure accessibility for all users including keyboard and screen reader users</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide clear visual feedback for different states (default, focus, error, disabled)</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Display label when provided with proper HTML association
-- Show error message below the select when error prop is provided
-- Apply error styling when in error state
-- Support all standard HTML select behaviors
-- Pass through all unspecified props to the underlying select element
-- Maintain proper focus states and keyboard navigation
-- Allow for selection of options through keyboard and mouse interaction
-- Properly handle form submission
-- Announce error messages to screen readers
-- Allow custom styling through className prop
-- Provide proper focus indicators for keyboard users
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement as a controlled component with React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Extend the standard HTML select element attributes</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use Tailwind CSS for styling with project conventions</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support accessibility features with proper ARIA attributes and labeling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure proper integration with form validation</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support nesting of option elements as children</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement consistent error state styling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use types instead of interfaces as per project conventions</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Implement proper ID generation for label association</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow single responsibility principle</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Create a reusable component that maintains focus states</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support all standard HTML select attributes</description>
+      </requirement>
+    </technical-requirements>
 
-## Component Structure
-```typescript
-type SelectProps = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Display label when provided with proper HTML association</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Show error message below the select when error prop is provided</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Apply error styling when in error state</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Support all standard HTML select behaviors</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Pass through all unspecified props to the underlying select element</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Maintain proper focus states and keyboard navigation</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Allow for selection of options through keyboard and mouse interaction</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Properly handle form submission</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Announce error messages to screen readers</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Allow custom styling through className prop</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Provide proper focus indicators for keyboard users</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type SelectProps = {
   // Optional label text to display above the select
   label?: string;
   // Optional error message to display below the select
   error?: string;
   // Optional ID for the select (auto-generated if not provided)
   id?: string;
-} & React.SelectHTMLAttributes<HTMLSelectElement>;
+} & React.SelectHTMLAttributes<HTMLSelectElement>;]]></definition>
+    </interface>
+  </interfaces>
+
+  <implementation>
+    <files>
+      <file path="src/ui/base/design_kit/select/select.tsx" action="create">
+        <changes>Create Select component implementation</changes>
+        <example><![CDATA[import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 export const Select: React.FC<SelectProps> = ({
   className,
@@ -96,59 +187,20 @@ export const Select: React.FC<SelectProps> = ({
       )}
     </div>
   );
-};
-```
+};]]></example>
+      </file>
+    </files>
 
-## Examples
-```tsx
-// Basic usage
-<Select
-  name="country"
-  label="Country"
->
-  <option value="">Select a country</option>
-  <option value="us">United States</option>
-  <option value="ca">Canada</option>
-  <option value="uk">United Kingdom</option>
-</Select>
+    <dependencies>
+      <dependency type="external">react for UI components</dependency>
+      <dependency type="internal">cn utility from @/lib/utils</dependency>
+    </dependencies>
+  </implementation>
 
-// With error state
-<Select
-  name="priority"
-  label="Priority"
-  error="Please select a priority"
->
-  <option value="">Select priority</option>
-  <option value="low">Low</option>
-  <option value="medium">Medium</option>
-  <option value="high">High</option>
-</Select>
-
-// With additional HTML attributes
-<Select
-  name="category"
-  label="Category"
-  required
-  defaultValue="feature"
->
-  <option value="feature">Feature</option>
-  <option value="bug">Bug</option>
-  <option value="task">Task</option>
-</Select>
-
-// Disabled state
-<Select
-  name="read-only-field"
-  label="Read Only Selection"
-  disabled
-  value="fixed-option"
->
-  <option value="fixed-option">Cannot be changed</option>
-</Select>
-```
-
-## Related Specifications
-- [Base UI Components](../../base.package_specs.md)
-- [Button Component](../button/button.specs.md)
-- [Input Component](../input/input.specs.md)
-- [Textarea Component](../textarea/textarea.specs.md)
+  <references>
+    <reference href="../../base.package_specs.md">Base UI Components</reference>
+    <reference href="../button/button.specs.md">Button Component</reference>
+    <reference href="../input/input.specs.md">Input Component</reference>
+    <reference href="../textarea/textarea.specs.md">Textarea Component</reference>
+  </references>
+</specification>

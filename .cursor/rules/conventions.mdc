@@ -61,24 +61,74 @@ export const TaskFilter = ({ onChange }) => {
       <description>ALL specification files MUST COMPLY with ALL conventions in this file. When a specification file CONTRADICTS any convention, the contradictory part is considered INVALID and must be updated.</description>
       <examples>
         <example title="Specification Compliance">
-          <correct-example title="Compliant specification" conditions="Creating a specification" expected-result="Specification follows conventions" correctness-criteria="Aligns with all project conventions"><![CDATA[# TaskList Component Specification
+          <correct-example title="Compliant specification" conditions="Creating a specification" expected-result="Specification follows conventions" correctness-criteria="Aligns with all project conventions"><![CDATA[---
+description: TaskList Component Specification
+type: component
+---
 
-## Overview
-The TaskList component displays a list of tasks.
+<specification>
+  <meta>
+    <title>TaskList Component</title>
+    <description>Displays a list of tasks</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/features/task_management/task_list.tsx">TaskList Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Technical Requirements
-- File should be named task_list.tsx (snake_case)
-- Component should use absolute imports with @/ prefix
-- Component should use React.FC with explicit props type]]></correct-example>
-          <incorrect-example title="Non-compliant specification" conditions="Creating a specification" expected-result="Specification follows conventions" incorrectness-criteria="Contradicts project conventions"><![CDATA[# TaskList Component Specification
+  <overview>
+    <description>The TaskList component displays a list of tasks.</description>
+    <responsibility>Display and manage multiple tasks in a list format</responsibility>
+  </overview>
 
-## Overview
-The TaskList component displays a list of tasks.
+  <requirements>
+    <technical-requirements>
+      <requirement priority="high">
+        <description>File should be named task_list.tsx (snake_case)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Component should use absolute imports with @/ prefix</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Component should use React.FC with explicit props type</description>
+      </requirement>
+    </technical-requirements>
+  </requirements>
+</specification>]]></correct-example>
+          <incorrect-example title="Non-compliant specification" conditions="Creating a specification" expected-result="Specification follows conventions" incorrectness-criteria="Contradicts project conventions"><![CDATA[---
+description: TaskList Component Specification
+type: component
+---
 
-## Technical Requirements
-- File should be named TaskList.tsx (PascalCase)
-- Component should use relative imports
-- Component should use function syntax without React.FC]]></incorrect-example>
+<specification>
+  <meta>
+    <title>TaskList Component</title>
+    <description>Displays a list of tasks</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/features/task_management/TaskList.tsx">TaskList Component</file-matcher>
+    </applies-to>
+  </meta>
+
+  <overview>
+    <description>The TaskList component displays a list of tasks.</description>
+    <responsibility>Display and manage multiple tasks in a list format</responsibility>
+  </overview>
+
+  <requirements>
+    <technical-requirements>
+      <requirement priority="high">
+        <description>File should be named TaskList.tsx (PascalCase)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Component should use relative imports</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Component should use function syntax without React.FC</description>
+      </requirement>
+    </technical-requirements>
+  </requirements>
+</specification>]]></incorrect-example>
         </example>
       </examples>
     </non-negotiable>

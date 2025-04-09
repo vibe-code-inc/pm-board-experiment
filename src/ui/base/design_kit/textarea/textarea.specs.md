@@ -1,55 +1,146 @@
-# Textarea Component Specification
+---
+description: Textarea Component Specification
+type: component
+---
 
-## Overview
-The Textarea component provides a standardized, accessible multi-line text input field with support for validation and error states. It serves as a foundational element in forms throughout the application for collecting larger text inputs.
+<specification>
+  <meta>
+    <title>Textarea Component Specification</title>
+    <description>The Textarea component provides a standardized, accessible multi-line text input field with support for validation and error states. It serves as a foundational element in forms throughout the application for collecting larger text inputs.</description>
+    <created-at utc-timestamp="1712678400">April 9, 2024, 10:00 AM EDT</created-at>
+    <applies-to>
+      <file-matcher glob="src/ui/base/design_kit/textarea/textarea.tsx">Textarea Component</file-matcher>
+    </applies-to>
+  </meta>
 
-## Product Requirements
-- Display a multi-line text input field with consistent styling
-- Support optional label text displayed above the textarea
-- Display error messages when validation fails
-- Maintain consistent appearance with other form elements
-- Support responsive design for different screen sizes
-- Allow for flexible height adjustment based on content
-- Ensure accessibility for all users including keyboard and screen reader users
-- Provide clear visual feedback for different states (default, focus, error, disabled)
+  <overview>
+    <description>The Textarea component provides a standardized, accessible multi-line text input field with support for validation and error states. It serves as a foundational element in forms throughout the application for collecting larger text inputs.</description>
+    <responsibility>Provide a consistent, accessible multi-line text input field for collecting larger text inputs with validation support</responsibility>
+  </overview>
 
-## Technical Requirements
-- Implement as a controlled component with React and TypeScript
-- Extend the standard HTML textarea element attributes
-- Use Tailwind CSS for styling with project conventions
-- Support accessibility features with proper ARIA attributes and labeling
-- Ensure proper integration with form validation
-- Implement consistent error state styling
-- Support for resizing behavior (vertical, horizontal, both, or none)
-- Use types instead of interfaces as per project conventions
-- Implement proper ID generation for label association
-- Follow single responsibility principle
-- Create a reusable component that maintains focus states
-- Support all standard HTML textarea attributes
+  <requirements>
+    <functional-requirements>
+      <requirement priority="high">
+        <description>Display a multi-line text input field with consistent styling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support optional label text displayed above the textarea</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Display error messages when validation fails</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Maintain consistent appearance with other form elements</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support responsive design for different screen sizes</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Allow for flexible height adjustment based on content</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure accessibility for all users including keyboard and screen reader users</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Provide clear visual feedback for different states (default, focus, error, disabled)</description>
+      </requirement>
+    </functional-requirements>
 
-## Behavioral Expectations
-- Display label when provided with proper HTML association
-- Show error message below the textarea when error prop is provided
-- Apply error styling when in error state
-- Support all standard HTML textarea behaviors
-- Pass through all unspecified props to the underlying textarea element
-- Maintain proper focus states and keyboard navigation
-- Allow for multi-line text input with appropriate wrapping
-- Properly handle form submission
-- Announce error messages to screen readers
-- Allow custom styling through className prop
-- Provide proper focus indicators for keyboard users
+    <technical-requirements>
+      <requirement priority="high">
+        <description>Implement as a controlled component with React and TypeScript</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Extend the standard HTML textarea element attributes</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use Tailwind CSS for styling with project conventions</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support accessibility features with proper ARIA attributes and labeling</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Ensure proper integration with form validation</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Implement consistent error state styling</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Support for resizing behavior (vertical, horizontal, both, or none)</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Use types instead of interfaces as per project conventions</description>
+      </requirement>
+      <requirement priority="medium">
+        <description>Implement proper ID generation for label association</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Follow single responsibility principle</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Create a reusable component that maintains focus states</description>
+      </requirement>
+      <requirement priority="high">
+        <description>Support all standard HTML textarea attributes</description>
+      </requirement>
+    </technical-requirements>
 
-## Component Structure
-```typescript
-type TextareaProps = {
+    <behavioral-expectations>
+      <expectation priority="high">
+        <description>Display label when provided with proper HTML association</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Show error message below the textarea when error prop is provided</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Apply error styling when in error state</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Support all standard HTML textarea behaviors</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Pass through all unspecified props to the underlying textarea element</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Maintain proper focus states and keyboard navigation</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Allow for multi-line text input with appropriate wrapping</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Properly handle form submission</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Announce error messages to screen readers</description>
+      </expectation>
+      <expectation priority="medium">
+        <description>Allow custom styling through className prop</description>
+      </expectation>
+      <expectation priority="high">
+        <description>Provide proper focus indicators for keyboard users</description>
+      </expectation>
+    </behavioral-expectations>
+  </requirements>
+
+  <interfaces>
+    <interface type="props">
+      <definition><![CDATA[type TextareaProps = {
   // Optional label text to display above the textarea
   label?: string;
   // Optional error message to display below the textarea
   error?: string;
   // Optional ID for the textarea (auto-generated if not provided)
   id?: string;
-} & React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+} & React.TextareaHTMLAttributes<HTMLTextAreaElement>;]]></definition>
+    </interface>
+  </interfaces>
+
+  <implementation>
+    <files>
+      <file path="src/ui/base/design_kit/textarea/textarea.tsx" action="create">
+        <changes>Create Textarea component implementation</changes>
+        <example><![CDATA[import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 export const Textarea: React.FC<TextareaProps> = ({
   className,
@@ -93,49 +184,20 @@ export const Textarea: React.FC<TextareaProps> = ({
       )}
     </div>
   );
-};
-```
+};]]></example>
+      </file>
+    </files>
 
-## Examples
-```tsx
-// Basic usage
-<Textarea
-  name="description"
-  label="Description"
-  placeholder="Enter a detailed description"
-  rows={4}
-/>
+    <dependencies>
+      <dependency type="external">react for UI components</dependency>
+      <dependency type="internal">cn utility from @/lib/utils</dependency>
+    </dependencies>
+  </implementation>
 
-// With error state
-<Textarea
-  name="comments"
-  label="Comments"
-  error="Comments must be at least 10 characters"
-  rows={3}
-/>
-
-// With additional HTML attributes
-<Textarea
-  name="feedback"
-  label="Feedback"
-  required
-  maxLength={500}
-  rows={5}
-  placeholder="Share your thoughts..."
-/>
-
-// Disabled state
-<Textarea
-  name="read-only-field"
-  label="Read Only Text"
-  disabled
-  value="This content cannot be edited"
-  rows={2}
-/>
-```
-
-## Related Specifications
-- [Base UI Components](../../base.package_specs.md)
-- [Button Component](../button/button.specs.md)
-- [Input Component](../input/input.specs.md)
-- [Select Component](../select/select.specs.md)
+  <references>
+    <reference href="../../base.package_specs.md">Base UI Components</reference>
+    <reference href="../button/button.specs.md">Button Component</reference>
+    <reference href="../input/input.specs.md">Input Component</reference>
+    <reference href="../select/select.specs.md">Select Component</reference>
+  </references>
+</specification>
